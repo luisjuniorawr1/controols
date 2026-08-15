@@ -52,6 +52,9 @@ button,a,summary,.drop-zone{-webkit-tap-highlight-color:transparent}
   .pdf-preview{height:min(58vh,360px)}
   .breadcrumbs{margin-bottom:24px}
 }
+@media(max-width:620px){
+  .category-hero{display:block}.category-icon.large{margin-bottom:15px}
+}
 @media(max-width:420px){
   .hub-hero h1{font-size:46px}.collection-hub-copy h1{font-size:43px}.simple-tool-hero h1{font-size:33px}.category-hero h1{font-size:38px}
   .hub-hero-inner{padding-top:48px}.hub-content{padding-top:34px}
