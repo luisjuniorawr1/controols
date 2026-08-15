@@ -5,7 +5,7 @@ import { categories, getCategory, getToolsByCategory, locales } from '@/src/data
 import { collections } from '@/src/data/collections';
 import { copy, isLocale } from '@/src/i18n';
 import { isToolLive } from '@/src/lib/live';
-import { toolTitle } from '@/src/toolLocale';
+import { toolTitle } from '@/src/toolPresentation';
 import Link from 'next/link';
 
 const base='https://controols.com';
