@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './assets.css';
 import './tool-clean.css';
+import './dark.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
   applicationName: 'Controols',
   title: { default: 'Controols', template: '%s | Controols' },
-  description: '400 fast, private and free online tools.',
+  description: 'Fast, private and free online tools.',
   creator: 'Controols',
   publisher: 'Controols',
   robots: { index: true, follow: true },
