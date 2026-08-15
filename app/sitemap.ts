@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { categories, locales, tools } from '@/src/data/catalog';
+import { categories, locales, tools } from '@/src/data/extendedCatalog';
 
 export const dynamic = 'force-static';
 
