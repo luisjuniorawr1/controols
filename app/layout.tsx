@@ -5,6 +5,7 @@ import './tool-clean.css';
 import './dark.css';
 import './home-stream.css';
 import './home-compact.css';
+import './collection-hub.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
