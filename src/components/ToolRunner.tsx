@@ -34,22 +34,15 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
         <div className="pending-icon">↻</div>
         <h2>{t.building}</h2>
         <p>{t.browserNote}</p>
-        <div className="engine-pill">WASM / browser file engine</div>
       </section>
     );
   }
 
   return (
-    <section className="runner">
-      <div className="runner-grid">
-        <label><span>{t.input}</span><textarea value={input} onChange={(e: {target:{value:string}})=>setInput(e.target.value)} placeholder={exampleForCategory(tool.category)} /></label>
-        <label><span>{t.output}</span><textarea readOnly value={output} placeholder="—" /></label>
-      </div>
-      <div className="runner-actions">
-        <button className="primary" onClick={execute} disabled={busy}>{busy ? '…' : t.run}</button>
-        <button onClick={()=>navigator.clipboard.writeText(output)} disabled={!output}>{t.copy}</button>
-        <button onClick={()=>{setInput('');setOutput('')}}>{t.clear}</button>
-      </div>
+    <section className="runner simple-runner">
+      <label><span>{t.input}</span><textarea value={input} onChange={(e)=>{setInput(e.target.value);setOutput('')}} placeholder={exampleForCategory(tool.category)} /></label>
+      <div className="runner-actions"><button className="primary" onClick={execute} disabled={busy||!input.trim()}>{busy ? '…' : t.run}</button><button onClick={()=>setInput('')} disabled={!input}>{t.clear}</button></div>
+      {output&&<div className="simple-output"><div className="result-summary">{output}</div><button onClick={()=>navigator.clipboard.writeText(output)}>{t.copy}</button></div>}
     </section>
   );
 }
