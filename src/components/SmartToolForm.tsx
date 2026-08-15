@@ -6,6 +6,7 @@ import { copy } from '@/src/i18n';
 import { runTool } from '@/src/lib/allExecutors';
 import { getToolFormSpec, type FieldSpec } from '@/src/data/toolFormSchemas';
 import { getToolFormOverride } from '@/src/data/toolFormOverrides';
+import { getExpansionToolFormSpec } from '@/src/data/expansionToolFormSchemas';
 
 function initialValue(field:FieldSpec){return field.defaultValue??''}
 function numericList(value:string){return value.replace(/[^0-9eE+.,;\-\s]/g,'')}
@@ -56,7 +57,7 @@ function serializeSlots(values:string[]){return values.map(x=>x.trim()).join('\n
 function parsePastedNumbers(value:string){return value.split(/[;,\s]+/).map(x=>x.trim()).filter(Boolean).slice(0,100)}
 
 export default function SmartToolForm({tool,locale}:{tool:Tool;locale:Locale}){
-  const t=copy[locale],spec=useMemo(()=>getToolFormOverride(tool,locale)||getToolFormSpec(tool,locale),[tool,locale]);
+  const t=copy[locale],spec=useMemo(()=>getToolFormOverride(tool,locale)||getExpansionToolFormSpec(tool,locale)||getToolFormSpec(tool,locale),[tool,locale]);
   const [values,setValues]=useState<Record<string,string>>(()=>Object.fromEntries(spec.fields.map(x=>[x.key,initialValue(x)])));
   const [output,setOutput]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
   const valid=spec.allowEmpty||spec.fields.every(field=>fieldValid(field,values[field.key]??'',tool.slug));
