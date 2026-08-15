@@ -6,7 +6,7 @@ import CollectionArt from '@/src/components/CollectionArt';
 import SubcategoryArt from '@/src/components/SubcategoryArt';
 import { categories, tools, type Locale } from '@/src/data/extendedCatalog';
 import { getCollection, type CollectionId } from '@/src/data/collections';
-import { toolTitle } from '@/src/toolLocale';
+import { toolTitle } from '@/src/toolPresentation';
 
 const ui:Record<Locale,{back:string;search:string;subcategories:string;subhint:string;results:string;empty:string;tools:string;open:string;privacy:string;clear:string}>={
   en:{back:'All categories',search:'Search within this category…',subcategories:'Choose a subcategory',subhint:'Pick an area to see only the tools for that task.',results:'Search results',empty:'No tools found in this category.',tools:'tools',open:'Explore',privacy:'Processed in your browser whenever possible',clear:'Clear search'},
