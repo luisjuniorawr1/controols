@@ -7,7 +7,10 @@ import { locales, tools } from '@/src/data/extendedCatalog';
 
 const base='https://controols.com';
 export function generateStaticParams(){ return locales.map(locale=>({locale})); }
-export async function generateMetadata({params}:{params:Promise<{locale:string}>}):Promise<Metadata>{const {locale}=await params;if(!isLocale(locale))return{};const url=`${base}/${locale}/`;return{title:'Controols',description:copy[locale].subtitle,alternates:{canonical:url,languages:Object.fromEntries(locales.map(l=>[l,`${base}/${l}/`]))},openGraph:{title:`Controols — ${copy[locale].tagline}`,description:copy[locale].subtitle,url,siteName:'Controols',type:'website'}};}
+export async function generateMetadata({params}:{params:Promise<{locale:string}>}):Promise<Metadata>{
+  const {locale}=await params;if(!isLocale(locale))return{};const url=`${base}/${locale}/`;
+  return{title:copy[locale].tagline,description:copy[locale].subtitle,alternates:{canonical:url,languages:{...Object.fromEntries(locales.map(l=>[l,`${base}/${l}/`])),'x-default':`${base}/en/`}},openGraph:{title:`Controols — ${copy[locale].tagline}`,description:copy[locale].subtitle,url,siteName:'Controols',type:'website'}};
+}
 
 export default async function LocaleHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
