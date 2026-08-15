@@ -5,12 +5,16 @@ import type { Tool, Locale } from '@/src/data/catalog';
 import { copy } from '@/src/i18n';
 import { exampleForCategory, runTool } from '@/src/lib/allExecutors';
 import { isToolLive } from '@/src/lib/live';
+import { FileToolRunner, QRToolRunner } from '@/src/components/AssetToolRunner';
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [busy, setBusy] = useState(false);
+
+  if (tool.category === 'qr') return <QRToolRunner tool={tool} locale={locale}/>;
+  if (tool.category === 'file') return <FileToolRunner tool={tool} locale={locale}/>;
 
   async function execute() {
     setBusy(true);
