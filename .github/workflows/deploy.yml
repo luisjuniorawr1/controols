@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
@@ -26,9 +25,9 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' && env.FIREBASE_PROJECT_ID != '' }}
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' }}
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          projectId: controols
