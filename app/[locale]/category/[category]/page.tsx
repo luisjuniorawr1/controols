@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Header from '@/src/components/Header';
-import { categories, getCategory, getToolsByCategory, locales } from '@/src/data/catalog';
+import { categories, getCategory, getToolsByCategory, locales } from '@/src/data/extendedCatalog';
 import { copy, isLocale } from '@/src/i18n';
 import { isToolLive } from '@/src/lib/live';
 import { toolTitle } from '@/src/toolLocale';
