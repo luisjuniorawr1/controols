@@ -5,12 +5,13 @@ import type { Locale, Tool } from '@/src/data/catalog';
 import { copy } from '@/src/i18n';
 import { runTool } from '@/src/lib/allExecutors';
 import { getToolFormSpec, type FieldSpec } from '@/src/data/toolFormSchemas';
+import { getToolFormOverride } from '@/src/data/toolFormOverrides';
 
 function initialValue(field:FieldSpec){return field.defaultValue??''}
 function numericList(value:string){return value.replace(/[^0-9eE+.,;\-\s]/g,'')}
 
 export default function SmartToolForm({tool,locale}:{tool:Tool;locale:Locale}){
-  const t=copy[locale],spec=useMemo(()=>getToolFormSpec(tool,locale),[tool,locale]);
+  const t=copy[locale],spec=useMemo(()=>getToolFormOverride(tool,locale)||getToolFormSpec(tool,locale),[tool,locale]);
   const [values,setValues]=useState<Record<string,string>>(()=>Object.fromEntries(spec.fields.map(x=>[x.key,initialValue(x)])));
   const [output,setOutput]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
   const valid=spec.allowEmpty||spec.fields.every(field=>!field.required||String(values[field.key]??'').trim()!=='');
