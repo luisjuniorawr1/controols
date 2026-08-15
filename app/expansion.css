@@ -1,0 +1,24 @@
+/* Controols 2.0: compact expansion styles without changing the existing visual system. */
+@media(min-width:1101px){
+  .collection-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .collection-card-body{min-height:150px;padding:15px 16px 14px}
+  .collection-card h3{font-size:20px}
+  .collection-card p{font-size:10.5px;line-height:1.45}
+  .collection-card-art{aspect-ratio:16/8.2}
+}
+
+.subcategory-grid.count-1{grid-template-columns:minmax(280px,440px)}
+.subcategory-grid.count-5{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+.tool-description{max-width:760px!important;color:#b8c0c8!important;font-size:15px!important;line-height:1.62!important;margin:0 0 8px!important}
+.tool-browser-note{font-size:11px!important;color:#727c87!important;margin:0!important;display:flex;align-items:center;gap:7px}
+.tool-browser-note:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px #ff7a1a14;flex:0 0 auto}
+
+/* New category icons keep the same visual language as the existing subcategories. */
+.category-hero .category-icon.large{background:#171c22;border:1px solid #303740;color:#ff9851;box-shadow:0 12px 34px #0003}
+
+@media(max-width:1050px){.subcategory-grid.count-5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){
+  .tool-description{font-size:14px!important;line-height:1.58!important}
+  .subcategory-grid.count-1,.subcategory-grid.count-5{grid-template-columns:1fr}
+}
