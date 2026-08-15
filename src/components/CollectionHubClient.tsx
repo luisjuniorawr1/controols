@@ -8,12 +8,12 @@ import { categories, tools, type Locale } from '@/src/data/extendedCatalog';
 import { getCollection, type CollectionId } from '@/src/data/collections';
 import { toolTitle } from '@/src/toolLocale';
 
-const ui:Record<Locale,{back:string;search:string;subcategories:string;subhint:string;results:string;empty:string;tools:string;open:string;privacy:string}>={
-  en:{back:'All categories',search:'Search within this category…',subcategories:'Choose a subcategory',subhint:'Pick an area to see only the tools for that task.',results:'Search results',empty:'No tools found in this category.',tools:'tools',open:'Explore',privacy:'Processed in your browser whenever possible'},
-  pt:{back:'Todas as categorias',search:'Busque dentro desta categoria…',subcategories:'Escolha uma subcategoria',subhint:'Entre em uma área para ver apenas as ferramentas daquela tarefa.',results:'Resultados da busca',empty:'Nenhuma ferramenta encontrada nesta categoria.',tools:'ferramentas',open:'Explorar',privacy:'Processado no navegador sempre que possível'},
-  es:{back:'Todas las categorías',search:'Busca dentro de esta categoría…',subcategories:'Elige una subcategoría',subhint:'Entra en un área para ver solo las herramientas de esa tarea.',results:'Resultados de búsqueda',empty:'No se encontraron herramientas en esta categoría.',tools:'herramientas',open:'Explorar',privacy:'Procesado en el navegador siempre que sea posible'},
-  zh:{back:'全部分类',search:'在此分类中搜索…',subcategories:'选择子分类',subhint:'进入一个领域，只查看该任务相关的工具。',results:'搜索结果',empty:'此分类中未找到工具。',tools:'工具',open:'浏览',privacy:'尽可能在浏览器中处理'},
-  hi:{back:'सभी श्रेणियाँ',search:'इस श्रेणी में खोजें…',subcategories:'एक उपश्रेणी चुनें',subhint:'उस काम के टूल देखने के लिए एक क्षेत्र चुनें।',results:'खोज परिणाम',empty:'इस श्रेणी में कोई टूल नहीं मिला।',tools:'टूल',open:'देखें',privacy:'जहाँ संभव हो, ब्राउज़र में प्रोसेस किया जाता है'}
+const ui:Record<Locale,{back:string;search:string;subcategories:string;subhint:string;results:string;empty:string;tools:string;open:string;privacy:string;clear:string}>={
+  en:{back:'All categories',search:'Search within this category…',subcategories:'Choose a subcategory',subhint:'Pick an area to see only the tools for that task.',results:'Search results',empty:'No tools found in this category.',tools:'tools',open:'Explore',privacy:'Processed in your browser whenever possible',clear:'Clear search'},
+  pt:{back:'Todas as categorias',search:'Busque dentro desta categoria…',subcategories:'Escolha uma subcategoria',subhint:'Entre em uma área para ver apenas as ferramentas daquela tarefa.',results:'Resultados da busca',empty:'Nenhuma ferramenta encontrada nesta categoria.',tools:'ferramentas',open:'Explorar',privacy:'Processado no navegador sempre que possível',clear:'Limpar busca'},
+  es:{back:'Todas las categorías',search:'Busca dentro de esta categoría…',subcategories:'Elige una subcategoría',subhint:'Entra en un área para ver solo las herramientas de esa tarea.',results:'Resultados de búsqueda',empty:'No se encontraron herramientas en esta categoría.',tools:'herramientas',open:'Explorar',privacy:'Procesado en el navegador siempre que sea posible',clear:'Limpiar búsqueda'},
+  zh:{back:'全部分类',search:'在此分类中搜索…',subcategories:'选择子分类',subhint:'进入一个领域，只查看该任务相关的工具。',results:'搜索结果',empty:'此分类中未找到工具。',tools:'工具',open:'浏览',privacy:'尽可能在浏览器中处理',clear:'清除搜索'},
+  hi:{back:'सभी श्रेणियाँ',search:'इस श्रेणी में खोजें…',subcategories:'एक उपश्रेणी चुनें',subhint:'उस काम के टूल देखने के लिए एक क्षेत्र चुनें।',results:'खोज परिणाम',empty:'इस श्रेणी में कोई टूल नहीं मिला।',tools:'टूल',open:'देखें',privacy:'जहाँ संभव हो, ब्राउज़र में प्रोसेस किया जाता है',clear:'खोज साफ़ करें'}
 };
 
 export default function CollectionHubClient({locale,collectionId}:{locale:Locale;collectionId:CollectionId}){
@@ -36,7 +36,7 @@ export default function CollectionHubClient({locale,collectionId}:{locale:Locale
           <label className="hub-search collection-search">
             <span aria-hidden="true">⌕</span>
             <input value={query} onChange={e=>setQuery(e.target.value)} placeholder={l.search} autoComplete="off"/>
-            {query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear search">×</button>}
+            {query&&<button type="button" onClick={()=>setQuery('')} aria-label={l.clear}>×</button>}
           </label>
           <div className="hub-meta"><b>CONTROOLS</b><span>{scopedTools.length} {l.tools}</span><span>{l.privacy}</span></div>
         </div>
