@@ -6,6 +6,7 @@ import { copy } from '@/src/i18n';
 import { exampleForCategory, runTool } from '@/src/lib/allExecutors';
 import { isToolLive } from '@/src/lib/live';
 import { FileToolRunner, QRToolRunner } from '@/src/components/AssetToolRunner';
+import ImageToolRunner from '@/src/components/ImageToolRunner';
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
@@ -15,6 +16,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
 
   if (tool.category === 'qr') return <QRToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'file') return <FileToolRunner tool={tool} locale={locale}/>;
+  if (tool.category === 'image') return <ImageToolRunner tool={tool} locale={locale}/>;
 
   async function execute() {
     setBusy(true);
