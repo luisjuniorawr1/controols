@@ -10,6 +10,7 @@ import './mobile-nav.css';
 import './ux-polish.css';
 import './expansion.css';
 import './blog.css';
+import './seo-content.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
