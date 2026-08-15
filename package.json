@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "qa:e2e": "playwright test tests/qa-all-tools.spec.ts --project=chromium"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
@@ -31,6 +32,7 @@
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/jsbarcode": "^3.11.4",
     "@types/node": "^24.0.0",
     "@types/pako": "^2.0.4",
