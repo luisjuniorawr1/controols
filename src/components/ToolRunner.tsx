@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Tool, Locale } from '@/src/data/catalog';
 import { copy } from '@/src/i18n';
 import { exampleForCategory, runTool } from '@/src/lib/allExecutors';
+import { isToolLive } from '@/src/lib/live';
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
@@ -17,7 +18,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
     setBusy(false);
   }
 
-  if (!tool.live) {
+  if (!isToolLive(tool)) {
     return (
       <section className="runner runner-pending">
         <div className="pending-icon">↻</div>
