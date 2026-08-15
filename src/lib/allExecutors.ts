@@ -3,8 +3,11 @@ import { runDesign, runGeo, runSecurity, runUnit } from './extraExecutors';
 import { runData, runDocument } from './contentExecutors';
 import { runPineExtra } from './pineExecutors';
 import { runStructuredOverride } from './structuredExecutorOverrides';
+import { runExpansionTool } from './expansionExecutors';
 
 export async function runTool(slug:string,category:string,input:string):Promise<string>{
+  const expansion=runExpansionTool(slug,category,input);
+  if(expansion!==undefined) return expansion;
   const override=runStructuredOverride(slug,input);
   if(override!==undefined) return override;
   const pine=runPineExtra(slug,category,input);
@@ -19,6 +22,7 @@ export async function runTool(slug:string,category:string,input:string):Promise<
 }
 
 export function exampleForCategory(category:string){
+  if(['ai','webseo','print','business','social'].includes(category)) return '';
   if(category==='unit') return '10 km mi';
   if(category==='design') return '#22C55E';
   if(category==='security') return 'Controols';
