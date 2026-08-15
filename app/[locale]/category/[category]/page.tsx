@@ -2,11 +2,12 @@ import { notFound } from 'next/navigation';
 import Header from '@/src/components/Header';
 import { categories, getCategory, getToolsByCategory, locales } from '@/src/data/catalog';
 import { copy, isLocale } from '@/src/i18n';
+import { isToolLive } from '@/src/lib/live';
 import Link from 'next/link';
 
 export function generateStaticParams(){ return locales.flatMap(locale=>categories.map(category=>({locale,category:category.id}))); }
 
 export default async function CategoryPage({ params }: { params: Promise<{ locale:string; category:string }> }){
   const {locale,category}=await params; if(!isLocale(locale))notFound(); const cat=getCategory(category); if(!cat)notFound(); const items=getToolsByCategory(category); const t=copy[locale];
-  return <><Header locale={locale}/><main className="inner"><div className="breadcrumbs"><Link href={`/${locale}/`}>Controols</Link><span>/</span><span>{cat.labels[locale]}</span></div><section className="category-hero"><div className="category-icon large">{cat.icon}</div><div><p className="eyebrow">{items.length} {t.tools}</p><h1>{cat.labels[locale]}</h1><p>{t.browserNote}</p></div></section><div className="tool-grid">{items.map(tool=><Link href={`/${locale}/tools/${tool.slug}/`} className="tool-card" key={tool.slug}><span className={`status-dot ${tool.live?'live':''}`}/><div><strong>{tool.title}</strong><small>{tool.live?t.ready:t.building}</small></div><span className="arrow">↗</span></Link>)}</div></main></>;
+  return <><Header locale={locale}/><main className="inner"><div className="breadcrumbs"><Link href={`/${locale}/`}>Controols</Link><span>/</span><span>{cat.labels[locale]}</span></div><section className="category-hero"><div className="category-icon large">{cat.icon}</div><div><p className="eyebrow">{items.length} {t.tools}</p><h1>{cat.labels[locale]}</h1><p>{t.browserNote}</p></div></section><div className="tool-grid">{items.map(tool=>{const live=isToolLive(tool);return <Link href={`/${locale}/tools/${tool.slug}/`} className="tool-card" key={tool.slug}><span className={`status-dot ${live?'live':''}`}/><div><strong>{tool.title}</strong><small>{live?t.ready:t.building}</small></div><span className="arrow">↗</span></Link>})}</div></main></>;
 }
