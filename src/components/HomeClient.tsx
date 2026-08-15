@@ -6,7 +6,7 @@ import { categories, tools, type Locale } from '@/src/data/extendedCatalog';
 import { collections } from '@/src/data/collections';
 import CollectionArt from '@/src/components/CollectionArt';
 import { copy } from '@/src/i18n';
-import { toolTitle } from '@/src/toolLocale';
+import { toolTitle } from '@/src/toolPresentation';
 
 const ui:Record<Locale,{eyebrow:string;headline:string;intro:string;collections:string;collectionsHint:string;results:string;noResults:string;searchHint:string;tools:string;open:string;clear:string}>={
   en:{eyebrow:'Free browser tools',headline:'Everything. Under control.',intro:'Choose what you want to work with. Your files stay in your browser whenever possible.',collections:'What do you want to do?',collectionsHint:'Choose an area to see the tools made for that task.',results:'Search results',noResults:'No tools found.',searchHint:'Search a tool or task…',tools:'tools',open:'Explore',clear:'Clear search'},
