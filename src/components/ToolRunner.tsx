@@ -3,7 +3,8 @@
 import type { Tool, Locale } from '@/src/data/catalog';
 import { copy } from '@/src/i18n';
 import { isToolLive } from '@/src/lib/live';
-import { FileToolRunner, QRToolRunner } from '@/src/components/AssetToolRunner';
+import { FileToolRunner } from '@/src/components/AssetToolRunner';
+import StructuredQRToolRunner from '@/src/components/StructuredQRToolRunner';
 import ImageToolRunner from '@/src/components/ImageToolRunner';
 import PdfToolRunner from '@/src/components/PdfToolRunner';
 import MediaToolRunner from '@/src/components/MediaToolRunner';
@@ -18,7 +19,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   if (pineImageExtraSlugs.has(tool.slug)) return <PineImageToolRunner tool={tool} locale={locale}/>;
   if (pineFileExtraSlugs.has(tool.slug)) return <PineFileToolRunner tool={tool} locale={locale}/>;
   if (['timer','stopwatch','screen-recorder'].includes(tool.slug)) return <PineInteractiveRunner tool={tool} locale={locale}/>;
-  if (tool.category === 'qr') return <QRToolRunner tool={tool} locale={locale}/>;
+  if (tool.category === 'qr') return <StructuredQRToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'file' || tool.slug==='file-sha256-checksum') return <FileToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'image') return <ImageToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'pdf') return <PdfToolRunner tool={tool} locale={locale}/>;
