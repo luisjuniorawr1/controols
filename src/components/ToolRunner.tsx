@@ -9,13 +9,17 @@ import StructuredImageToolRunner from '@/src/components/StructuredImageToolRunne
 import StructuredPdfToolRunner from '@/src/components/StructuredPdfToolRunner';
 import StructuredMediaToolRunner from '@/src/components/StructuredMediaToolRunner';
 import StructuredPineImageToolRunner from '@/src/components/StructuredPineImageToolRunner';
+import BulkSimpleImageRunner from '@/src/components/BulkSimpleImageRunner';
 import PineFileToolRunner from '@/src/components/PineFileToolRunner';
 import PineInteractiveRunner from '@/src/components/PineInteractiveRunner';
 import SmartToolForm from '@/src/components/SmartToolForm';
 import { pineFileExtraSlugs, pineImageExtraSlugs } from '@/src/data/pineToolsExtras';
 
+const simpleBulk=new Set(['bulk-change-brightness','bulk-change-contrast','bulk-change-saturation','bulk-flip-image']);
+
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
+  if(simpleBulk.has(tool.slug)) return <BulkSimpleImageRunner tool={tool} locale={locale}/>;
   if (pineImageExtraSlugs.has(tool.slug)) return <StructuredPineImageToolRunner tool={tool} locale={locale}/>;
   if (pineFileExtraSlugs.has(tool.slug)) return <PineFileToolRunner tool={tool} locale={locale}/>;
   if (['timer','stopwatch','screen-recorder'].includes(tool.slug)) return <PineInteractiveRunner tool={tool} locale={locale}/>;
