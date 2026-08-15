@@ -15,6 +15,7 @@ jobs:
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,7 +23,7 @@ jobs:
           node-version: 22
       - run: npm install
       - name: Audit production dependencies
-        run: npm audit --omit=dev || true
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' && env.FIREBASE_PROJECT_ID != '' }}
