@@ -9,6 +9,7 @@ import StructuredImageToolRunner from '@/src/components/StructuredImageToolRunne
 import StructuredPdfToolRunner from '@/src/components/StructuredPdfToolRunner';
 import PdfPasswordToolRunner from '@/src/components/PdfPasswordToolRunner';
 import StructuredMediaToolRunner from '@/src/components/StructuredMediaToolRunner';
+import RemoveAudioVideoRunner from '@/src/components/RemoveAudioVideoRunner';
 import StructuredPineImageToolRunner from '@/src/components/StructuredPineImageToolRunner';
 import BulkSimpleImageRunner from '@/src/components/BulkSimpleImageRunner';
 import PineFileToolRunner from '@/src/components/PineFileToolRunner';
@@ -29,6 +30,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   if (tool.category === 'image') return <StructuredImageToolRunner tool={tool} locale={locale}/>;
   if (['protect-pdf','unlock-pdf'].includes(tool.slug)) return <PdfPasswordToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'pdf') return <StructuredPdfToolRunner tool={tool} locale={locale}/>;
+  if (tool.slug === 'remove-audio-from-video') return <RemoveAudioVideoRunner tool={tool} locale={locale}/>;
   if (tool.category === 'video' || tool.category === 'audio') return <StructuredMediaToolRunner tool={tool} locale={locale}/>;
   if (!isToolLive(tool)) return <section className="runner runner-pending"><div className="pending-icon">↻</div><h2>{t.building}</h2><p>{t.browserNote}</p></section>;
   return <SmartToolForm tool={tool} locale={locale}/>;
