@@ -1,4 +1,4 @@
-name: Deploy Firebase Hosting
+name: Build and Deploy Firebase Hosting
 
 on:
   push:
@@ -8,15 +8,18 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - run: npm install
       - run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' && env.FIREBASE_PROJECT_ID != '' }}
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
