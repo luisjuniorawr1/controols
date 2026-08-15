@@ -1,8 +1,11 @@
 import { exampleForCategory as coreExample, runTool as runCore } from './executors';
 import { runDesign, runGeo, runSecurity, runUnit } from './extraExecutors';
 import { runData, runDocument } from './contentExecutors';
+import { runPineExtra } from './pineExecutors';
 
 export async function runTool(slug:string,category:string,input:string):Promise<string>{
+  const pine=runPineExtra(slug,category,input);
+  if(pine!==undefined) return pine;
   if(category==='design') return runDesign(slug,input);
   if(category==='unit') return runUnit(slug,input);
   if(category==='security') return runSecurity(slug,input);
