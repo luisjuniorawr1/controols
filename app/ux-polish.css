@@ -1,0 +1,70 @@
+/* Final UX/UI polish layer: small consistency fixes only. */
+html{scroll-padding-top:86px}body{overflow-x:hidden}#collections{scroll-margin-top:86px}
+
+/* Keyboard and accessibility */
+a:focus-visible,button:focus-visible,summary:focus-visible,.drop-zone:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none}
+button,a,summary,.drop-zone{-webkit-tap-highlight-color:transparent}
+
+/* Prevent long localized labels from breaking layouts */
+.collection-card,.subcategory-card,.hub-result-card,.tool-card,.related-grid a,.smart-field,.asset-controls,.asset-result{min-width:0}
+.collection-card h3,.subcategory-card h3,.hub-result-card strong,.tool-card strong,.simple-tool-hero h1,.category-hero h1{overflow-wrap:anywhere}
+
+/* Global footer rules used to leak into the footer inside subcategory cards. */
+.subcategory-card footer{max-width:none!important;margin:14px 0 0!important;padding:11px 0 0!important;color:inherit!important;font-size:inherit!important}
+
+/* Remove final remnants of the old green accent. */
+.quiet-link{color:#ff9b55!important}.quiet-link:hover{color:#ffc09a!important}
+.add-list-item{color:#ffb27a!important;border-color:#5e3a23!important;background:#1a130f!important}
+.add-list-item:hover{color:#ffd0b0!important;border-color:var(--accent)!important;background:#26170e!important}
+
+/* More consistent interaction and touch targets. */
+.runner button,.download-button,.secondary-small,.add-list-item{min-height:44px}
+.smart-field input,.smart-field select,.option-field input,.option-field select{min-height:46px}
+.related-grid a{min-height:48px;align-items:center;transition:border-color .16s ease,background .16s ease,transform .16s ease}
+.related-grid a:hover{border-color:#62432f;background:#15110e;transform:translateY(-1px)}
+.runner button,.download-button,.hub-search button,.mobile-menu-toggle{transition:background .16s ease,border-color .16s ease,color .16s ease,transform .12s ease}
+.runner button:active:not(:disabled),.download-button:active,.hub-search button:active,.mobile-menu-toggle:active{transform:scale(.975)}
+.drop-zone{position:relative}.drop-zone:focus-within{border-color:#7b5135;background:#12100e}
+
+/* Results and previews read more cleanly. */
+.asset-result img,.asset-result video{display:block;margin-inline:auto}.asset-result textarea,.result-text{scrollbar-color:#454b54 #0b0e12}
+.result-summary{line-height:1.5}.form-error{line-height:1.45}
+
+/* Breadcrumbs remain usable instead of being hard-clipped on narrow screens. */
+.breadcrumbs{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}.breadcrumbs::-webkit-scrollbar{display:none}.breadcrumbs>*{flex:0 0 auto}
+
+/* Search and cards: very small refinement without changing layout. */
+.hub-search{cursor:text}.hub-search button{flex:0 0 auto}.collection-card,.subcategory-card,.hub-result-card,.tool-card{isolation:isolate}
+.collection-card:focus-visible,.subcategory-card:focus-visible,.hub-result-card:focus-visible,.tool-card:focus-visible{border-color:#8b5a38;box-shadow:0 0 0 3px #ff7a1a18}
+
+/* Mobile polish */
+@media(max-width:720px){
+  html{scroll-padding-top:74px}#collections{scroll-margin-top:74px}
+  input,select,textarea{font-size:16px!important}
+  .hub-search input{font-size:16px!important}
+  .hub-search{padding-inline:13px}
+  .tool-page,.inner,.runner,.asset-runner{min-width:0;width:100%}
+  .runner-actions{gap:9px}.runner-actions button{flex:1 1 auto;justify-content:center}
+  .download-button{width:100%;text-align:center}
+  .download-list{display:grid;grid-template-columns:1fr;width:100%}
+  .collection-hub-art{transform:none}
+  .pdf-preview{height:min(58vh,360px)}
+  .breadcrumbs{margin-bottom:24px}
+}
+@media(max-width:420px){
+  .hub-hero h1{font-size:46px}.collection-hub-copy h1{font-size:43px}.simple-tool-hero h1{font-size:33px}.category-hero h1{font-size:38px}
+  .hub-hero-inner{padding-top:48px}.hub-content{padding-top:34px}
+  .runner{border-radius:16px}.smart-fields{gap:11px}
+}
+
+/* Touch devices should not keep desktop hover translations stuck after a tap. */
+@media(hover:none){
+  .collection-card:hover,.subcategory-card:hover,.hub-result-card:hover,.tool-card:hover,.related-grid a:hover{transform:none}
+  .collection-card:hover .collection-art-svg,.subcategory-card:hover .subcategory-art-svg{transform:none;filter:none}
+}
+
+/* Respect reduced-motion preferences. */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
