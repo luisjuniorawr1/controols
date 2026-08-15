@@ -6,6 +6,7 @@ import { blogLocaleMap, blogPath, blogPosts, blogUi, getBlogPost } from '@/src/d
 import { getTool, locales } from '@/src/data/extendedCatalog';
 import { isLocale } from '@/src/i18n';
 import { toolTitle } from '@/src/toolPresentation';
+import { safeContentDate } from '@/src/seoContent';
 
 const base = 'https://controols.com';
 
@@ -20,6 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   if (!post) return {};
   const article = post.translations[locale];
   const url = `${base}${blogPath(post, locale)}`;
+  const publishedAt=safeContentDate(post.publishedAt);
+  const updatedAt=safeContentDate(post.updatedAt);
   return {
     title: article.title,
     description: article.description,
@@ -36,8 +39,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       url,
       siteName: 'Controols',
       type: 'article',
-      publishedTime: `${post.publishedAt}T12:00:00Z`,
-      modifiedTime: `${post.updatedAt}T12:00:00Z`,
+      publishedTime: `${publishedAt}T12:00:00Z`,
+      modifiedTime: `${updatedAt}T12:00:00Z`,
       images: [{ url: `${base}${post.cover}`, width: 1200, height: 630, alt: article.alt }]
     },
     twitter: {
@@ -60,6 +63,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ local
   const dateFormat = new Intl.DateTimeFormat(blogLocaleMap[locale], { day: '2-digit', month: 'long', year: 'numeric' });
   const related = blogPosts.filter(item => item.id !== post.id).slice(0, 2);
   const pageUrl = `${base}${blogPath(post, locale)}`;
+  const publishedAt=safeContentDate(post.publishedAt);
+  const updatedAt=safeContentDate(post.updatedAt);
+  const languagePaths=Object.fromEntries(locales.map(code=>[code,blogPath(post,code)]));
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -67,8 +73,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ local
     headline: article.title,
     description: article.description,
     image: `${base}${post.cover}`,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt,
+    datePublished: publishedAt,
+    dateModified: updatedAt,
     inLanguage: blogLocaleMap[locale],
     mainEntityOfPage: pageUrl,
     author: { '@type': 'Organization', name: 'Controols', url: base },
@@ -86,7 +92,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ local
   };
 
   return <>
-    <Header locale={locale}/>
+    <Header locale={locale} languagePaths={languagePaths}/>
     <main className="blog-article-shell">
       <nav className="blog-breadcrumbs" aria-label="Breadcrumb">
         <Link href={`/${locale}/`}>Controols</Link><span>/</span><Link href={`/${locale}/blog/`}>Blog</Link><span>/</span><span>{article.category}</span>
@@ -98,8 +104,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ local
           <h1>{article.title}</h1>
           <p className="blog-article-deck">{article.description}</p>
           <div className="blog-article-dates">
-            <span>{ui.published} <time dateTime={post.publishedAt}>{dateFormat.format(new Date(`${post.publishedAt}T12:00:00Z`))}</time></span>
-            {post.updatedAt !== post.publishedAt && <span>{ui.updated} <time dateTime={post.updatedAt}>{dateFormat.format(new Date(`${post.updatedAt}T12:00:00Z`))}</time></span>}
+            <span>{ui.published} <time dateTime={publishedAt}>{dateFormat.format(new Date(`${publishedAt}T12:00:00Z`))}</time></span>
+            {updatedAt !== publishedAt && <span>{ui.updated} <time dateTime={updatedAt}>{dateFormat.format(new Date(`${updatedAt}T12:00:00Z`))}</time></span>}
           </div>
         </header>
 
