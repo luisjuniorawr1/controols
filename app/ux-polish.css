@@ -27,6 +27,19 @@ button,a,summary,.drop-zone{-webkit-tap-highlight-color:transparent}
 .runner button:active:not(:disabled),.download-button:active,.hub-search button:active,.mobile-menu-toggle:active{transform:scale(.975)}
 .drop-zone{position:relative}.drop-zone:focus-within{border-color:#7b5135;background:#12100e}
 
+/* Slider + exact numeric value for bounded visual adjustments. */
+.smart-field-range{gap:9px}
+.range-number-control{display:grid;grid-template-columns:minmax(150px,1fr) 88px;align-items:center;gap:14px;width:100%}
+.range-number-control .range-slider{appearance:none;-webkit-appearance:none;width:100%;height:22px;min-height:22px;padding:0;border:0;background:transparent;cursor:pointer}
+.range-number-control .range-slider::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(90deg,var(--accent) 0 var(--range-fill),#2a3038 var(--range-fill) 100%);border:1px solid #343a43}
+.range-number-control .range-slider::-moz-range-track{height:6px;border-radius:999px;background:#2a3038;border:1px solid #343a43}
+.range-number-control .range-slider::-moz-range-progress{height:6px;border-radius:999px;background:var(--accent)}
+.range-number-control .range-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;border:3px solid #111419;background:var(--accent);box-shadow:0 0 0 1px #ff9b55,0 2px 9px #0008}
+.range-number-control .range-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:3px solid #111419;background:var(--accent);box-shadow:0 0 0 1px #ff9b55,0 2px 9px #0008}
+.range-number-control .range-slider:hover::-webkit-slider-thumb{transform:scale(1.08)}
+.range-number-control .range-number-value{width:88px;min-height:40px!important;text-align:center;padding-inline:8px;font-variant-numeric:tabular-nums}
+.range-number-control:focus-within .range-slider::-webkit-slider-runnable-track{border-color:#8b5a38}
+
 /* Results and previews read more cleanly. */
 .asset-result img,.asset-result video{display:block;margin-inline:auto}.asset-result textarea,.result-text{scrollbar-color:#454b54 #0b0e12}
 .result-summary{line-height:1.5}.form-error{line-height:1.45}
@@ -51,6 +64,7 @@ button,a,summary,.drop-zone{-webkit-tap-highlight-color:transparent}
   .collection-hub-art{transform:none}
   .pdf-preview{height:min(58vh,360px)}
   .breadcrumbs{margin-bottom:24px}
+  .range-number-control{grid-template-columns:minmax(0,1fr) 78px;gap:10px}.range-number-control .range-number-value{width:78px}
 }
 @media(max-width:620px){
   .category-hero{display:block}.category-icon.large{margin-bottom:15px}
@@ -59,6 +73,7 @@ button,a,summary,.drop-zone{-webkit-tap-highlight-color:transparent}
   .hub-hero h1{font-size:46px}.collection-hub-copy h1{font-size:43px}.simple-tool-hero h1{font-size:33px}.category-hero h1{font-size:38px}
   .hub-hero-inner{padding-top:48px}.hub-content{padding-top:34px}
   .runner{border-radius:16px}.smart-fields{gap:11px}
+  .range-number-control{grid-template-columns:1fr 72px}.range-number-control .range-number-value{width:72px;padding-inline:5px}
 }
 
 /* Touch devices should not keep desktop hover translations stuck after a tap. */
