@@ -7,11 +7,11 @@ import { copy } from '@/src/i18n';
 import { toolTitle } from '@/src/toolLocale';
 
 const ui:Record<Locale,{featured:string;open:string;browse:string;popular:string;collections:string;results:string;private:string;searchHint:string;collectionNames:string[]}>={
-  en:{featured:'Featured tool',open:'Open tool',browse:'Browse all tools',popular:'Popular now',collections:'Explore by collection',results:'Search results',private:'Private by design',searchHint:'What do you need to do?',collectionNames:['Image & Design','PDF & Files','Video & Audio','Text & Data','Dev & Security','Calculators & Utilities']},
-  pt:{featured:'Ferramenta em destaque',open:'Abrir ferramenta',browse:'Ver todas as ferramentas',popular:'Populares agora',collections:'Explore por coleção',results:'Resultados da busca',private:'Privacidade por padrão',searchHint:'O que você precisa fazer?',collectionNames:['Imagem e Design','PDF e Arquivos','Vídeo e Áudio','Texto e Dados','Dev e Segurança','Cálculos e Utilidades']},
-  es:{featured:'Herramienta destacada',open:'Abrir herramienta',browse:'Ver todas las herramientas',popular:'Populares ahora',collections:'Explorar por colección',results:'Resultados de búsqueda',private:'Privacidad por defecto',searchHint:'¿Qué necesitas hacer?',collectionNames:['Imagen y Diseño','PDF y Archivos','Video y Audio','Texto y Datos','Dev y Seguridad','Cálculos y Utilidades']},
-  zh:{featured:'精选工具',open:'打开工具',browse:'查看全部工具',popular:'热门工具',collections:'按合集浏览',results:'搜索结果',private:'默认保护隐私',searchHint:'你想完成什么？',collectionNames:['图像与设计','PDF 与文件','视频与音频','文本与数据','开发与安全','计算与实用工具']},
-  hi:{featured:'फ़ीचर्ड टूल',open:'टूल खोलें',browse:'सभी टूल देखें',popular:'लोकप्रिय टूल',collections:'कलेक्शन के अनुसार',results:'खोज परिणाम',private:'डिफ़ॉल्ट रूप से निजी',searchHint:'आप क्या करना चाहते हैं?',collectionNames:['इमेज और डिज़ाइन','PDF और फ़ाइलें','वीडियो और ऑडियो','टेक्स्ट और डेटा','डेव और सुरक्षा','कैलकुलेटर और यूटिलिटीज']}
+  en:{featured:'Featured tool',open:'Open tool',browse:'Explore tools',popular:'Popular right now',collections:'Browse by collection',results:'Search results',private:'Private by design',searchHint:'What do you need to do?',collectionNames:['Image & Design','PDF & Files','Video & Audio','Text & Data','Dev & Security','Calculators & Utilities']},
+  pt:{featured:'Ferramenta em destaque',open:'Abrir ferramenta',browse:'Explorar ferramentas',popular:'Populares agora',collections:'Explore por coleção',results:'Resultados da busca',private:'Privacidade por padrão',searchHint:'O que você precisa fazer?',collectionNames:['Imagem e Design','PDF e Arquivos','Vídeo e Áudio','Texto e Dados','Dev e Segurança','Cálculos e Utilidades']},
+  es:{featured:'Herramienta destacada',open:'Abrir herramienta',browse:'Explorar herramientas',popular:'Populares ahora',collections:'Explorar por colección',results:'Resultados de búsqueda',private:'Privacidad por defecto',searchHint:'¿Qué necesitas hacer?',collectionNames:['Imagen y Diseño','PDF y Archivos','Video y Audio','Texto y Datos','Dev y Seguridad','Cálculos y Utilidades']},
+  zh:{featured:'精选工具',open:'打开工具',browse:'探索工具',popular:'热门工具',collections:'按合集浏览',results:'搜索结果',private:'默认保护隐私',searchHint:'你想完成什么？',collectionNames:['图像与设计','PDF 与文件','视频与音频','文本与数据','开发与安全','计算与实用工具']},
+  hi:{featured:'फ़ीचर्ड टूल',open:'टूल खोलें',browse:'टूल एक्सप्लोर करें',popular:'लोकप्रिय टूल',collections:'कलेक्शन के अनुसार',results:'खोज परिणाम',private:'डिफ़ॉल्ट रूप से निजी',searchHint:'आप क्या करना चाहते हैं?',collectionNames:['इमेज और डिज़ाइन','PDF और फ़ाइलें','वीडियो और ऑडियो','टेक्स्ट और डेटा','डेव और सुरक्षा','कैलकुलेटर और यूटिलिटीज']}
 };
 
 const collectionCats:string[][]=[
@@ -42,12 +42,17 @@ export default function HomeClient({locale}:{locale:Locale}){
         <p>{t.browserNote}</p>
         <div className="hero-meta"><b>CONTROOLS</b><span>{tools.length} {t.tools}</span><span>{u.private}</span></div>
         <div className="hero-actions">
-          <Link className="hero-primary" href={`/${locale}/tools/${featured.slug}/`}>▶ {u.open}</Link>
-          <a className="hero-secondary" href="#tool-shelves">ⓘ {u.browse}</a>
+          <Link className="hero-primary" href={`/${locale}/tools/${featured.slug}/`}><span>▶</span>{u.open}</Link>
+          <a className="hero-secondary" href="#popular"><span>⌄</span>{u.browse}</a>
         </div>
-        <label className="stream-search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={u.searchHint}/>{query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear">×</button>}</label>
+        <label className="stream-search">
+          <span className="search-icon">⌕</span>
+          <input value={query} onChange={e=>setQuery(e.target.value)} placeholder={u.searchHint}/>
+          {query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear">×</button>}
+        </label>
       </div>
       <div className="hero-tool-art" aria-hidden="true">
+        <div className="hero-core"><span>OO</span></div>
         <div className="hero-orbit hero-orbit-a"><span>◫</span><b>IMAGE</b></div>
         <div className="hero-orbit hero-orbit-b"><span>▤</span><b>PDF</b></div>
         <div className="hero-orbit hero-orbit-c"><span>&lt;/&gt;</span><b>DEV</b></div>
@@ -56,25 +61,28 @@ export default function HomeClient({locale}:{locale:Locale}){
     </section>
 
     <div id="tool-shelves" className="tool-shelves">
-      {normalized?<Shelf title={`${u.results} · ${filtered.length}`} toolsToShow={filtered} locale={locale}/>:<>
-        <Shelf title={u.popular} toolsToShow={popular} locale={locale} featured/>
-        <div className="shelves-kicker">{u.collections}</div>
+      {normalized?<Shelf title={`${u.results} · ${filtered.length}`} toolsToShow={filtered.slice(0,80)} locale={locale} searchResults/>:<>
+        <Shelf id="popular" title={u.popular} toolsToShow={popular} locale={locale} featured/>
+        <div id="collections" className="shelves-kicker"><span>{u.collections}</span><i>{collectionCats.length}</i></div>
         {collectionCats.map((cats,index)=><Shelf key={cats.join('-')} title={u.collectionNames[index]} toolsToShow={tools.filter(tool=>cats.includes(tool.category)).slice(0,18)} locale={locale}/>) }
       </>}
     </div>
   </div>;
 }
 
-function Shelf({title,toolsToShow,locale,featured=false}:{title:string;toolsToShow:typeof tools;locale:Locale;featured?:boolean}){
-  return <section className={`tool-shelf${featured?' shelf-featured':''}`}>
-    <div className="shelf-heading"><h2>{title}</h2><span>›</span></div>
+function Shelf({id,title,toolsToShow,locale,featured=false,searchResults=false}:{id?:string;title:string;toolsToShow:typeof tools;locale:Locale;featured?:boolean;searchResults?:boolean}){
+  return <section id={id} className={`tool-shelf${featured?' shelf-featured':''}${searchResults?' shelf-search-results':''}`}>
+    <div className="shelf-heading"><h2>{title}</h2><span className="shelf-count">{toolsToShow.length}</span></div>
     <div className="shelf-track">
       {toolsToShow.map(tool=>{
         const category=categories.find(c=>c.id===tool.category);
-        return <Link href={`/${locale}/tools/${tool.slug}/`} className="stream-tool-card" key={tool.slug}>
-          <div className="stream-card-visual"><span className="stream-card-icon">{category?.icon||'●'}</span><i>{category?.labels[locale]}</i></div>
-          <strong>{toolTitle(tool,locale)}</strong>
-          <small>{category?.labels[locale]}</small>
+        return <Link href={`/${locale}/tools/${tool.slug}/`} className={`stream-tool-card cat-${tool.category}`} key={tool.slug}>
+          <div className="stream-card-visual">
+            <span className="stream-card-icon">{category?.icon||'●'}</span>
+            <i>{category?.labels[locale]}</i>
+            <em>↗</em>
+          </div>
+          <div className="stream-card-copy"><strong>{toolTitle(tool,locale)}</strong><small>{category?.labels[locale]}</small></div>
         </Link>;
       })}
     </div>
