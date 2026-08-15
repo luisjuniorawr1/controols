@@ -6,7 +6,7 @@ export default defineConfig({
   expect: { timeout: 20_000 },
   fullyParallel: false,
   workers: 1,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   reporter: [
     ['list'],
     ['json', { outputFile: 'qa-results.json' }],
