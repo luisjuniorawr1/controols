@@ -1,4 +1,4 @@
-name: Build and Deploy Firebase Hosting
+name: Build, QA and Deploy Firebase Hosting
 
 on:
   push:
@@ -10,8 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build-qa-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       NEXT_TELEMETRY_DISABLED: 1
@@ -23,9 +24,25 @@ jobs:
       - run: npm install
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
-      - run: npm run build
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium for QA
+        run: npx playwright install --with-deps chromium
+      - name: Test every registered tool
+        run: npm run qa:e2e
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: controols-full-qa
+          path: |
+            qa-results.json
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' }}
+        if: ${{ success() && env.FIREBASE_SERVICE_ACCOUNT != '' }}
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
