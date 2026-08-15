@@ -9,6 +9,8 @@ const assets = [
   ['node_modules/@neslinesli93/qpdf-wasm/dist/qpdf.js', 'qpdf.js'],
   ['node_modules/@neslinesli93/qpdf-wasm/dist/qpdf.wasm', 'qpdf.wasm'],
   ['node_modules/pdfjs-dist/build/pdf.worker.min.mjs', 'pdf.worker.min.mjs'],
+  ['node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js', 'ffmpeg-core.js'],
+  ['node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm', 'ffmpeg-core.wasm'],
 ];
 
 for (const [source, name] of assets) {
