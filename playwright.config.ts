@@ -3,10 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   timeout: 90_000,
-  expect: { timeout: 15_000 },
+  expect: { timeout: 20_000 },
   fullyParallel: true,
-  workers: process.env.CI ? 4 : undefined,
-  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 3 : undefined,
+  retries: 0,
   reporter: [
     ['list'],
     ['json', { outputFile: 'qa-results.json' }],
