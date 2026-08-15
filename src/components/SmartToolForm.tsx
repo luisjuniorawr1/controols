@@ -9,7 +9,9 @@ import { getToolFormOverride } from '@/src/data/toolFormOverrides';
 import { getExpansionToolFormSpec } from '@/src/data/expansionToolFormSchemas';
 import RangeNumberControl from '@/src/components/RangeNumberControl';
 
-function initialValue(field:FieldSpec){return field.defaultValue??''}
+const sliderFieldKeys=new Set(['brightness','contrast','saturation','grayscale','blur','angle','opacity','hue','gamma','threshold','levels','tolerance','spread']);
+function shouldUseSlider(field:FieldSpec){return field.kind==='number'&&field.min!==undefined&&field.max!==undefined&&sliderFieldKeys.has(field.key)}
+function initialValue(field:FieldSpec){return field.defaultValue??(shouldUseSlider(field)?String(field.min??0):'')}
 function numericList(value:string){return value.replace(/[^0-9eE+.,;\-\s]/g,'')}
 function isNumericList(value:string){const parts=value.trim().split(/[;,\s]+/).filter(Boolean);return parts.length>0&&parts.every(x=>/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?$/i.test(x))}
 function semanticPattern(slug:string){const p:Record<string,RegExp>={
@@ -39,9 +41,6 @@ function fieldValid(field:FieldSpec,value:string,slug:string){
   const pattern=semanticPattern(slug);if(pattern&&!pattern.test(s.replace(/\s+/g,slug==='binary-to-text'||slug==='base32-decode'||slug==='morse-to-text'?' ':'').trim()))return false;
   return true;
 }
-
-const sliderFieldKeys=new Set(['brightness','contrast','saturation','grayscale','blur','angle','opacity','hue','gamma','threshold','levels','tolerance','spread']);
-function shouldUseSlider(field:FieldSpec){return field.kind==='number'&&field.min!==undefined&&field.max!==undefined&&sliderFieldKeys.has(field.key)}
 
 const listCopy:Record<Locale,{number:string;add:string;remove:string;paste:string;pasteTitle:string;pasteHelp:string;apply:string}>={
   en:{number:'Number',add:'Add number',remove:'Remove',paste:'Paste a list',pasteTitle:'Paste multiple numbers',pasteHelp:'Paste numbers separated by commas, spaces or line breaks.',apply:'Apply list'},
