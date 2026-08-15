@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { Tool, Locale } from '@/src/data/catalog';
 import { copy } from '@/src/i18n';
-import { exampleForCategory, runTool } from '@/src/lib/executors';
+import { exampleForCategory, runTool } from '@/src/lib/allExecutors';
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
