@@ -11,5 +11,10 @@ export function runStructuredOverride(slug:string,input:string):string|undefined
   if(slug==='lighten-color'||slug==='darken-color'){const[color='#22C55E',amountRaw='15']=input.trim().split(/\s+/),amount=Math.abs(Number(amountRaw.replace('%',''))||15);return lightness(color,slug==='lighten-color'?amount:-amount)}
   if(slug==='time-zone-offset-calculator'){const[zone='UTC',date='']=input.split('|');return timezoneOffset(zone,date)}
   if(slug==='nanoid-generator')return nanoid(Number(input)||21);
+  if(slug==='css-box-shadow-generator'){const[x='0',y='12',blur='30',spread='0',color='#000000']=input.split('|');return`${Number(x)||0}px ${Number(y)||0}px ${Math.max(0,Number(blur)||0)}px ${Number(spread)||0}px ${color}`}
+  if(slug==='css-text-shadow-generator'){const[x='0',y='2',blur='8',color='#000000']=input.split('|');return`${Number(x)||0}px ${Number(y)||0}px ${Math.max(0,Number(blur)||0)}px ${color}`}
+  if(slug==='border-radius-generator'){const[a='16',b='16',c='16',d='16']=input.split('|');return`${Math.max(0,Number(a)||0)}px ${Math.max(0,Number(b)||0)}px ${Math.max(0,Number(c)||0)}px ${Math.max(0,Number(d)||0)}px`}
+  if(slug==='css-filter-generator'){const[brightness='100',contrast='100',saturation='100',grayscale='0',blur='0']=input.split('|');return`brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) grayscale(${grayscale}%) blur(${blur}px)`}
+  if(slug==='gradient-generator'){const[angle='135',a='#111827',b='#22c55e']=input.split('|');return`linear-gradient(${Number(angle)||0}deg, ${a}, ${b})`}
   return undefined;
 }
