@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import './assets.css';
+import './tool-clean.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
