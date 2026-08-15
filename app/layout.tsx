@@ -6,6 +6,7 @@ import './dark.css';
 import './home-stream.css';
 import './home-compact.css';
 import './collection-hub.css';
+import './mobile-nav.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
