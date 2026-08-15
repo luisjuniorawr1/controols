@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Header from '@/src/components/Header';
 import ToolRunner from '@/src/components/ToolRunner';
-import { getCategory, getTool, locales, tools } from '@/src/data/catalog';
+import { getCategory, getTool, locales, tools } from '@/src/data/extendedCatalog';
 import { copy, isLocale } from '@/src/i18n';
 import { toolTitle } from '@/src/toolLocale';
 
