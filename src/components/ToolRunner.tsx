@@ -8,7 +8,7 @@ import StructuredQRToolRunner from '@/src/components/StructuredQRToolRunner';
 import StructuredImageToolRunner from '@/src/components/StructuredImageToolRunner';
 import StructuredPdfToolRunner from '@/src/components/StructuredPdfToolRunner';
 import StructuredMediaToolRunner from '@/src/components/StructuredMediaToolRunner';
-import PineImageToolRunner from '@/src/components/PineImageToolRunner';
+import StructuredPineImageToolRunner from '@/src/components/StructuredPineImageToolRunner';
 import PineFileToolRunner from '@/src/components/PineFileToolRunner';
 import PineInteractiveRunner from '@/src/components/PineInteractiveRunner';
 import SmartToolForm from '@/src/components/SmartToolForm';
@@ -16,7 +16,7 @@ import { pineFileExtraSlugs, pineImageExtraSlugs } from '@/src/data/pineToolsExt
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
-  if (pineImageExtraSlugs.has(tool.slug)) return <PineImageToolRunner tool={tool} locale={locale}/>;
+  if (pineImageExtraSlugs.has(tool.slug)) return <StructuredPineImageToolRunner tool={tool} locale={locale}/>;
   if (pineFileExtraSlugs.has(tool.slug)) return <PineFileToolRunner tool={tool} locale={locale}/>;
   if (['timer','stopwatch','screen-recorder'].includes(tool.slug)) return <PineInteractiveRunner tool={tool} locale={locale}/>;
   if (tool.category === 'qr') return <StructuredQRToolRunner tool={tool} locale={locale}/>;
