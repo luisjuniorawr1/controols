@@ -4,8 +4,11 @@ import { runData, runDocument } from './contentExecutors';
 import { runPineExtra } from './pineExecutors';
 import { runStructuredOverride } from './structuredExecutorOverrides';
 import { runExpansionTool } from './expansionExecutors';
+import { runQualityOverride } from './qualityOverrides';
 
 export async function runTool(slug:string,category:string,input:string):Promise<string>{
+  const quality=runQualityOverride(slug,category,input);
+  if(quality!==undefined) return quality;
   const expansion=runExpansionTool(slug,category,input);
   if(expansion!==undefined) return expansion;
   const override=runStructuredOverride(slug,input);
