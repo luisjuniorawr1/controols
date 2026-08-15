@@ -6,7 +6,7 @@ import { isToolLive } from '@/src/lib/live';
 import { FileToolRunner } from '@/src/components/AssetToolRunner';
 import StructuredQRToolRunner from '@/src/components/StructuredQRToolRunner';
 import ImageToolRunner from '@/src/components/ImageToolRunner';
-import PdfToolRunner from '@/src/components/PdfToolRunner';
+import StructuredPdfToolRunner from '@/src/components/StructuredPdfToolRunner';
 import MediaToolRunner from '@/src/components/MediaToolRunner';
 import PineImageToolRunner from '@/src/components/PineImageToolRunner';
 import PineFileToolRunner from '@/src/components/PineFileToolRunner';
@@ -22,7 +22,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   if (tool.category === 'qr') return <StructuredQRToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'file' || tool.slug==='file-sha256-checksum') return <FileToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'image') return <ImageToolRunner tool={tool} locale={locale}/>;
-  if (tool.category === 'pdf') return <PdfToolRunner tool={tool} locale={locale}/>;
+  if (tool.category === 'pdf') return <StructuredPdfToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'video' || tool.category === 'audio') return <MediaToolRunner tool={tool} locale={locale}/>;
   if (!isToolLive(tool)) return <section className="runner runner-pending"><div className="pending-icon">↻</div><h2>{t.building}</h2><p>{t.browserNote}</p></section>;
   return <SmartToolForm tool={tool} locale={locale}/>;
