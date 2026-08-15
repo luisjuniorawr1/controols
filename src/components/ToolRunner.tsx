@@ -9,6 +9,10 @@ import { FileToolRunner, QRToolRunner } from '@/src/components/AssetToolRunner';
 import ImageToolRunner from '@/src/components/ImageToolRunner';
 import PdfToolRunner from '@/src/components/PdfToolRunner';
 import MediaToolRunner from '@/src/components/MediaToolRunner';
+import PineImageToolRunner from '@/src/components/PineImageToolRunner';
+import PineFileToolRunner from '@/src/components/PineFileToolRunner';
+import PineInteractiveRunner from '@/src/components/PineInteractiveRunner';
+import { pineFileExtraSlugs, pineImageExtraSlugs } from '@/src/data/pineToolsExtras';
 
 export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Locale }) {
   const t = copy[locale];
@@ -16,6 +20,9 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   const [output, setOutput] = useState('');
   const [busy, setBusy] = useState(false);
 
+  if (pineImageExtraSlugs.has(tool.slug)) return <PineImageToolRunner tool={tool} locale={locale}/>;
+  if (pineFileExtraSlugs.has(tool.slug)) return <PineFileToolRunner tool={tool} locale={locale}/>;
+  if (['timer','stopwatch','screen-recorder'].includes(tool.slug)) return <PineInteractiveRunner tool={tool} locale={locale}/>;
   if (tool.category === 'qr') return <QRToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'file') return <FileToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'image') return <ImageToolRunner tool={tool} locale={locale}/>;
@@ -42,7 +49,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
     <section className="runner simple-runner">
       <label><span>{t.input}</span><textarea value={input} onChange={(e)=>{setInput(e.target.value);setOutput('')}} placeholder={exampleForCategory(tool.category)} /></label>
       <div className="runner-actions"><button className="primary" onClick={execute} disabled={busy||!input.trim()}>{busy ? '…' : t.run}</button><button onClick={()=>setInput('')} disabled={!input}>{t.clear}</button></div>
-      {output&&<div className="simple-output"><div className="result-summary">{output}</div><button onClick={()=>navigator.clipboard.writeText(output)}>{t.copy}</button></div>}
+      {output&&<div className="simple-output"><pre className="result-text">{output}</pre><button onClick={()=>navigator.clipboard.writeText(output)}>{t.copy}</button></div>}
     </section>
   );
 }
