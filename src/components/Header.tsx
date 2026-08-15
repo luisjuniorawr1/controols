@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { Locale } from '@/src/data/catalog';
 import { collections } from '@/src/data/collections';
 
@@ -15,8 +16,11 @@ const labels:Record<Locale,{home:string;collections:string;blog:string;language:
 const languageNames:Record<Locale,string>={en:'English',pt:'Português',es:'Español',zh:'中文',hi:'हिन्दी'};
 const languageCodes=['en','pt','es','zh','hi'] as const;
 
-export default function Header({locale}:{locale:Locale}){
+type HeaderProps={locale:Locale;languagePaths?:Partial<Record<Locale,string>>};
+
+export default function Header({locale,languagePaths}:HeaderProps){
   const l=labels[locale];
+  const pathname=usePathname();
   const [open,setOpen]=useState(false);
 
   useEffect(()=>{
@@ -26,6 +30,13 @@ export default function Header({locale}:{locale:Locale}){
     return()=>{document.body.style.overflow=previous;};
   },[open]);
 
+  const languageHref=(code:Locale)=>{
+    if(languagePaths?.[code])return languagePaths[code]!;
+    if(!pathname)return `/${code}/`;
+    const localized=pathname.replace(/^\/(en|pt|es|zh|hi)(?=\/|$)/,`/${code}`);
+    return localized===pathname&&!pathname.startsWith(`/${locale}`)?`/${code}/`:localized;
+  };
+
   return <header className="site-header stream-header">
     <Link className="brand" href={`/${locale}/`} aria-label="Controols" onClick={()=>setOpen(false)}><span>CONTR</span><b>OO</b><span>LS</span></Link>
 
@@ -33,7 +44,7 @@ export default function Header({locale}:{locale:Locale}){
 
     <details className="language-menu desktop-language">
       <summary aria-label={l.language}>{locale.toUpperCase()} <span>⌄</span></summary>
-      <div>{languageCodes.map(code=><Link className={code===locale?'active':''} href={`/${code}/`} key={code}><span>{code.toUpperCase()}</span>{languageNames[code]}</Link>)}</div>
+      <div>{languageCodes.map(code=><Link className={code===locale?'active':''} href={languageHref(code)} key={code} hrefLang={code}><span>{code.toUpperCase()}</span>{languageNames[code]}</Link>)}</div>
     </details>
 
     <button type="button" className={`mobile-menu-toggle${open?' open':''}`} aria-label={open?l.close:l.menu} aria-expanded={open} aria-controls="mobile-navigation" onClick={()=>setOpen(value=>!value)}>
@@ -60,7 +71,7 @@ export default function Header({locale}:{locale:Locale}){
       <section className="mobile-nav-section mobile-language-section">
         <div className="mobile-nav-label"><span>{l.language}</span></div>
         <div className="mobile-language-grid">
-          {languageCodes.map(code=><Link href={`/${code}/`} key={code} className={code===locale?'active':''} onClick={()=>setOpen(false)}><b>{code.toUpperCase()}</b><span>{languageNames[code]}</span></Link>)}
+          {languageCodes.map(code=><Link href={languageHref(code)} key={code} hrefLang={code} className={code===locale?'active':''} onClick={()=>setOpen(false)}><b>{code.toUpperCase()}</b><span>{languageNames[code]}</span></Link>)}
         </div>
       </section>
     </div>
