@@ -1,0 +1,144 @@
+name: Setup Firebase custom domain
+
+on:
+  push:
+    paths:
+      - '.github/workflows/setup-custom-domain.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - name: Configure controols.com and www.controols.com
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('crypto');
+
+          const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+          if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT secret is missing');
+          const sa = JSON.parse(raw);
+          const projectId = 'controols';
+          const siteId = 'controols';
+          const parent = `projects/${projectId}/sites/${siteId}`;
+
+          const b64url = value => Buffer.from(value).toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const header = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+          const payload = b64url(JSON.stringify({
+            iss: sa.client_email,
+            scope: 'https://www.googleapis.com/auth/firebase.hosting https://www.googleapis.com/auth/cloud-platform',
+            aud: 'https://oauth2.googleapis.com/token',
+            iat: now,
+            exp: now + 3600,
+          }));
+          const unsigned = `${header}.${payload}`;
+          const signer = crypto.createSign('RSA-SHA256');
+          signer.update(unsigned);
+          signer.end();
+          const assertion = `${unsigned}.${signer.sign(sa.private_key).toString('base64url')}`;
+
+          async function getToken() {
+            const body = new URLSearchParams({
+              grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+              assertion,
+            });
+            const res = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'content-type': 'application/x-www-form-urlencoded' },
+              body,
+            });
+            if (!res.ok) throw new Error(`OAuth token failed: ${res.status} ${await res.text()}`);
+            return (await res.json()).access_token;
+          }
+
+          const tokenPromise = getToken();
+          async function api(url, options = {}) {
+            const token = await tokenPromise;
+            return fetch(url, {
+              ...options,
+              headers: {
+                authorization: `Bearer ${token}`,
+                'content-type': 'application/json',
+                ...(options.headers || {}),
+              },
+            });
+          }
+
+          async function ensureDomain(domain, redirectTarget) {
+            const url = `https://firebasehosting.googleapis.com/v1beta1/${parent}/customDomains?customDomainId=${encodeURIComponent(domain)}`;
+            const body = redirectTarget ? { redirectTarget } : {};
+            const res = await api(url, { method: 'POST', body: JSON.stringify(body) });
+            if (res.ok) {
+              console.log(`Created Firebase custom domain: ${domain}`);
+              return;
+            }
+            if (res.status === 409) {
+              console.log(`Firebase custom domain already exists: ${domain}`);
+              return;
+            }
+            throw new Error(`Creating ${domain} failed: ${res.status} ${await res.text()}`);
+          }
+
+          async function getDomain(domain) {
+            const url = `https://firebasehosting.googleapis.com/v1beta1/${parent}/customDomains/${encodeURIComponent(domain)}`;
+            const res = await api(url);
+            if (!res.ok) throw new Error(`Reading ${domain} failed: ${res.status} ${await res.text()}`);
+            return res.json();
+          }
+
+          function recordsFrom(domain) {
+            const groups = [
+              ...(domain.requiredDnsUpdates?.desired || []),
+              ...(domain.requiredDnsUpdates?.discovered || []),
+              ...(domain.cert?.verification?.dns?.desired || []),
+              ...(domain.cert?.verification?.dns?.discovered || []),
+            ];
+            const seen = new Set();
+            const records = [];
+            for (const group of groups) {
+              for (const record of group.records || []) {
+                const action = record.requiredAction || 'NONE';
+                if (action === 'NONE') continue;
+                const key = `${action}|${record.type}|${record.domainName}|${record.rdata}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                records.push({ action, type: record.type, host: record.domainName, value: record.rdata });
+              }
+            }
+            return records;
+          }
+
+          async function main() {
+            await ensureDomain('controols.com');
+            await ensureDomain('www.controols.com', 'controols.com');
+            await new Promise(r => setTimeout(r, 7000));
+
+            for (const name of ['controols.com', 'www.controols.com']) {
+              const domain = await getDomain(name);
+              console.log(`\n=== ${name} ===`);
+              console.log(`hostState=${domain.hostState || 'unknown'}`);
+              console.log(`ownershipState=${domain.ownershipState || 'unknown'}`);
+              console.log(`certState=${domain.cert?.state || 'unknown'}`);
+              const records = recordsFrom(domain);
+              if (!records.length) {
+                console.log('No DNS changes currently reported by Firebase.');
+              } else {
+                console.log('DNS changes required by Firebase:');
+                for (const r of records) console.log(`${r.action}\t${r.type}\t${r.host}\t${r.value}`);
+              }
+            }
+          }
+
+          main().catch(err => {
+            console.error(err.stack || String(err));
+            process.exit(1);
+          });
+          NODE
