@@ -8,7 +8,7 @@ export const pineToolExtras: ExtraTool[] = [
     'generate-list-of-numbers','filter-numbers','sort-numbers','minimum-maximum-list','average-list','number-base-converter','binary-converter','hexadecimal-converter','roman-numerals-converter'
   ]),
   ...add('design', [
-    'lighten-color','darken-color','change-color-saturation','greyscale-color','invert-color','blend-colors','shift-color-hue','split-complementary-colors','monochromatic-colors','square-color-scheme','get-colors-from-image','bulk-get-colors-from-image'
+    'lighten-color','darken-color','change-color-saturation','greyscale-color','invert-color','blend-colors','shift-color-hue','split-complementary-colors','monochromatic-colors','square-color-scheme'
   ]),
   ...add('text', [
     'reverse-list','list-randomizer','sort-list','add-text-to-each-line','convert-tabs-to-spaces','convert-spaces-to-tabs','remove-empty-lines','filter-lines','repeat-text','case-converter','count-lines','count-words','count-letters'
