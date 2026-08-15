@@ -2,8 +2,11 @@ import { exampleForCategory as coreExample, runTool as runCore } from './executo
 import { runDesign, runGeo, runSecurity, runUnit } from './extraExecutors';
 import { runData, runDocument } from './contentExecutors';
 import { runPineExtra } from './pineExecutors';
+import { runStructuredOverride } from './structuredExecutorOverrides';
 
 export async function runTool(slug:string,category:string,input:string):Promise<string>{
+  const override=runStructuredOverride(slug,input);
+  if(override!==undefined) return override;
   const pine=runPineExtra(slug,category,input);
   if(pine!==undefined) return pine;
   if(category==='design') return runDesign(slug,input);
