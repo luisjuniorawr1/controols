@@ -46,4 +46,14 @@ function draw(id:CollectionId){switch(id){
     {[0,1,2,3].map(r=>[0,1,2].map(c=><rect key={`${r}-${c}`} x={88+c*61} y={182+r*37} width="48" height="27" rx="8" fill={c===2?'#ff7a1a':'#252a31'}/>))}
     <g transform="translate(396 92)"><rect width="246" height="226" rx="22" fill="#11151a" stroke="#363d46"/><path d="M34 178V62M34 178h177" stroke="#707b86" strokeWidth="3"/><rect x="59" y="131" width="28" height="47" rx="7" fill="#795030"/><rect x="105" y="95" width="28" height="83" rx="7" fill="#a85f28"/><rect x="151" y="54" width="28" height="124" rx="7" fill="#ff7a1a"/><path d="M55 111l60-35 47-29 46-22" fill="none" stroke="#ffb27b" strokeWidth="5" strokeLinecap="round"/></g>
   </>;
+  case'ai-prompts':return <>
+    <rect x="62" y="76" width="410" height="244" rx="24" fill="#11151a" stroke="#363d46"/><circle cx="94" cy="106" r="7" fill="#ff7a1a"/><circle cx="118" cy="106" r="7" fill="#69727d"/><circle cx="142" cy="106" r="7" fill="#69727d"/>
+    <rect x="92" y="148" width="255" height="14" rx="7" fill="#f0f2f4"/><rect x="92" y="181" width="314" height="11" rx="6" fill="#737d88"/><rect x="92" y="210" width="272" height="11" rx="6" fill="#58616b"/>
+    <path d="M536 80l18 43 43 18-43 18-18 43-18-43-43-18 43-18z" fill="#ff7a1a"/><path d="M608 187l10 24 24 10-24 10-10 24-10-24-24-10 24-10z" fill="#ff9b58"/><rect x="458" y="255" width="172" height="56" rx="17" fill="#21160f" stroke="#6a472f"/><text x="544" y="291" textAnchor="middle" fill="#ff9a52" fontSize="18" fontWeight="900">PROMPT</text>
+  </>;
+  case'web-seo':return <>
+    <rect x="58" y="70" width="430" height="270" rx="24" fill="#0f1317" stroke="#353d46"/><rect x="58" y="70" width="430" height="45" rx="24" fill="#171c22"/><circle cx="88" cy="93" r="6" fill="#ff7a1a"/><circle cx="108" cy="93" r="6" fill="#6c7580"/><circle cx="128" cy="93" r="6" fill="#6c7580"/>
+    <rect x="89" y="143" width="258" height="17" rx="8" fill="#e8ebed"/><rect x="89" y="178" width="194" height="10" rx="5" fill="#6f7984"/><rect x="89" y="204" width="302" height="10" rx="5" fill="#535c66"/><rect x="89" y="230" width="274" height="10" rx="5" fill="#535c66"/>
+    <g transform="translate(444 151)"><circle cx="91" cy="91" r="82" fill="#171c22" stroke="#434b55"/><path d="M42 113c21-62 51-96 91-105M49 141c31-29 65-46 103-53" fill="none" stroke="#ff7a1a" strokeWidth="9" strokeLinecap="round"/><circle cx="133" cy="8" r="9" fill="#ff9a52"/><circle cx="152" cy="88" r="9" fill="#ff9a52"/></g>
+  </>;
 }}
