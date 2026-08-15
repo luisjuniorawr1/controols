@@ -7,6 +7,7 @@ import { runTool } from '@/src/lib/allExecutors';
 import { getToolFormSpec, type FieldSpec } from '@/src/data/toolFormSchemas';
 import { getToolFormOverride } from '@/src/data/toolFormOverrides';
 import { getExpansionToolFormSpec } from '@/src/data/expansionToolFormSchemas';
+import RangeNumberControl from '@/src/components/RangeNumberControl';
 
 function initialValue(field:FieldSpec){return field.defaultValue??''}
 function numericList(value:string){return value.replace(/[^0-9eE+.,;\-\s]/g,'')}
@@ -38,6 +39,9 @@ function fieldValid(field:FieldSpec,value:string,slug:string){
   const pattern=semanticPattern(slug);if(pattern&&!pattern.test(s.replace(/\s+/g,slug==='binary-to-text'||slug==='base32-decode'||slug==='morse-to-text'?' ':'').trim()))return false;
   return true;
 }
+
+const sliderFieldKeys=new Set(['brightness','contrast','saturation','grayscale','blur','angle','opacity','hue','gamma','threshold','levels','tolerance','spread']);
+function shouldUseSlider(field:FieldSpec){return field.kind==='number'&&field.min!==undefined&&field.max!==undefined&&sliderFieldKeys.has(field.key)}
 
 const listCopy:Record<Locale,{number:string;add:string;remove:string;paste:string;pasteTitle:string;pasteHelp:string;apply:string}>={
   en:{number:'Number',add:'Add number',remove:'Remove',paste:'Paste a list',pasteTitle:'Paste multiple numbers',pasteHelp:'Paste numbers separated by commas, spaces or line breaks.',apply:'Apply list'},
@@ -96,6 +100,7 @@ function NumberListField({field,value,locale,onChange}:{field:FieldSpec;value:st
 
 function Field({field,value,toolSlug,locale,onChange}:{field:FieldSpec;value:string;toolSlug:string;locale:Locale;onChange:(value:string)=>void}){
   if(field.kind==='number-list')return <NumberListField field={field} value={value} locale={locale} onChange={onChange}/>;
+  if(shouldUseSlider(field))return <RangeNumberControl label={field.label} value={value||String(field.min??0)} onChange={onChange} min={field.min!} max={field.max!} step={field.step??1} id={`tool-${field.key}`}/>;
   const invalid=Boolean(value)&&!fieldValid(field,value,toolSlug),common={id:`tool-${field.key}`,value,onChange:(e:React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement>)=>onChange(e.target.value),required:field.required!==false,'aria-invalid':invalid};
   return <label className={`smart-field smart-field-${field.kind}${invalid?' invalid':''}`} htmlFor={`tool-${field.key}`}><span>{field.label}</span>
     {field.kind==='textarea'?<textarea {...common} placeholder={field.placeholder}/>:field.kind==='select'?<select {...common}>{(field.options||[]).map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select>:field.kind==='color'?<div className="color-control"><input {...common} type="color"/><output>{value||'#000000'}</output></div>:<input {...common} type={field.kind} min={field.min} max={field.max} step={field.step} placeholder={field.placeholder} inputMode={field.kind==='number'?'decimal':undefined}/>}</label>
