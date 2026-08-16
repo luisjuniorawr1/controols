@@ -45,7 +45,7 @@ async function unlockObservation(page: Page) {
   await expect(locked).toBeVisible();
   await expect(locked).toBeDisabled();
   await expect(page.locator('.kids-observation-orb strong')).toHaveText('30');
-  await page.clock.fastForward(31_000);
+  await page.clock.runFor(31_000);
   const unlocked = page.getByRole('button', { name: /ver pistas/i });
   await expect(unlocked).toBeVisible();
   await expect(unlocked).toBeEnabled();
