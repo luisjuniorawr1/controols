@@ -1,0 +1,8 @@
+/* Keep the home CTA inside the physical viewport even while the entrance animation runs. */
+@media(prefers-reduced-motion:no-preference){
+  .kids-title-overlay{animation:kid-pop-centered .38s ease-out}
+  @keyframes kid-pop-centered{
+    from{opacity:0;transform:translate(-50%,12px)}
+    to{opacity:1;transform:translate(-50%,0)}
+  }
+}
