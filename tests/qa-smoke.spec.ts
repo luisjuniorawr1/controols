@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('home loads the hacker theme and primary navigation', async ({ page }) => {
   await page.goto('/pt/');
-  await expect(page.locator('.brand')).toContainText('CONTROOLS');
+  await expect(page.getByRole('link', { name: 'Controols', exact: true })).toBeVisible();
   await expect(page.locator('.system-chip')).toContainText('SYS://ONLINE');
   await expect(page.locator('.hub-hero h1')).toBeVisible();
   await expect(page.locator('#collections .collection-card').first()).toBeVisible();
