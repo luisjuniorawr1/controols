@@ -1,21 +1,28 @@
-# Assets oficiais do CONTROOLS
+# CONTROOLS game assets
 
-Este diretório contém a identidade visual oficial do jogo infantil CONTROOLS.
+Os arquivos desta pasta são os **masters oficiais em resolução original** do CONTROOLS para crianças de 7 a 10 anos.
 
-## Elenco fixo
+## Regra de qualidade
 
-- **Luna** — amarelo, cachos e presilha de estrela.
-- **Theo** — turquesa, óculos, headphones e tecnologia.
-- **Maya** — roxo, tranças e tablet/caderno.
-- **Caio** — laranja/vermelho, energético.
-- **Nina** — verde, calma e bolsa com escudo.
+- Não reduzir resolução antes de publicar.
+- Não converter os masters para formatos com perda.
+- A interface pode redimensionar a exibição via CSS, mas deve carregar o master original.
+- Novos assets devem entrar no repositório na resolução original em que forem aprovados.
 
-Novas ilustrações devem preservar rosto, cabelo, roupas, cores e acessórios desses cinco personagens. Novas poses e expressões são bem-vindas, mas não redesenhe o elenco.
+## Elenco oficial
 
-## Estrutura
+- Luna — amarelo, cachos e presilha de estrela.
+- Theo — turquesa, óculos e acessórios de tecnologia.
+- Maya — roxo, tranças e tablet/caderno.
+- Caio — laranja/vermelho, energético.
+- Nina — verde, calma e bolsa com escudo.
 
-- `characters/` — personagens recortados para UI e diálogos.
-- `scenes/` — ilustrações 16:9 da aventura.
-- `reference/` — lineup oficial usado como referência visual.
+Novas cenas devem preservar rosto, cabelo, roupas, cores e acessórios desses personagens.
 
-A primeira aventura é **A Mensagem Misteriosa**, para crianças de 7 a 10 anos, com 1 ou 2 jogadores cooperando. A experiência prioriza imagens, decisões curtas, feedback gentil e segurança digital prática.
+## Masters atuais
+
+- Personagens: 1122 × 1402 px.
+- Cenas 16:9: 1672 × 941 px.
+- Lineup e folha de recompensas: 1448 × 1086 px.
+
+A primeira aventura é **A Mensagem Misteriosa** e privilegia imagens, escolhas curtas e cooperação.

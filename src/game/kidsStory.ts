@@ -9,11 +9,11 @@ export type Kid = {
 };
 
 export const kids: Kid[] = [
-  { id: 'luna', name: 'Luna', trait: 'Curiosa', color: '#f6bd22', asset: '/game/assets/characters/luna.webp' },
-  { id: 'theo', name: 'Theo', trait: 'Inventor', color: '#1ec4c8', asset: '/game/assets/characters/theo.webp' },
-  { id: 'maya', name: 'Maya', trait: 'Observadora', color: '#8b5bd9', asset: '/game/assets/characters/maya.webp' },
-  { id: 'caio', name: 'Caio', trait: 'Corajoso', color: '#f2643c', asset: '/game/assets/characters/caio.webp' },
-  { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.webp' },
+  { id: 'luna', name: 'Luna', trait: 'Curiosa', color: '#f6bd22', asset: '/game/assets/characters/luna.png' },
+  { id: 'theo', name: 'Theo', trait: 'Inventor', color: '#1ec4c8', asset: '/game/assets/characters/theo.png' },
+  { id: 'maya', name: 'Maya', trait: 'Observadora', color: '#8b5bd9', asset: '/game/assets/characters/maya.png' },
+  { id: 'caio', name: 'Caio', trait: 'Corajoso', color: '#f2643c', asset: '/game/assets/characters/caio.png' },
+  { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
 export const firstKidsStory = {
@@ -23,10 +23,10 @@ export const firstKidsStory = {
   subtitle: 'Uma aventura cooperativa para pensar antes de clicar.',
   age: '7–10 anos',
   scenes: {
-    title: '/game/assets/scenes/title-a-mensagem-misteriosa.webp',
-    message: '/game/assets/scenes/mensagem-suspeita.webp',
-    clues: '/game/assets/scenes/quadro-de-pistas.webp',
-    team: '/game/assets/reference/character-lineup.webp',
+    title: '/game/assets/scenes/title-a-mensagem-misteriosa.png',
+    message: '/game/assets/scenes/mensagem-suspeita.png',
+    clues: '/game/assets/scenes/quadro-de-pistas.png',
+    team: '/game/assets/reference/character-lineup.png',
   },
 } as const;
 
