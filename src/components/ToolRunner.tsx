@@ -16,6 +16,7 @@ import StructuredPineImageToolRunner from '@/src/components/StructuredPineImageT
 import BulkSimpleImageRunner from '@/src/components/BulkSimpleImageRunner';
 import PineFileToolRunner from '@/src/components/PineFileToolRunner';
 import PineInteractiveRunner from '@/src/components/PineInteractiveRunner';
+import GuidedAiToolRunner, { guidedAiSlugs } from '@/src/components/GuidedAiToolRunner';
 import SmartToolForm from '@/src/components/SmartToolForm';
 import { pineFileExtraSlugs, pineImageExtraSlugs } from '@/src/data/pineToolsExtras';
 
@@ -38,6 +39,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   if (tool.category === 'pdf') return <StructuredPdfToolRunner tool={tool} locale={locale}/>;
   if (tool.slug === 'remove-audio-from-video') return <RemoveAudioVideoRunner tool={tool} locale={locale}/>;
   if (tool.category === 'video' || tool.category === 'audio') return <StructuredMediaToolRunner tool={tool} locale={locale}/>;
+  if (guidedAiSlugs.has(tool.slug)) return <GuidedAiToolRunner tool={tool} locale={locale}/>;
   if (!isToolLive(tool)) return <section className="runner runner-pending"><div className="pending-icon">↻</div><h2>{t.building}</h2><p>{t.browserNote}</p></section>;
   return <AutoRunEnhancer><SmartToolForm tool={tool} locale={locale}/></AutoRunEnhancer>;
 }
