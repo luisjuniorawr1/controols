@@ -4,6 +4,7 @@ import './globals.css';
 import './kids-game.css';
 import './tv-viewport.css';
 import './kids-readable.css';
+import './kids-stage-v2.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
