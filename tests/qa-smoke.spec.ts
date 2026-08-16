@@ -32,6 +32,14 @@ async function expectSingleViewport(page: Page) {
   expect(clippedButtons).toEqual([]);
 }
 
+async function expectLargeGuide(page: Page, testId: string, minHeight: number) {
+  const guide = page.getByTestId(testId);
+  await expect(guide).toBeVisible();
+  const box = await guide.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeGreaterThanOrEqual(minHeight);
+}
+
 test('kids title screen is single-player only and keeps original-resolution artwork', async ({ page }) => {
   await page.goto('/pt/');
   const art = page.getByRole('img', { name: /luna, theo, maya, caio e nina/i });
@@ -68,6 +76,43 @@ test('Case 001 uses large bold child-first type and illustrated guides', async (
   await page.getByRole('button', { name: /^conferir$/i }).click();
   await page.getByRole('button', { name: /próxima pista/i }).click();
   await expect(page.getByRole('img', { name: /theo mostra uma pista/i })).toBeVisible();
+  await expectSingleViewport(page);
+});
+
+test('story challenges keep characters large and visually fill the TV stage', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await page.getByRole('button', { name: /jogar/i }).click();
+  await page.getByRole('button', { name: /começar/i }).click();
+  await page.getByRole('button', { name: /ver pistas/i }).click();
+  await page.getByRole('button', { name: /link estranho/i }).click();
+  await page.getByRole('button', { name: /muita pressa/i }).click();
+  await page.getByRole('button', { name: /^conferir$/i }).click();
+  await page.getByRole('button', { name: /próxima pista/i }).click();
+
+  await expectLargeGuide(page, 'theo-guide', 245);
+  const theoStage = await page.getByTestId('theo-guide-stage').boundingBox();
+  expect(theoStage).not.toBeNull();
+  expect(theoStage!.width).toBeGreaterThanOrEqual(300);
+  await expect(page.locator('.kids-visual-equation')).toBeVisible();
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: /^não$/i }).click();
+  await page.getByRole('button', { name: /continuar/i }).click();
+  await expectLargeGuide(page, 'nina-guide', 245);
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: /abrir o app/i }).click();
+  await page.getByRole('button', { name: /juntar pistas/i }).click();
+  await expectLargeGuide(page, 'maya-guide', 150);
+  await expectLargeGuide(page, 'caio-guide', 150);
+  await expect(page.getByTestId('team-guide-stage')).toBeVisible();
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
+  await page.getByRole('button', { name: /um adulto de confiança/i }).click();
+  await page.getByRole('button', { name: /montar escudo/i }).click();
+  await expectLargeGuide(page, 'luna-guide', 245);
   await expectSingleViewport(page);
 });
 
