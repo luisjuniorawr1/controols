@@ -14,6 +14,7 @@ jobs:
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       DRIVE_FILE_ID: 1Q-uQXkmEaRIxE5qPCrfSRwUkkX6KPJOM
+      GOOGLE_PROJECT_NUMBER: '1029247868377'
     steps:
       - uses: actions/checkout@v4
       - name: Restore original assets from Drive
@@ -25,31 +26,36 @@ jobs:
           const fs = require('fs');
           const https = require('https');
           const sa = JSON.parse(fs.readFileSync('/tmp/service-account.json', 'utf8'));
-          const now = Math.floor(Date.now()/1000);
-          const b64u = x => Buffer.from(JSON.stringify(x)).toString('base64url');
-          const input = `${b64u({alg:'RS256',typ:'JWT'})}.${b64u({iss:sa.client_email,scope:'https://www.googleapis.com/auth/drive.readonly',aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600})}`;
-          const sig = crypto.sign('RSA-SHA256', Buffer.from(input), sa.private_key).toString('base64url');
-          const assertion = `${input}.${sig}`;
-          const body = new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion}).toString();
           const request = (options, body) => new Promise((resolve,reject) => {
             const req=https.request(options,res=>{let chunks=[];res.on('data',d=>chunks.push(d));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks)}));});
             req.on('error',reject); if(body) req.write(body); req.end();
           });
+          async function getToken(scope){
+            const now=Math.floor(Date.now()/1000);
+            const b64u=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
+            const input=`${b64u({alg:'RS256',typ:'JWT'})}.${b64u({iss:sa.client_email,scope,aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600})}`;
+            const sig=crypto.sign('RSA-SHA256',Buffer.from(input),sa.private_key).toString('base64url');
+            const body=new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion:`${input}.${sig}`}).toString();
+            const r=await request({hostname:'oauth2.googleapis.com',path:'/token',method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}},body);
+            if(r.status<200||r.status>=300) throw new Error(`token ${r.status}: ${r.body.toString().slice(0,500)}`);
+            return JSON.parse(r.body.toString()).access_token;
+          }
           (async()=>{
-            const tokenRes=await request({hostname:'oauth2.googleapis.com',path:'/token',method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}},body);
-            if(tokenRes.status<200||tokenRes.status>=300) throw new Error(`token ${tokenRes.status}`);
-            const token=JSON.parse(tokenRes.body.toString()).access_token;
-            let u=new URL(`https://drive.usercontent.google.com/download?id=${encodeURIComponent(process.env.DRIVE_FILE_ID)}&export=download&confirm=t`);
+            const cloudToken=await getToken('https://www.googleapis.com/auth/cloud-platform');
+            const enable=await request({hostname:'serviceusage.googleapis.com',path:`/v1/projects/${process.env.GOOGLE_PROJECT_NUMBER}/services/drive.googleapis.com:enable`,method:'POST',headers:{Authorization:`Bearer ${cloudToken}`,'Content-Type':'application/json','Content-Length':'2'}},'{}');
+            console.log(`Drive API enable: ${enable.status}`);
+            if(enable.status<200||enable.status>=300) throw new Error(`enable ${enable.status}: ${enable.body.toString().slice(0,1000)}`);
+            const driveToken=await getToken('https://www.googleapis.com/auth/drive.readonly');
             let dl;
-            for(let i=0;i<10;i++){
-              dl=await request({hostname:u.hostname,path:u.pathname+u.search,method:'GET',headers:{Authorization:`Bearer ${token}`,'User-Agent':'Mozilla/5.0'}});
-              console.log(`download hop ${i+1}: ${dl.status} ${u.hostname}`);
-              if(!(dl.status>=300&&dl.status<400&&dl.headers.location)) break;
-              u=new URL(dl.headers.location,u);
+            for(let i=0;i<12;i++){
+              dl=await request({hostname:'www.googleapis.com',path:`/drive/v3/files/${encodeURIComponent(process.env.DRIVE_FILE_ID)}?alt=media`,method:'GET',headers:{Authorization:`Bearer ${driveToken}`}});
+              console.log(`Drive download attempt ${i+1}: ${dl.status}`);
+              if(dl.status>=200&&dl.status<300) break;
+              await new Promise(r=>setTimeout(r,5000));
             }
-            if(!dl || dl.status<200||dl.status>=300) throw new Error(`download ${dl?.status}`);
+            if(!dl||dl.status<200||dl.status>=300) throw new Error(`download ${dl?.status}: ${dl?.body.toString().slice(0,1000)}`);
             fs.writeFileSync('/tmp/controols-assets.zip',dl.body);
-            console.log(`Downloaded ${dl.body.length} bytes; type=${dl.headers['content-type']||''}`);
+            console.log(`Downloaded ${dl.body.length} bytes`);
           })().catch(err=>{console.error(err);process.exit(1)});
           NODE
           unzip -t /tmp/controols-assets.zip >/dev/null
