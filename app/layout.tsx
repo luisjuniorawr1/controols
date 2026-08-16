@@ -12,6 +12,7 @@ import './ux-polish.css';
 import './expansion.css';
 import './blog.css';
 import './seo-content.css';
+import './hacker-theme.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
