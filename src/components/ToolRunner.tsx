@@ -6,6 +6,7 @@ import { isToolLive } from '@/src/lib/live';
 import { FileToolRunner } from '@/src/components/AssetToolRunner';
 import AutoRunEnhancer from '@/src/components/AutoRunEnhancer';
 import StructuredQRToolRunner from '@/src/components/StructuredQRToolRunner';
+import PixQrCodeRunner from '@/src/components/PixQrCodeRunner';
 import StructuredImageToolRunner from '@/src/components/StructuredImageToolRunner';
 import StructuredPdfToolRunner from '@/src/components/StructuredPdfToolRunner';
 import PdfPasswordToolRunner from '@/src/components/PdfPasswordToolRunner';
@@ -29,6 +30,7 @@ export default function ToolRunner({ tool, locale }: { tool: Tool; locale: Local
   }
   if (pineFileExtraSlugs.has(tool.slug)) return <PineFileToolRunner tool={tool} locale={locale}/>;
   if (['timer','stopwatch','screen-recorder'].includes(tool.slug)) return <PineInteractiveRunner tool={tool} locale={locale}/>;
+  if (tool.slug === 'pix-qr-code-generator') return <PixQrCodeRunner locale={locale}/>;
   if (tool.category === 'qr') return <AutoRunEnhancer><StructuredQRToolRunner tool={tool} locale={locale}/></AutoRunEnhancer>;
   if (tool.category === 'file' || tool.slug==='file-sha256-checksum') return <FileToolRunner tool={tool} locale={locale}/>;
   if (tool.category === 'image') return <AutoRunEnhancer><StructuredImageToolRunner tool={tool} locale={locale}/></AutoRunEnhancer>;
