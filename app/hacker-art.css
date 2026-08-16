@@ -1,0 +1,3 @@
+/* Existing collection illustrations were authored with an orange accent. Shift only their chromatic accents into the new green identity without touching neutral grays. */
+.collection-art-svg,.subcategory-art-svg{filter:hue-rotate(78deg) saturate(1.08)}
+.collection-card:hover .collection-art-svg,.subcategory-card:hover .subcategory-art-svg{filter:hue-rotate(78deg) saturate(1.08) brightness(1.06)}
