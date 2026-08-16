@@ -42,6 +42,8 @@ export default function Header({locale,languagePaths}:HeaderProps){
 
     <nav className="desktop-nav"><Link href={`/${locale}/`}>{l.home}</Link><Link href={`/${locale}/#collections`}>{l.collections}</Link><Link href={`/${locale}/blog/`}>{l.blog}</Link></nav>
 
+    <span className="system-chip" aria-hidden="true"><i/>SYS://ONLINE</span>
+
     <details className="language-menu desktop-language">
       <summary aria-label={l.language}>{locale.toUpperCase()} <span>⌄</span></summary>
       <div>{languageCodes.map(code=><Link className={code===locale?'active':''} href={languageHref(code)} key={code} hrefLang={code}><span>{code.toUpperCase()}</span>{languageNames[code]}</Link>)}</div>
