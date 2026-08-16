@@ -25,4 +25,4 @@ Novas cenas devem preservar rosto, cabelo, roupas, cores e acessórios desses pe
 - Cenas 16:9: 1672 × 941 px.
 - Lineup e folha de recompensas: 1448 × 1086 px.
 
-A primeira aventura é **A Mensagem Misteriosa** e privilegia imagens, escolhas curtas e cooperação.
+A primeira aventura é **A Mensagem Misteriosa**. Todas as aventuras são para **uma criança por vez**, com os personagens da turma atuando como aliados dentro da história. A experiência privilegia imagens, escolhas curtas e cooperação com o elenco.
