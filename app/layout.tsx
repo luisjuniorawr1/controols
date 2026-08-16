@@ -1,28 +1,15 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
-import './assets.css';
-import './tool-clean.css';
-import './dark.css';
-import './home-stream.css';
-import './home-compact.css';
-import './collection-hub.css';
-import './mobile-nav.css';
-import './ux-polish.css';
-import './expansion.css';
-import './blog.css';
-import './seo-content.css';
-import './hacker-theme.css';
-import './hacker-art.css';
-import './story-game.css';
+import './kids-game.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
-  applicationName: 'Controols',
-  title: { default: 'Controols', template: '%s | Controols' },
-  description: 'Aventuras de investigação e segurança digital para jogar sozinho, em família ou com amigos.',
-  creator: 'Controols',
-  publisher: 'Controols',
+  applicationName: 'CONTROOLS',
+  title: { default: 'CONTROOLS', template: '%s | CONTROOLS' },
+  description: 'Aventuras cooperativas de segurança digital para crianças de 7 a 10 anos.',
+  creator: 'CONTROOLS',
+  publisher: 'CONTROOLS',
   robots: { index: true, follow: true },
 };
 
