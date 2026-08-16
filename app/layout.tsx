@@ -14,12 +14,13 @@ import './blog.css';
 import './seo-content.css';
 import './hacker-theme.css';
 import './hacker-art.css';
+import './story-game.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
   applicationName: 'Controols',
   title: { default: 'Controols', template: '%s | Controols' },
-  description: 'Fast, private and free online tools.',
+  description: 'Aventuras de investigação e segurança digital para jogar sozinho, em família ou com amigos.',
   creator: 'Controols',
   publisher: 'Controols',
   robots: { index: true, follow: true },
@@ -29,7 +30,7 @@ const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body>{children}</body>
       {gaMeasurementId && <>
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
