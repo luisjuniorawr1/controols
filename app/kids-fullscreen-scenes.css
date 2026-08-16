@@ -1,0 +1,227 @@
+/*
+ * CONTROOLS Case 001 — full-screen visual density contract
+ *
+ * TV screens must feel like illustrated game scenes, never a white form beside
+ * an image. White stays available for small readable controls, while each
+ * scene itself is filled with color, characters, illustration and clear focus.
+ */
+
+.kids-cast-screen{
+  background:
+    radial-gradient(circle at 8% 16%,rgba(255,209,83,.72) 0 8%,transparent 22%),
+    radial-gradient(circle at 92% 18%,rgba(77,213,190,.55) 0 10%,transparent 24%),
+    linear-gradient(135deg,#cfeaff 0 43%,#e7ddff 72%,#fff0bd 100%);
+}
+.kids-character-select{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:linear-gradient(145deg,rgba(243,249,255,.94),rgba(226,239,255,.9) 48%,rgba(255,243,196,.9));
+  border-color:rgba(255,255,255,.9);
+}
+.kids-character-select:before,.kids-character-select:after{
+  content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none;
+}
+.kids-character-select:before{width:290px;aspect-ratio:1;left:-110px;bottom:-120px;background:rgba(112,80,214,.13)}
+.kids-character-select:after{width:250px;aspect-ratio:1;right:-80px;top:-100px;background:rgba(255,197,61,.25)}
+.kids-character-card{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--kid-color) 16%,#f8fbff),rgba(255,255,255,.82));
+  border-color:rgba(255,255,255,.84);
+}
+
+.kids-story{
+  background:
+    radial-gradient(circle at 4% 14%,rgba(255,211,78,.4) 0 7%,transparent 20%),
+    radial-gradient(circle at 94% 12%,rgba(66,207,183,.32) 0 8%,transparent 23%),
+    linear-gradient(155deg,#d8ecff 0 38%,#edf4ff 55%,#e5ddff 100%);
+}
+.kids-topbar{position:relative;z-index:20}
+.kid-progress{position:relative;z-index:20;background:rgba(255,255,255,.65);box-shadow:inset 0 0 0 2px rgba(190,215,240,.55)}
+
+/* Give illustration more territory on narrative screens. */
+.kids-stage-grid{
+  width:min(1500px,100%);
+  gap:clamp(8px,1vw,14px);
+}
+.kids-stage-grid[data-screen="intro"],
+.kids-stage-grid[data-screen="clues"],
+.kids-stage-grid[data-screen="ending"]{
+  grid-template-columns:minmax(0,1.18fr) minmax(410px,.82fr);
+}
+.kids-stage-grid[data-screen="https"],
+.kids-stage-grid[data-screen="action"],
+.kids-stage-grid[data-screen="shield"]{
+  grid-template-columns:minmax(340px,.93fr) minmax(500px,1.07fr);
+}
+.kids-stage-grid[data-screen="team"]{
+  grid-template-columns:minmax(360px,.9fr) minmax(530px,1.1fr);
+}
+
+.kids-art-stage,.kids-visual-stage,.kids-duo-stage,.kids-finale-art,.kids-game-card{
+  border-color:rgba(255,255,255,.86);
+  box-shadow:0 18px 46px rgba(34,67,120,.17),inset 0 0 0 2px rgba(47,103,177,.08);
+}
+.kids-game-card{
+  --scene-a:#ddecff;
+  --scene-b:#f1eaff;
+  --scene-c:#fff0bc;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(145deg,var(--scene-a) 0 38%,var(--scene-b) 68%,var(--scene-c) 130%);
+}
+.kids-game-card:before{
+  content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.64) 0 4px,transparent 5px) 0 0/38px 38px,
+    linear-gradient(120deg,transparent 0 65%,rgba(255,255,255,.34) 65% 100%);
+  opacity:.48;
+}
+.kids-game-card:after{
+  content:"";position:absolute;z-index:-1;right:-15%;bottom:-24%;width:52%;aspect-ratio:1;
+  border-radius:50%;background:rgba(255,255,255,.42);box-shadow:-310px -260px 0 10px rgba(255,255,255,.15);
+  pointer-events:none;
+}
+.kids-game-card>*{position:relative;z-index:2}
+
+[data-screen="intro"] .kids-game-card{--scene-a:#ffe89a;--scene-b:#dcefff;--scene-c:#d8f7ed}
+[data-screen="clues"] .kids-game-card{--scene-a:#e4dcff;--scene-b:#d9edff;--scene-c:#fff0b8}
+[data-screen="https"] .kids-game-card{--scene-a:#c9f4ef;--scene-b:#dbeeff;--scene-c:#fff4c8}
+[data-screen="action"] .kids-game-card{--scene-a:#d8f4d6;--scene-b:#e5f8ee;--scene-c:#ffeec1}
+[data-screen="team"] .kids-game-card{--scene-a:#e4dcff;--scene-b:#f0e8ff;--scene-c:#ffe4b8}
+[data-screen="shield"] .kids-game-card{--scene-a:#fff0a7;--scene-b:#fff8d4;--scene-c:#d8f3e6}
+[data-screen="ending"] .kids-game-card{--scene-a:#d6ecff;--scene-b:#e6ddff;--scene-c:#fff0a8}
+
+[data-screen] .kids-step-tag{
+  background:#17305f;color:#fff;border-color:rgba(255,255,255,.92);
+  box-shadow:0 5px 0 rgba(23,48,95,.16);
+}
+[data-screen] .kid-choice{
+  background:rgba(255,255,255,.74);
+  border-color:rgba(255,255,255,.92);
+  box-shadow:0 7px 0 rgba(83,117,160,.17),0 10px 25px rgba(42,82,130,.08);
+  backdrop-filter:blur(3px);
+}
+[data-screen] .kid-choice.is-selected{
+  background:#e6f2ff;border-color:#3271df;box-shadow:0 7px 0 #a6c5ee;
+}
+[data-screen] .kids-feedback{
+  background:rgba(255,255,255,.76);
+  box-shadow:0 7px 20px rgba(39,75,124,.1);
+}
+[data-screen] .kids-feedback.good{background:rgba(220,249,229,.9)}
+[data-screen] .kids-feedback.hint{background:rgba(255,240,195,.94)}
+
+/* Observation mission: the 30 seconds are active detective time, not loading. */
+.kids-observation-card{justify-content:center;padding-inline:clamp(18px,2vw,28px)}
+.kids-observation-card h1{margin-bottom:4px}
+.kids-observation-card>p{margin-bottom:5px}
+.kids-observation-zone{
+  width:100%;min-height:clamp(178px,29vh,260px);
+  display:grid;grid-template-columns:minmax(150px,1fr) minmax(125px,.72fr);
+  align-items:end;justify-items:center;gap:clamp(2px,.7vw,10px);
+  margin:0 0 clamp(3px,.8vh,8px);
+}
+.kids-observation-orb{
+  width:clamp(142px,20vh,200px);aspect-ratio:1;
+  display:grid;grid-template-rows:auto 1fr auto;place-items:center;align-content:center;
+  padding:clamp(14px,2vh,20px);border-radius:50%;
+  color:white;background:linear-gradient(150deg,#183970,#2868df 72%,#37a1ee);
+  border:6px solid rgba(255,255,255,.94);
+  box-shadow:0 12px 0 rgba(20,65,133,.2),0 20px 36px rgba(29,78,150,.22);
+}
+.kids-observation-orb span{font-size:clamp(10px,1.7vh,14px);line-height:1;text-transform:uppercase;letter-spacing:.06em;font-weight:1000;text-align:center}
+.kids-observation-orb strong{font-size:clamp(58px,10.5vh,88px);line-height:.9;font-weight:1000;letter-spacing:-.06em}
+.kids-observation-orb small{font-size:clamp(10px,1.6vh,13px);font-weight:1000;letter-spacing:.08em}
+.kids-observation-orb.is-ready{background:linear-gradient(150deg,#2fa95f,#49c87c 70%,#83df9f)}
+.kids-observation-kid{
+  display:block;max-width:100%;height:clamp(180px,31vh,270px);object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 14px 15px rgba(31,68,115,.2));
+}
+.kids-observation-tip{
+  width:100%;min-height:clamp(44px,6.5vh,58px);display:flex;align-items:center;justify-content:center;gap:9px;
+  margin:0 0 clamp(6px,1vh,10px);padding:8px 12px;border-radius:18px;
+  background:rgba(255,255,255,.68);border:3px solid rgba(255,255,255,.9);
+  color:#244e82;box-shadow:0 5px 0 rgba(61,105,157,.12);
+}
+.kids-observation-tip span{font-size:clamp(22px,3.5vh,30px)}
+.kids-observation-tip b{font-size:clamp(15px,2.4vh,20px);line-height:1.05}
+.kids-observation-card>.kids-primary:disabled{opacity:.72;background:linear-gradient(180deg,#6c83a7,#526b91);color:#edf4ff}
+
+.kids-art-cue{
+  position:absolute;display:grid;place-items:center;width:clamp(48px,7vh,66px);height:clamp(48px,7vh,66px);
+  border-radius:50%;background:rgba(255,255,255,.92);border:4px solid #fff;
+  box-shadow:0 10px 22px rgba(24,61,108,.22);font-size:clamp(25px,4vh,36px);
+  animation:kids-cue-pulse 2.4s ease-in-out infinite;
+}
+.kids-art-cue.cue-link{right:8%;bottom:17%}.kids-art-cue.cue-clock{left:8%;bottom:10%;animation-delay:.8s}
+@keyframes kids-cue-pulse{0%,100%{transform:scale(1) rotate(-4deg)}50%{transform:scale(1.1) rotate(4deg)}}
+
+/* Clue screen: character + progress fill the action panel before choices. */
+.kids-inline-guide{
+  width:100%;min-height:clamp(62px,10vh,88px);display:grid;grid-template-columns:auto 1fr;align-items:center;text-align:left;
+  gap:9px;margin:1px 0 clamp(5px,.8vh,8px);padding:5px 11px 5px 5px;
+  color:#fff;background:linear-gradient(100deg,#6244a9,#805bd0);border:3px solid rgba(255,255,255,.88);border-radius:22px;
+  box-shadow:0 7px 0 rgba(68,42,133,.14);
+}
+.kids-inline-guide img{height:clamp(54px,9vh,78px);width:clamp(52px,7vw,76px);object-fit:contain;object-position:center bottom}
+.kids-inline-guide div{display:grid;gap:2px}.kids-inline-guide small{font-size:clamp(9px,1.5vh,12px);font-weight:1000;letter-spacing:.08em;color:#e9ddff}.kids-inline-guide b{font-size:clamp(14px,2.3vh,19px);line-height:1.05}
+.kids-selection-count{display:flex;align-items:baseline;justify-content:center;gap:4px;margin:-2px 0 5px;color:#17305f}
+.kids-selection-count b{font-size:clamp(24px,4vh,34px)}.kids-selection-count span{font-size:clamp(12px,1.9vh,15px);font-weight:1000;text-transform:uppercase}
+
+/* Character stages gain playful ambient marks so nothing feels abandoned. */
+.kids-scene-spark{position:absolute;z-index:1;font-weight:1000;opacity:.34;color:#235caa;pointer-events:none}
+.kids-scene-spark.is-one{left:8%;bottom:9%;font-size:clamp(50px,8vh,74px);transform:rotate(-12deg)}
+.kids-scene-spark.is-two{right:10%;bottom:10%;font-size:clamp(34px,6vh,54px);color:#fff}
+
+/* Team puzzle: pastel clue blocks are substantial game pieces, not white forms. */
+.kids-clue-block:first-child{background:linear-gradient(180deg,#dff4ff,#cfe9fb);border-color:#b8dbef}
+.kids-clue-block:last-child{background:linear-gradient(180deg,#fff0c6,#ffe3ad);border-color:#f3d194}
+.kids-clue-block button{background:rgba(255,255,255,.78);border-color:rgba(255,255,255,.9);box-shadow:0 4px 0 rgba(76,108,147,.11)}
+.kids-team-success{margin:2px 0 5px!important;padding:8px 12px!important}
+
+/* Shield becomes visibly assembled as the child taps the three powers. */
+.kids-shield-meter{
+  width:min(520px,94%);height:18px;margin:2px auto 6px;padding:3px;border-radius:999px;
+  background:rgba(255,255,255,.66);border:2px solid rgba(255,255,255,.9);box-shadow:inset 0 2px 6px rgba(39,75,124,.12);
+}
+.kids-shield-meter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#48c879,#4c8df5,#ffca44);transition:.28s width}
+.kids-safe-steps button{background:rgba(255,255,255,.74);border-color:rgba(255,255,255,.92);box-shadow:0 5px 0 rgba(84,109,142,.13)}
+
+/* Finale is celebratory across the whole viewport. */
+.kids-finale-art{background:radial-gradient(circle at 50% 34%,#fff9c8 0 15%,#dff2ff 43%,#c7dcff 72%,#d9cfff 100%)}
+.kids-confetti{position:absolute;z-index:3;font-size:clamp(18px,3vh,28px);opacity:.75}
+.kids-confetti.c1{left:16%;bottom:13%;color:#f8a51b;transform:rotate(18deg)}
+.kids-confetti.c2{right:20%;bottom:18%;color:#5d39a6;transform:rotate(-17deg)}
+.kids-confetti.c3{left:47%;top:10%;color:#38b96d;transform:rotate(11deg)}
+.kids-badges span{background:rgba(255,255,255,.68);border-color:rgba(255,255,255,.9);box-shadow:0 5px 0 rgba(69,103,145,.11)}
+
+@media(max-height:700px){
+  .kids-stage-grid[data-screen="intro"],.kids-stage-grid[data-screen="clues"],.kids-stage-grid[data-screen="ending"]{grid-template-columns:minmax(0,1.16fr) minmax(395px,.84fr)}
+  .kids-stage-grid[data-screen="https"],.kids-stage-grid[data-screen="action"],.kids-stage-grid[data-screen="shield"]{grid-template-columns:minmax(320px,.9fr) minmax(470px,1.1fr)}
+  .kids-stage-grid[data-screen="team"]{grid-template-columns:minmax(335px,.88fr) minmax(500px,1.12fr)}
+  .kids-observation-zone{min-height:140px;grid-template-columns:minmax(130px,1fr) minmax(105px,.62fr);margin-bottom:2px}
+  .kids-observation-orb{width:124px;border-width:4px;padding:11px;box-shadow:0 7px 0 rgba(20,65,133,.18),0 12px 22px rgba(29,78,150,.17)}
+  .kids-observation-orb span{font-size:8px}.kids-observation-orb strong{font-size:53px}.kids-observation-orb small{font-size:8px}
+  .kids-observation-kid{height:150px}
+  .kids-observation-tip{min-height:38px;padding:5px 8px;border-width:2px;border-radius:13px;margin-bottom:5px}.kids-observation-tip span{font-size:18px}.kids-observation-tip b{font-size:12px}
+  .kids-art-cue{width:42px;height:42px;border-width:3px;font-size:22px}
+  .kids-inline-guide{min-height:48px;border-width:2px;border-radius:15px;padding:3px 8px 3px 3px;margin-bottom:4px;box-shadow:0 4px 0 rgba(68,42,133,.13)}
+  .kids-inline-guide img{height:43px;width:46px}.kids-inline-guide small{font-size:8px}.kids-inline-guide b{font-size:11px}
+  .kids-selection-count{margin:-5px 0 2px}.kids-selection-count b{font-size:20px}.kids-selection-count span{font-size:9px}
+  .kids-shield-meter{height:13px;margin:0 auto 3px;padding:2px}
+}
+
+@media(max-width:900px){
+  .kids-stage-grid[data-screen]{grid-template-columns:1fr;grid-template-rows:minmax(0,.9fr) minmax(0,1.1fr)}
+  .kids-stage-grid[data-screen="intro"],.kids-stage-grid[data-screen="clues"]{grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
+  .kids-observation-zone{min-height:120px;grid-template-columns:1fr .7fr}.kids-observation-orb{width:110px}.kids-observation-kid{height:126px}
+}
+
+@media(max-width:600px){
+  .kids-game-card:before{background-size:28px 28px}
+  .kids-stage-grid[data-screen]{gap:6px}
+  .kids-observation-card{padding-inline:9px}.kids-observation-zone{min-height:86px;grid-template-columns:1fr .58fr}.kids-observation-orb{width:82px;border-width:3px;padding:7px}.kids-observation-orb span{font-size:6px}.kids-observation-orb strong{font-size:35px}.kids-observation-orb small{font-size:6px}.kids-observation-kid{height:92px}
+  .kids-observation-tip{min-height:30px;margin-bottom:3px}.kids-observation-tip span{font-size:14px}.kids-observation-tip b{font-size:9px}
+  .kids-art-cue{display:none}
+  .kids-inline-guide{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){.kids-art-cue{animation:none}}

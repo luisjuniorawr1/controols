@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { firstKidsStory, kids, redFlags, safeSteps, type KidId } from '@/src/game/kidsStory';
+
+const OBSERVATION_SECONDS = 30;
+const observationTips = [
+  'Olhe a imagem inteira.',
+  'Veja o link com atenção.',
+  'Quem mandou essa mensagem?',
+  'Por que existe tanta pressa?',
+];
 
 type Screen = 'home' | 'choose' | 'intro' | 'clues' | 'https' | 'action' | 'team' | 'shield' | 'ending';
 
@@ -45,6 +53,8 @@ function GuideStage({ kidId, icon, kicker, line, tone, alt, testId }: GuideStage
       <b>{line}</b>
     </div>
     <div className="kids-guide-icon" aria-hidden="true">{icon}</div>
+    <span className="kids-scene-spark is-one" aria-hidden="true">✦</span>
+    <span className="kids-scene-spark is-two" aria-hidden="true">●</span>
     <img data-testid={testId} src={kid.asset} alt={alt} />
   </aside>;
 }
@@ -73,16 +83,35 @@ export default function KidsStoryPrototype() {
   const [domain, setDomain] = useState<'real' | 'fake' | null>(null);
   const [helper, setHelper] = useState<'adult' | 'sender' | null>(null);
   const [shieldSteps, setShieldSteps] = useState<string[]>([]);
+  const [observationSeconds, setObservationSeconds] = useState(OBSERVATION_SECONDS);
 
   const selectedKid = kids.find(kid => kid.id === player)!;
+  const maya = kids.find(kid => kid.id === 'maya')!;
   const correctFlags = flags.filter(id => redFlags.find(flag => flag.id === id)?.correct).length;
   const clueSuccess = correctFlags === 2 && !flags.includes('lock');
   const actionSafe = action === 'official' || action === 'adult';
   const teamDone = domain === 'real' && helper === 'adult';
   const shieldDone = shieldSteps.length === safeSteps.length;
+  const observationUnlocked = observationSeconds === 0;
+  const observationTip = useMemo(() => {
+    const elapsed = OBSERVATION_SECONDS - observationSeconds;
+    const index = Math.min(observationTips.length - 1, Math.floor(elapsed / 8));
+    return observationTips[index];
+  }, [observationSeconds]);
+
+  useEffect(() => {
+    if (screen !== 'intro' || observationSeconds <= 0) return;
+    const timer = window.setTimeout(() => setObservationSeconds(current => Math.max(0, current - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [screen, observationSeconds]);
 
   function begin() {
     setScreen('choose');
+  }
+
+  function startStory() {
+    setObservationSeconds(OBSERVATION_SECONDS);
+    setScreen('intro');
   }
 
   function toggleFlag(id: string) {
@@ -100,6 +129,7 @@ export default function KidsStoryPrototype() {
     setDomain(null);
     setHelper(null);
     setShieldSteps([]);
+    setObservationSeconds(OBSERVATION_SECONDS);
   }
 
   if (screen === 'home') {
@@ -118,10 +148,10 @@ export default function KidsStoryPrototype() {
   }
 
   if (screen === 'choose') {
-    return <main className="kids-game">
+    return <main className="kids-game kids-cast-screen">
       <section className="kids-panel kids-character-select">
-        <div className="kids-step-tag">ESCOLHA SEU HERÓI</div>
-        <h1>Quem vai com você?</h1>
+        <div className="kids-step-tag">ESCOLHA SEU AMIGO</div>
+        <h1>Quem vai ajudar hoje?</h1>
         <div className="kids-character-grid" data-testid="character-grid">
           {kids.map(kid => {
             const selected = player === kid.id;
@@ -132,7 +162,7 @@ export default function KidsStoryPrototype() {
             </button>;
           })}
         </div>
-        <button className="kids-primary" type="button" onClick={() => setScreen('intro')}>Começar →</button>
+        <button className="kids-primary" type="button" onClick={startStory}>Começar aventura →</button>
       </section>
     </main>;
   }
@@ -149,13 +179,25 @@ export default function KidsStoryPrototype() {
       <div className="kids-art-stage">
         <img src={firstKidsStory.scenes.message} alt="A turma observa uma mensagem suspeita do Clube Aurora" />
         <div className="kids-art-sticker">📩 MENSAGEM NOVA!</div>
+        <div className="kids-art-cue cue-link" aria-hidden="true">🔗</div>
+        <div className="kids-art-cue cue-clock" aria-hidden="true">⏰</div>
       </div>
-      <div className="kids-game-card">
-        <div className="kids-card-emoji" aria-hidden="true">😯</div>
+      <div className="kids-game-card kids-observation-card">
         <span className="kids-step-tag">MISSÃO 1</span>
-        <h1>Mensagem estranha!</h1>
-        <p>Ajude Luna antes do clique.</p>
-        <button className="kids-primary" type="button" onClick={() => setScreen('clues')}>Ver pistas 🔎</button>
+        <h1>Olhe com atenção!</h1>
+        <p>Tem pistas escondidas nessa mensagem.</p>
+        <div className="kids-observation-zone">
+          <div className={`kids-observation-orb${observationUnlocked ? ' is-ready' : ''}`} aria-live="polite">
+            <span>{observationUnlocked ? 'PRONTO!' : 'OLHOS DE DETETIVE'}</span>
+            <strong>{observationUnlocked ? '✓' : observationSeconds}</strong>
+            <small>{observationUnlocked ? 'VAMOS INVESTIGAR' : 'SEGUNDOS'}</small>
+          </div>
+          <img className="kids-observation-kid" src={selectedKid.asset} alt={`${selectedKid.name} observa a mensagem com atenção`} />
+        </div>
+        <div className="kids-observation-tip" aria-live="polite"><span>🔎</span><b>{observationTip}</b></div>
+        <button className="kids-primary" type="button" disabled={!observationUnlocked} onClick={() => setScreen('clues')}>
+          {observationUnlocked ? 'Ver pistas 🔎' : '🔒 Observe primeiro'}
+        </button>
       </div>
     </section>}
 
@@ -166,17 +208,22 @@ export default function KidsStoryPrototype() {
       </div>
       <div className="kids-game-card kids-clue-game-card">
         <span className="kids-step-tag">DESAFIO VISUAL</span>
-        <h1>Ache 2 alertas!</h1>
+        <h1>Escolha 2 pistas!</h1>
+        <div className="kids-inline-guide">
+          <img src={maya.asset} alt="Maya ajuda a procurar as pistas" />
+          <div><small>MAYA DIZ:</small><b>“Tem 2 sinais estranhos aqui!”</b></div>
+        </div>
         <div className="kids-choice-grid compact">
           {redFlags.map(flag => <ChoiceCard key={flag.id} icon={flag.icon} title={flag.label} selected={flags.includes(flag.id)} onClick={() => toggleFlag(flag.id)} />)}
         </div>
+        <div className="kids-selection-count" aria-live="polite"><b>{flags.length}</b><span>/2 pistas</span></div>
         {!flagsChecked && <button className="kids-primary" type="button" disabled={flags.length !== 2} onClick={() => setFlagsChecked(true)}>Conferir</button>}
         {flagsChecked && <div className={`kids-feedback ${clueSuccess ? 'good' : 'hint'}`}>
-          <b>{clueSuccess ? 'Você achou! ⭐' : 'Olhe de novo! 👀'}</b>
+          <b>{clueSuccess ? 'Boa investigação! ⭐' : 'Olhe de novo! 👀'}</b>
           <p>{clueSuccess ? 'Pressa + endereço estranho = pare e confira.' : 'Cadeado sozinho não prova que o site é verdadeiro.'}</p>
           {!clueSuccess && <button type="button" onClick={() => { setFlags([]); setFlagsChecked(false); }}>Tentar outra vez</button>}
         </div>}
-        {flagsChecked && clueSuccess && <button className="kids-primary" type="button" onClick={() => setScreen('https')}>Próxima pista →</button>}
+        {flagsChecked && clueSuccess && <button className="kids-primary" type="button" onClick={() => setScreen('https')}>Próxima missão →</button>}
       </div>
     </section>}
 
@@ -193,13 +240,13 @@ export default function KidsStoryPrototype() {
       <div className="kids-game-card">
         <span className="kids-step-tag">PEGADINHA DIGITAL</span>
         <div className="kids-visual-equation" aria-hidden="true"><span>🔒</span><b>=</b><span>✅?</span></div>
-        <h1>Cadeado = site verdadeiro?</h1>
+        <h1>Cadeado = site seguro?</h1>
         <div className="kids-choice-grid two">
           <ChoiceCard icon="✅" title="Sim" selected={httpsAnswer === 'yes'} onClick={() => setHttpsAnswer('yes')} />
           <ChoiceCard icon="🧐" title="Não" selected={httpsAnswer === 'no'} onClick={() => setHttpsAnswer('no')} />
         </div>
         {httpsAnswer && <div className={`kids-feedback ${httpsAnswer === 'no' ? 'good' : 'hint'}`}>
-          <b>{httpsAnswer === 'no' ? 'Isso! 🎉' : 'Pegadinha!'}</b>
+          <b>{httpsAnswer === 'no' ? 'Isso! 🎉' : 'Quase!'}</b>
           <p>Site falso também pode ter cadeado.</p>
         </div>}
         {httpsAnswer && <button className="kids-primary" type="button" onClick={() => setScreen('action')}>Continuar →</button>}
@@ -211,37 +258,37 @@ export default function KidsStoryPrototype() {
         kidId="nina"
         icon="🛡️"
         kicker="DICA DA NINA"
-        line="Saia da mensagem e confira!"
+        line="Vamos com calma!"
         tone="green"
         alt="Nina mostra o caminho mais seguro"
         testId="nina-guide"
       />
       <div className="kids-game-card">
         <span className="kids-step-tag">SUA DECISÃO</span>
-        <h1>O que você faz?</h1>
+        <h1>O que fazer agora?</h1>
         <div className="kids-choice-grid three">
-          <ChoiceCard icon="👆" title="Clicar no link" selected={action === 'click'} onClick={() => setAction('click')} />
+          <ChoiceCard icon="👆" title="Clicar agora" selected={action === 'click'} onClick={() => setAction('click')} />
           <ChoiceCard icon="📱" title="Abrir o app" selected={action === 'official'} onClick={() => setAction('official')} />
           <ChoiceCard icon="🤝" title="Pedir ajuda" selected={action === 'adult'} onClick={() => setAction('adult')} />
         </div>
         {action && <div className={`kids-feedback ${actionSafe ? 'good' : 'hint'}`}>
-          <b>{actionSafe ? 'Boa escolha! 🛡️' : 'Pare! ✋'}</b>
-          <p>{actionSafe ? 'Confira no app oficial ou peça ajuda.' : 'Não clique. Confira por outro caminho.'}</p>
+          <b>{actionSafe ? 'Boa escolha! 🛡️' : 'Pense de novo! ✋'}</b>
+          <p>{actionSafe ? 'Confira no app oficial ou peça ajuda.' : 'Não clique correndo. Confira por outro caminho.'}</p>
         </div>}
-        {action && actionSafe && <button className="kids-primary" type="button" onClick={() => setScreen('team')}>Juntar pistas →</button>}
+        {action && actionSafe && <button className="kids-primary" type="button" onClick={() => setScreen('team')}>Juntar respostas →</button>}
       </div>
     </section>}
 
     {screen === 'team' && <section className="kids-stage-grid" data-screen="team">
       <DuoGuideStage />
       <div className="kids-game-card kids-team-card">
-        <span className="kids-step-tag">MISSÃO DA TURMA</span>
-        <h1>Junte as 2 pistas!</h1>
+        <span className="kids-step-tag">DESAFIO DAS PISTAS</span>
+        <h1>Junte as 2 respostas!</h1>
         <div className="kids-clue-pair">
           <article className="kids-clue-block">
             <div className="kids-clue-picture" aria-hidden="true">🌐</div>
             <div className="kids-player-label">PISTA A</div>
-            <h2>Qual é o site oficial?</h2>
+            <h2>Qual parece oficial?</h2>
             <button className={domain === 'real' ? 'is-selected' : ''} type="button" onClick={() => setDomain('real')}>clubeaurora.com.br</button>
             <button className={domain === 'fake' ? 'is-selected wrong' : ''} type="button" onClick={() => setDomain('fake')}>aurora-acesso-seguro.net</button>
           </article>
@@ -254,6 +301,7 @@ export default function KidsStoryPrototype() {
           </article>
         </div>
         {(domain || helper) && !teamDone && <p className="kids-coop-hint">💡 Caminho conhecido + pessoa de confiança.</p>}
+        {teamDone && <div className="kids-feedback good kids-team-success"><b>As pistas combinam! ⭐</b></div>}
         <button className="kids-primary" type="button" disabled={!teamDone} onClick={() => setScreen('shield')}>Montar escudo ✨</button>
       </div>
     </section>}
@@ -263,7 +311,7 @@ export default function KidsStoryPrototype() {
         kidId="luna"
         icon="🛡️"
         kicker="SUPERPODERES"
-        line="Você já sabe se proteger!"
+        line="Isso protege você!"
         tone="yellow"
         alt="Luna comemora os superpoderes digitais"
         testId="luna-guide"
@@ -272,6 +320,7 @@ export default function KidsStoryPrototype() {
         <span className="kids-step-tag">ESCUDO CONTROOLS</span>
         <h1>Monte seu escudo!</h1>
         <p className="kids-short-copy">Toque nos 3 superpoderes.</p>
+        <div className="kids-shield-meter" aria-hidden="true"><span style={{ width: `${(shieldSteps.length / safeSteps.length) * 100}%` }} /></div>
         <div className="kids-safe-steps">
           {safeSteps.map(step => {
             const selected = shieldSteps.includes(step.id);
@@ -280,7 +329,8 @@ export default function KidsStoryPrototype() {
             </button>;
           })}
         </div>
-        <button className="kids-primary" type="button" disabled={!shieldDone} onClick={() => setScreen('ending')}>Missão cumprida! ⭐</button>
+        {shieldDone && <div className="kids-feedback good"><b>Escudo completo! ✨</b></div>}
+        <button className="kids-primary" type="button" disabled={!shieldDone} onClick={() => setScreen('ending')}>Ver resultado ⭐</button>
       </div>
     </section>}
 
@@ -290,13 +340,16 @@ export default function KidsStoryPrototype() {
         <span className="kids-finale-star is-one" aria-hidden="true">⭐</span>
         <span className="kids-finale-star is-two" aria-hidden="true">✨</span>
         <span className="kids-finale-star is-three" aria-hidden="true">⭐</span>
+        <span className="kids-confetti c1" aria-hidden="true">●</span>
+        <span className="kids-confetti c2" aria-hidden="true">▲</span>
+        <span className="kids-confetti c3" aria-hidden="true">■</span>
       </div>
       <div className="kids-game-card kids-ending-card-v2">
         <div className="kids-card-emoji" aria-hidden="true">🏆</div>
         <span className="kids-step-tag">MISSÃO CUMPRIDA</span>
         <h1>Você conseguiu!</h1>
-        <p><b>Parar. Conferir. Pedir ajuda.</b><br />Esse é o superpoder digital!</p>
-        <div className="kids-badges"><span>🔎<b>Olho atento</b></span><span>🛡️<b>Escudo digital</b></span><span>⭐<b>Guardião</b></span></div>
+        <p><b>Parou. Pensou. Confirmou.</b><br />Esse é o superpoder digital!</p>
+        <div className="kids-badges"><span>🔎<b>Olho de lince</b></span><span>🛡️<b>Pensou antes</b></span><span>⭐<b>Guardião digital</b></span></div>
         <button className="kids-primary" type="button" onClick={restart}>Jogar de novo</button>
       </div>
     </section>}
