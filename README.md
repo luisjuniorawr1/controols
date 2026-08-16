@@ -1,43 +1,43 @@
 # CONTROOLS
 
-CONTROOLS is becoming a narrative cyber-security investigation game for families and friends.
+CONTROOLS is a visual digital-safety adventure game for children ages 7–10.
 
-The public prototype is **Case 001 — O Login da Meia-Noite**: five fixed characters investigate a suspicious message, a compromised account and an offline security camera. One player is human in the current local prototype and the remaining four seats are filled by bots.
+The game is **single-player by design**. One child chooses one of the recurring CONTROOLS characters as their avatar and works together with the story cast to solve digital-safety challenges. There is no second-player mode, no social-deduction role system and no need to identify a culprit among players.
 
-## Core rules
+## Core product rules
 
-- Every adventure has exactly five character seats.
-- A session supports 1–5 human controllers; bots fill every remaining seat.
-- Roles are always 1 Digital Thief, 1 Detective, 1 Spy and 2 Residents.
-- Characters and secret roles are separate. Any character can receive any role in a new session.
-- No human or bot receives the other players' roles.
-- The Game Master owns the full state. Each player view contains only public facts plus that player's private role, objective and observations.
-- Bot decisions are driven by their own personality profile, private observations, memory/suspicion model and public evidence — never by the complete role map.
+- Every adventure is made for exactly one child playing at a time.
+- Luna, Theo, Maya, Caio and Nina are the recurring official cast across the game.
+- The child chooses one character to represent them; the other characters remain allies inside the story.
+- Gameplay is image-first and text-light, with large illustrations, short choices and visual challenges suitable for a TV-sized screen.
+- Stories teach safe digital behavior through adventure and problem solving rather than classroom-style lessons.
+- Approved game art is stored and served from the repository at its original resolution. Do not downscale or convert master artwork to a lossy replacement for deployment.
+- Future TV/QR pairing should preserve this solo model: one child/session/controller, with the TV acting as the shared adventure screen rather than introducing multiplayer.
 
-## Prototype flow
+## Current adventure
 
-1. Choose one of the five characters.
-2. Receive a private random role.
-3. Investigate a suspicious condominium message.
-4. Inspect the link and choose relevant signals.
-5. Hear bot arguments generated from their profiles and private state.
-6. Reconstruct the incident timeline.
-7. Investigate two apps on a compromised device.
-8. Vote for the suspected manipulator.
-9. Reveal the roles and ending, then replay with new assignments.
+**Case 001 — A Mensagem Misteriosa**
 
-## Architecture
+1. Start the adventure.
+2. Choose one of the five official characters.
+3. Help Luna inspect a suspicious message.
+4. Find visual warning signs in the message and link.
+5. Learn that a padlock/HTTPS alone does not prove a site is trustworthy.
+6. Choose a safer way to verify the message.
+7. Combine two clues from the CONTROOLS team.
+8. Build the CONTROOLS safety shield and complete the mission.
 
-The first implementation lives in:
+## Current implementation
 
-- `src/game/types.ts` — isolated game and private-state types
-- `src/game/characters.ts` — five fixed character profiles and role objectives
-- `src/game/engine.ts` — role assignment, player views and bot decisions
-- `src/game/firstStory.ts` — Case 001 story data
-- `src/components/StoryPrototype.tsx` — playable narrative prototype
-- `app/story-game.css` — investigation-game visual system
+The active children's prototype lives in:
 
-The current prototype runs entirely in the browser. Secure TV + phone rooms will require moving the Game Master/private state to a server so each device only receives its authorized player view.
+- `src/game/kidsStory.ts` — official characters, story metadata and challenge data
+- `src/components/KidsStoryPrototype.tsx` — playable Case 001 flow
+- `app/story-game.css` — children's game visual system
+- `public/game/assets/` — original-resolution character, scene, reference and UI artwork
+- `tests/qa-smoke.spec.ts` — critical single-player flow and original-resolution image checks
+
+The prototype currently runs entirely in the browser. TV presentation and QR/controller pairing will be added only after the browser game loop is validated, while keeping the game single-player.
 
 ## Development
 
@@ -53,4 +53,4 @@ npm run build
 npm run qa:smoke
 ```
 
-The deploy workflow runs build + three smoke tests and publishes to Firebase Hosting. The retired 649-tool full QA is no longer part of deployment.
+The deploy workflow runs the static build, three smoke tests and publishes to Firebase Hosting.
