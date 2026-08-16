@@ -4,12 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      full_qa:
-        description: Run the complete registered-tool QA before deploy
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: controols-main-build
@@ -35,18 +29,14 @@ jobs:
         run: npm run build
       - name: Install Chromium for smoke QA
         run: npx playwright install --with-deps chromium
-      - name: Smoke test critical pages
+      - name: Smoke test critical game flow
         run: npm run qa:smoke
-      - name: Full registered-tool QA
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.full_qa }}
-        run: npm run qa:e2e
       - name: Upload QA report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: controols-qa
           path: |
-            qa-results.json
             playwright-report/
             test-results/
           if-no-files-found: ignore

@@ -1,29 +1,25 @@
 import { expect, test } from '@playwright/test';
 
-test('home loads the hacker theme and primary navigation', async ({ page }) => {
+test('first Controols cyber mystery loads with five fixed characters', async ({ page }) => {
   await page.goto('/pt/');
-  await expect(page.getByRole('link', { name: 'Controols', exact: true })).toBeVisible();
-  await expect(page.locator('.system-chip')).toContainText('SYS://ONLINE');
-  await expect(page.locator('.hub-hero h1')).toBeVisible();
-  await expect(page.locator('#collections .collection-card').first()).toBeVisible();
-
-  const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().toLowerCase());
-  expect(accent).toBe('#00e676');
+  await expect(page.getByText('CONTROOLS', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'O Login da Meia-Noite' })).toBeVisible();
+  await expect(page.locator('.character-card')).toHaveCount(5);
+  await expect(page.getByRole('button', { name: /Iniciar investigação/i })).toBeVisible();
 });
 
-test('a representative tool page still exposes its runner', async ({ page }) => {
-  await page.goto('/pt/tools/pixelate-image/');
-  await expect(page.locator('h1')).toBeVisible();
-  await expect(page.locator('.runner')).toBeVisible();
+test('starting a game assigns a private role without exposing the other roles', async ({ page }) => {
+  await page.goto('/pt/');
+  await page.getByRole('button', { name: /Iniciar investigação/i }).click();
+  await expect(page.getByText('SEU PAPEL SECRETO', { exact: true })).toBeVisible();
+  await expect(page.locator('.compact-seats')).toContainText('PAPEL OCULTO');
+  await expect(page.getByRole('button', { name: 'Estou pronto' })).toBeVisible();
 });
 
-test('mobile navigation opens without breaking the layout', async ({ page }) => {
+test('prototype remains playable on a phone viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
-  const toggle = page.locator('.mobile-menu-toggle');
-  await expect(toggle).toBeVisible();
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('#mobile-navigation')).toHaveClass(/open/);
-  await expect(page.locator('.mobile-category-list a').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'O Login da Meia-Noite' })).toBeVisible();
+  await expect(page.locator('.character-card').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /Iniciar investigação/i })).toBeVisible();
 });

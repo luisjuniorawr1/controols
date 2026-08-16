@@ -1,19 +1,34 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Header from '@/src/components/Header';
-import HomeClient from '@/src/components/HomeClient';
-import { copy, isLocale } from '@/src/i18n';
-import { locales, tools } from '@/src/data/extendedCatalog';
+import StoryPrototype from '@/src/components/StoryPrototype';
+import { isLocale } from '@/src/i18n';
 
-const base='https://controols.com';
-export function generateStaticParams(){ return locales.map(locale=>({locale})); }
-export async function generateMetadata({params}:{params:Promise<{locale:string}>}):Promise<Metadata>{
-  const {locale}=await params;if(!isLocale(locale))return{};const url=`${base}/${locale}/`;
-  return{title:copy[locale].tagline,description:copy[locale].subtitle,alternates:{canonical:url,languages:{...Object.fromEntries(locales.map(l=>[l,`${base}/${l}/`])),'x-default':`${base}/en/`}},openGraph:{title:`Controols — ${copy[locale].tagline}`,description:copy[locale].subtitle,url,siteName:'Controols',type:'website'}};
+const base = 'https://controols.com';
+
+export function generateStaticParams() {
+  return [{ locale: 'pt' }];
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const url = `${base}/${locale}/`;
+  return {
+    title: 'Controols — O Login da Meia-Noite',
+    description: 'Uma aventura de investigação e segurança digital para jogar sozinho ou com amigos. Cinco personagens, papéis secretos, pistas e decisões.',
+    alternates: { canonical: url },
+    openGraph: {
+      title: 'Controols — O Login da Meia-Noite',
+      description: 'Investigue um incidente digital, confronte evidências e descubra quem está manipulando o grupo.',
+      url,
+      siteName: 'Controols',
+      type: 'website',
+    },
+  };
 }
 
 export default async function LocaleHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  return <><Header locale={locale}/><main><HomeClient locale={locale}/></main><footer><div className="brand"><span>CONTR</span><b>OO</b><span>LS</span></div><p>{tools.length} tools · Browser first · Open web</p></footer></>;
+  return <StoryPrototype />;
 }
