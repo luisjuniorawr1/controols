@@ -1,0 +1,65 @@
+name: Asset bridge
+
+on:
+  push:
+    branches: [fix-game-asset-quality]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      DRIVE_FILE_ID: ${{ secrets.CONTROOLS_ASSET_DRIVE_FILE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show service account email
+        if: ${{ env.DRIVE_FILE_ID == '' }}
+        run: |
+          node -e "const x=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); console.log('ASSET_BRIDGE_EMAIL='+x.client_email)"
+      - name: Restore original assets from Drive
+        if: ${{ env.DRIVE_FILE_ID != '' }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > /tmp/service-account.json
+          node <<'NODE'
+          const crypto = require('crypto');
+          const fs = require('fs');
+          const https = require('https');
+          const sa = JSON.parse(fs.readFileSync('/tmp/service-account.json', 'utf8'));
+          const now = Math.floor(Date.now()/1000);
+          const b64u = x => Buffer.from(JSON.stringify(x)).toString('base64url');
+          const input = `${b64u({alg:'RS256',typ:'JWT'})}.${b64u({iss:sa.client_email,scope:'https://www.googleapis.com/auth/drive.readonly',aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600})}`;
+          const sig = crypto.sign('RSA-SHA256', Buffer.from(input), sa.private_key).toString('base64url');
+          const assertion = `${input}.${sig}`;
+          const body = new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion}).toString();
+          const req = https.request('https://oauth2.googleapis.com/token', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}}, res => {
+            let data=''; res.on('data',d=>data+=d); res.on('end',()=>{
+              if(res.statusCode<200||res.statusCode>=300) throw new Error(`token ${res.statusCode}: ${data}`);
+              const token=JSON.parse(data).access_token;
+              const fileId=process.env.DRIVE_FILE_ID;
+              const out=fs.createWriteStream('/tmp/controols-assets.zip');
+              https.get(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`, {headers:{Authorization:`Bearer ${token}`}}, r=>{
+                if(r.statusCode<200||r.statusCode>=300){let e='';r.on('data',d=>e+=d);r.on('end',()=>{throw new Error(`download ${r.statusCode}: ${e}`)});return;}
+                r.pipe(out); out.on('finish',()=>out.close());
+              });
+            });
+          }); req.write(body); req.end();
+          NODE
+          for i in {1..60}; do [ -s /tmp/controols-assets.zip ] && break; sleep 1; done
+          unzip -t /tmp/controols-assets.zip >/dev/null
+          rm -rf /tmp/controols-assets
+          unzip -q /tmp/controols-assets.zip -d /tmp/controols-assets
+          rm -rf public/game/assets/characters public/game/assets/scenes public/game/assets/reference public/game/assets/ui
+          cp -R /tmp/controols-assets/controols-assets/characters public/game/assets/
+          cp -R /tmp/controols-assets/controols-assets/scenes public/game/assets/
+          cp -R /tmp/controols-assets/controols-assets/reference public/game/assets/
+          cp -R /tmp/controols-assets/controols-assets/ui public/game/assets/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/game/assets
+          git commit -m 'Add original resolution CONTROOLS assets'
+          git push
