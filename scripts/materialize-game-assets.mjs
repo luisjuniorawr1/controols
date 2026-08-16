@@ -5,13 +5,13 @@ const repo = 'luisjuniorawr1/controols';
 const assets = {
   'public/game/assets/characters/luna.webp': 'b732147f3e7cbde2b708afd1f2b6149819bae0fc',
   'public/game/assets/characters/theo.webp': '1677c718929362b78e371d2546416071d0a96e09',
-  'public/game/assets/characters/maya.webp': '7a910eccaaadeb61f3ebd5fbc817cefabcceb436',
+  'public/game/assets/characters/maya.webp': '7a910ca147ae3226bd966e45f1ad27e1ac49a97d',
   'public/game/assets/characters/caio.webp': 'a7e59ce383cd379fa69cc4f9290de453321045e5',
   'public/game/assets/characters/nina.webp': 'daf6647b9c4d1c7fc30113b018515d74c4901aba',
   'public/game/assets/reference/character-lineup.webp': '519947f3b16cf41aff26ad3454fed7126e4c24b2',
-  'public/game/assets/scenes/title-a-mensagem-misteriosa.webp': 'e7402cb6a827cba905d424b68a5c6f6ccead1ffc',
-  'public/game/assets/scenes/mensagem-suspeita.webp': '7b82bb5c98b78f6de9da2b56c8349fb6ca009550',
-  'public/game/assets/scenes/quadro-de-pistas.webp': 'b793278a5e27fd52d08f56b362693759b43b7567',
+  'public/game/assets/scenes/title-a-mensagem-misteriosa.webp': '83c8d785a590eddfc47b6367aa1c97e6180e7ddd',
+  'public/game/assets/scenes/mensagem-suspeita.webp': 'e7402cb6a827cba905d424b68a5c6f6ccead1ffc',
+  'public/game/assets/scenes/quadro-de-pistas.webp': '96c1a28f2725a5537069daedb04c03802838ee89',
 };
 
 async function downloadBlob(path, sha) {
