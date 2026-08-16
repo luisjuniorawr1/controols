@@ -11,64 +11,41 @@ permissions:
 jobs:
   bridge:
     runs-on: ubuntu-latest
-    env:
-      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      DRIVE_FILE_ID: 1Q-uQXkmEaRIxE5qPCrfSRwUkkX6KPJOM
-      GOOGLE_PROJECT_NUMBER: '1029247868377'
     steps:
       - uses: actions/checkout@v4
-      - name: Restore original assets from Drive
+      - name: Add original CONTROOLS PNG masters
         run: |
           set -euo pipefail
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > /tmp/service-account.json
-          node <<'NODE'
-          const crypto = require('crypto');
-          const fs = require('fs');
-          const https = require('https');
-          const sa = JSON.parse(fs.readFileSync('/tmp/service-account.json', 'utf8'));
-          const request = (options, body) => new Promise((resolve,reject) => {
-            const req=https.request(options,res=>{let chunks=[];res.on('data',d=>chunks.push(d));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks)}));});
-            req.on('error',reject); if(body) req.write(body); req.end();
-          });
-          async function getToken(scope){
-            const now=Math.floor(Date.now()/1000);
-            const b64u=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
-            const input=`${b64u({alg:'RS256',typ:'JWT'})}.${b64u({iss:sa.client_email,scope,aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600})}`;
-            const sig=crypto.sign('RSA-SHA256',Buffer.from(input),sa.private_key).toString('base64url');
-            const body=new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion:`${input}.${sig}`}).toString();
-            const r=await request({hostname:'oauth2.googleapis.com',path:'/token',method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}},body);
-            if(r.status<200||r.status>=300) throw new Error(`token ${r.status}: ${r.body.toString().slice(0,500)}`);
-            return JSON.parse(r.body.toString()).access_token;
-          }
-          (async()=>{
-            const cloudToken=await getToken('https://www.googleapis.com/auth/cloud-platform');
-            const enable=await request({hostname:'serviceusage.googleapis.com',path:`/v1/projects/${process.env.GOOGLE_PROJECT_NUMBER}/services/drive.googleapis.com:enable`,method:'POST',headers:{Authorization:`Bearer ${cloudToken}`,'Content-Type':'application/json','Content-Length':'2'}},'{}');
-            console.log(`Drive API enable: ${enable.status}`);
-            if(enable.status<200||enable.status>=300) throw new Error(`enable ${enable.status}: ${enable.body.toString().slice(0,1000)}`);
-            const driveToken=await getToken('https://www.googleapis.com/auth/drive.readonly');
-            let dl;
-            for(let i=0;i<12;i++){
-              dl=await request({hostname:'www.googleapis.com',path:`/drive/v3/files/${encodeURIComponent(process.env.DRIVE_FILE_ID)}?alt=media`,method:'GET',headers:{Authorization:`Bearer ${driveToken}`}});
-              console.log(`Drive download attempt ${i+1}: ${dl.status}`);
-              if(dl.status>=200&&dl.status<300) break;
-              await new Promise(r=>setTimeout(r,5000));
-            }
-            if(!dl||dl.status<200||dl.status>=300) throw new Error(`download ${dl?.status}: ${dl?.body.toString().slice(0,1000)}`);
-            fs.writeFileSync('/tmp/controols-assets.zip',dl.body);
-            console.log(`Downloaded ${dl.body.length} bytes`);
-          })().catch(err=>{console.error(err);process.exit(1)});
-          NODE
-          unzip -t /tmp/controols-assets.zip >/dev/null
-          rm -rf /tmp/controols-assets
-          unzip -q /tmp/controols-assets.zip -d /tmp/controols-assets
-          rm -rf public/game/assets/characters public/game/assets/scenes public/game/assets/reference public/game/assets/ui
-          cp -R /tmp/controols-assets/controols-assets/characters public/game/assets/
-          cp -R /tmp/controols-assets/controols-assets/scenes public/game/assets/
-          cp -R /tmp/controols-assets/controols-assets/reference public/game/assets/
-          cp -R /tmp/controols-assets/controols-assets/ui public/game/assets/
+          if [ -f public/game/assets/scenes/title-a-mensagem-misteriosa.png ] && [ "$(stat -c%s public/game/assets/scenes/title-a-mensagem-misteriosa.png)" -gt 2000000 ]; then
+            echo 'Original assets already present.'
+            exit 0
+          fi
+          mkdir -p public/game/assets/characters public/game/assets/scenes public/game/assets/reference public/game/assets/ui
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-f99c-820e-a9ca-6db457c9ecff/raw?se=2026-08-16T21%3A31%3A42Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A47Z&ske=2026-08-17T12%3A18%3A47Z&sks=b&skv=2026-02-06&sig=BlS2a1mYlaKNggnUj/VQq1b35RRt%2BPLCA4euNcUc7Ys%3D' -o public/game/assets/characters/luna.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-dda0-820e-9429-0135300e3b34/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-15T22%3A31%3A41Z&ske=2026-08-16T22%3A31%3A41Z&sks=b&skv=2026-02-06&sig=HR0MQ483z0AKvWBa3vxPdOF888ZttGMEZBKXIEU7bds%3D' -o public/game/assets/characters/theo.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-02a0-820e-81b6-063b281a00b8/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T14%3A13%3A05Z&ske=2026-08-17T14%3A13%3A05Z&sks=b&skv=2026-02-06&sig=8j1ITzB1oAOc95J1TTfHxjG180LcBvT9w/VTiKFLXgw%3D' -o public/game/assets/characters/maya.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-5610-820e-9ac7-2b305552a1f9/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T09%3A30%3A33Z&ske=2026-08-17T09%3A30%3A33Z&sks=b&skv=2026-02-06&sig=vsOVp9oG8MHZmQXQVP12ilz9QQljhDb4x%2B2R/FDVlgc%3D' -o public/game/assets/characters/caio.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-4738-820e-8b16-4d3aaff706a4/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T13%3A27%3A52Z&ske=2026-08-17T13%3A27%3A52Z&sks=b&skv=2026-02-06&sig=J640OimzK6gSP%2B0y/pIQVUpsnf8BtZnczvDKCxUbX3U%3D' -o public/game/assets/characters/nina.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-2b30-820e-9bbb-14e30444bf20/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T14%3A13%3A05Z&ske=2026-08-17T14%3A13%3A05Z&sks=b&skv=2026-02-06&sig=GFX%2Bc%2BcnJJoI7b8d3LusjeKu/YjkfGtK%2Bl5Lzfau0WE%3D' -o public/game/assets/reference/character-lineup.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-c8a0-820e-b182-9ba9022b8a91/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A49Z&ske=2026-08-17T12%3A18%3A49Z&sks=b&skv=2026-02-06&sig=dnWgfIL2pCV9Dd2IEgJxEmYtfsbBKAdtzc6OuvshZhs%3D' -o public/game/assets/scenes/title-a-mensagem-misteriosa.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-5fc8-820e-aafd-47a228518a4f/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T13%3A27%3A27Z&ske=2026-08-17T13%3A27%3A27Z&sks=b&skv=2026-02-06&sig=FweYe%2BEAOUk50bU12RzzMY75Q/R5OoeGcBcPgKn1big%3D' -o public/game/assets/scenes/mensagem-suspeita.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-63bc-820e-a860-7e7e62ef65a7/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A52%3A35Z&ske=2026-08-17T12%3A52%3A35Z&sks=b&skv=2026-02-06&sig=7BkEtcOFglu0SemNvzYbvFsWBi6yzqTes3UNQ5JrWbc%3D' -o public/game/assets/scenes/quadro-de-pistas.png
+          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-b7c0-820e-8400-110959940e0d/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A49Z&ske=2026-08-17T12%3A18%3A49Z&sks=b&skv=2026-02-06&sig=%2BrmgCq8lSRLkSErecVHkE11sHJrxy4XMRgGC5%2Bf8pxM%3D' -o public/game/assets/ui/reward-icons-sheet.png
+          expected='luna.png:1045406 theo.png:905391 maya.png:902794 caio.png:927304 nina.png:971974 character-lineup.png:1785718 title-a-mensagem-misteriosa.png:2303570 mensagem-suspeita.png:2108740 quadro-de-pistas.png:2049145 reward-icons-sheet.png:1449264'
+          echo "$expected"
+          stat -c '%n %s bytes' public/game/assets/characters/*.png public/game/assets/reference/*.png public/game/assets/scenes/*.png public/game/assets/ui/*.png
+          test "$(stat -c%s public/game/assets/characters/luna.png)" -eq 1045406
+          test "$(stat -c%s public/game/assets/characters/theo.png)" -eq 905391
+          test "$(stat -c%s public/game/assets/characters/maya.png)" -eq 902794
+          test "$(stat -c%s public/game/assets/characters/caio.png)" -eq 927304
+          test "$(stat -c%s public/game/assets/characters/nina.png)" -eq 971974
+          test "$(stat -c%s public/game/assets/reference/character-lineup.png)" -eq 1785718
+          test "$(stat -c%s public/game/assets/scenes/title-a-mensagem-misteriosa.png)" -eq 2303570
+          test "$(stat -c%s public/game/assets/scenes/mensagem-suspeita.png)" -eq 2108740
+          test "$(stat -c%s public/game/assets/scenes/quadro-de-pistas.png)" -eq 2049145
+          test "$(stat -c%s public/game/assets/ui/reward-icons-sheet.png)" -eq 1449264
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add public/game/assets
-          if git diff --cached --quiet; then echo 'Original assets already present.'; exit 0; fi
           git commit -m 'Add original resolution CONTROOLS assets'
           git push
