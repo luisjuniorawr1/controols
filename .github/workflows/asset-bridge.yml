@@ -37,15 +37,17 @@ jobs:
           });
           (async()=>{
             const tokenRes=await request({hostname:'oauth2.googleapis.com',path:'/token',method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}},body);
-            if(tokenRes.status<200||tokenRes.status>=300) throw new Error(`token ${tokenRes.status}: ${tokenRes.body}`);
+            if(tokenRes.status<200||tokenRes.status>=300) throw new Error(`token ${tokenRes.status}`);
             const token=JSON.parse(tokenRes.body.toString()).access_token;
-            const fileId=process.env.DRIVE_FILE_ID;
-            let dl=await request({hostname:'drive.usercontent.google.com',path:`/download?id=${encodeURIComponent(fileId)}&export=download&confirm=t`,method:'GET',headers:{Authorization:`Bearer ${token}`,'User-Agent':'Mozilla/5.0'}});
-            if(dl.status>=300&&dl.status<400&&dl.headers.location){
-              const u=new URL(dl.headers.location);
+            let u=new URL(`https://drive.usercontent.google.com/download?id=${encodeURIComponent(process.env.DRIVE_FILE_ID)}&export=download&confirm=t`);
+            let dl;
+            for(let i=0;i<10;i++){
               dl=await request({hostname:u.hostname,path:u.pathname+u.search,method:'GET',headers:{Authorization:`Bearer ${token}`,'User-Agent':'Mozilla/5.0'}});
+              console.log(`download hop ${i+1}: ${dl.status} ${u.hostname}`);
+              if(!(dl.status>=300&&dl.status<400&&dl.headers.location)) break;
+              u=new URL(dl.headers.location,u);
             }
-            if(dl.status<200||dl.status>=300) throw new Error(`download ${dl.status}: ${dl.body.toString().slice(0,1000)}`);
+            if(!dl || dl.status<200||dl.status>=300) throw new Error(`download ${dl?.status}`);
             fs.writeFileSync('/tmp/controols-assets.zip',dl.body);
             console.log(`Downloaded ${dl.body.length} bytes; type=${dl.headers['content-type']||''}`);
           })().catch(err=>{console.error(err);process.exit(1)});
