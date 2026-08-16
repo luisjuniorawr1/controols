@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-async function expectSceneMaster(image: ReturnType<Parameters<typeof expect>[0] extends never ? never : never>) {}
-
 test('kids title screen loads original-resolution artwork and play modes', async ({ page }) => {
   await page.goto('/pt/');
   const art = page.getByRole('img', { name: /luna, theo, maya, caio e nina/i });
