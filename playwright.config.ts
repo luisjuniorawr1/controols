@@ -14,9 +14,9 @@ export default defineConfig({
   ],
   use: {
     baseURL: 'http://127.0.0.1:4173',
-    trace: 'retain-on-failure',
+    trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'off'
   },
   webServer: {
     command: 'python3 -m http.server 4173 -d out',
@@ -25,6 +25,14 @@ export default defineConfig({
     timeout: 30_000
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: ['--disable-dev-shm-usage']
+        }
+      }
+    }
   ]
 });
