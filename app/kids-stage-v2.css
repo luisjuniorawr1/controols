@@ -1,0 +1,268 @@
+/*
+ * CONTROOLS illustrated TV stage
+ *
+ * Every gameplay screen should feel like a cartoon scene rather than a form:
+ * a large visual/character area, a compact action area and almost no dead space.
+ * This file is loaded after the viewport and readability contracts so it can
+ * enforce the final composition without ever re-introducing page scrolling.
+ */
+
+.kids-stage-grid{
+  width:min(1400px,100%);
+  height:100%;min-height:0;max-height:100%;
+  margin:0 auto;overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(360px,.86fr) minmax(500px,1.14fr);
+  gap:clamp(10px,1.35vw,20px);
+  align-items:stretch;
+}
+
+.kids-art-stage,.kids-visual-stage,.kids-duo-stage,.kids-finale-art,.kids-game-card{
+  min-height:0;height:100%;max-height:100%;
+  border:4px solid #cfe2f7;
+  border-radius:clamp(24px,2.2vw,34px);
+  box-shadow:0 18px 50px rgba(28,67,121,.15);
+  overflow:hidden;
+}
+
+.kids-art-stage{
+  position:relative;background:#dcecff;
+}
+.kids-art-stage img{
+  display:block;width:100%;height:100%;object-fit:cover;
+}
+.kids-art-sticker{
+  position:absolute;left:clamp(12px,2vw,24px);top:clamp(12px,2vh,22px);
+  padding:clamp(8px,1.3vh,12px) clamp(12px,1.5vw,18px);
+  border:4px solid #fff;border-radius:999px;
+  background:#17305f;color:#fff;
+  font-size:clamp(14px,2.25vh,20px);font-weight:1000;letter-spacing:.025em;
+  box-shadow:0 8px 0 rgba(17,45,88,.22);
+  text-transform:uppercase;
+}
+
+.kids-game-card{
+  background:rgba(255,255,255,.97);
+  padding:clamp(14px,2.6vh,30px) clamp(18px,2.5vw,36px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;position:relative;
+}
+.kids-game-card h1{
+  width:100%;max-width:820px;
+  margin:clamp(5px,1vh,10px) auto clamp(8px,1.4vh,15px);
+  font-size:clamp(38px,6.4vh,62px);line-height:.92;
+  font-weight:1000;letter-spacing:-.035em;text-transform:uppercase;text-wrap:balance;
+}
+.kids-game-card>p,.kids-game-card>.kids-short-copy{
+  margin:clamp(4px,.8vh,8px) auto clamp(8px,1.4vh,14px);
+  max-width:720px;
+  color:#405f84;font-size:clamp(19px,3vh,26px);line-height:1.1;font-weight:1000;
+}
+.kids-card-emoji{
+  display:grid;place-items:center;
+  width:clamp(64px,10vh,90px);height:clamp(64px,10vh,90px);
+  margin-bottom:clamp(4px,.8vh,8px);
+  border-radius:28px;background:#eef6ff;border:4px solid #d2e5f8;
+  font-size:clamp(38px,6vh,54px);line-height:1;
+  transform:rotate(-3deg);
+}
+
+/* Character-led visual stage. The child should never see a tiny character
+ * stranded in a large empty column again. */
+.kids-visual-stage{
+  position:relative;isolation:isolate;
+  background:linear-gradient(155deg,#eaf7ff 0 54%,#dcecff 100%);
+}
+.kids-visual-stage:before,.kids-visual-stage:after{
+  content:"";position:absolute;border-radius:50%;z-index:-1;filter:blur(.2px);
+}
+.kids-visual-stage:before{width:52%;aspect-ratio:1;right:-12%;bottom:-12%;background:rgba(255,255,255,.6)}
+.kids-visual-stage:after{width:34%;aspect-ratio:1;left:-10%;top:24%;background:rgba(255,255,255,.34)}
+.kids-tone-blue{background:linear-gradient(145deg,#c9f6f1 0 48%,#d9edff 100%)}
+.kids-tone-green{background:linear-gradient(145deg,#dff7d8 0 48%,#dff5ee 100%)}
+.kids-tone-yellow{background:linear-gradient(145deg,#fff1a8 0 46%,#fff9dc 100%)}
+
+.kids-visual-stage>img{
+  position:absolute;left:50%;bottom:-1.5%;transform:translateX(-50%);
+  display:block;width:auto;height:auto;
+  max-width:78%;max-height:77%;
+  object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 18px 18px rgba(28,67,121,.22));
+  z-index:2;
+}
+.kids-guide-copy{
+  position:absolute;z-index:4;left:5.5%;top:5%;
+  width:min(67%,390px);
+  display:grid;gap:4px;text-align:left;
+  padding:clamp(11px,1.8vh,17px) clamp(13px,1.4vw,20px);
+  border:4px solid #fff;border-radius:24px 24px 24px 8px;
+  background:#17305f;color:#fff;
+  box-shadow:0 11px 0 rgba(23,48,95,.16);
+}
+.kids-guide-copy span{
+  font-size:clamp(12px,1.9vh,16px);font-weight:1000;letter-spacing:.06em;text-transform:uppercase;
+  color:#bfe0ff;
+}
+.kids-guide-copy b{
+  font-size:clamp(21px,3.4vh,29px);line-height:1.02;font-weight:1000;letter-spacing:-.02em;
+}
+.kids-guide-icon{
+  position:absolute;z-index:5;right:5%;top:27%;
+  width:clamp(86px,12vh,118px);height:clamp(86px,12vh,118px);
+  display:grid;place-items:center;
+  border-radius:50%;border:5px solid #fff;background:#fff;
+  box-shadow:0 14px 28px rgba(28,67,121,.2);
+  font-size:clamp(48px,7vh,70px);line-height:1;
+  transform:rotate(5deg);
+}
+
+.kids-visual-equation{
+  display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.4vw,20px);
+  margin:clamp(5px,1vh,10px) 0 clamp(3px,.7vh,7px);
+}
+.kids-visual-equation span{
+  min-width:clamp(76px,9vw,118px);height:clamp(68px,10vh,92px);
+  display:grid;place-items:center;border:4px solid #d7e7f8;border-radius:24px;
+  background:#f5faff;box-shadow:0 7px 0 #dce9f7;
+  font-size:clamp(37px,5.6vh,55px);
+}
+.kids-visual-equation b{font-size:clamp(34px,5vh,50px);color:#2868df}
+
+/* Two-character stage for the final clue mission. */
+.kids-duo-stage{
+  position:relative;isolation:isolate;
+  background:linear-gradient(155deg,#eadfff 0 50%,#ffe7c2 100%);
+}
+.kids-duo-stage:after{
+  content:"";position:absolute;z-index:-1;left:8%;right:8%;bottom:4%;height:20%;
+  border-radius:50%;background:rgba(255,255,255,.54);filter:blur(6px);
+}
+.kids-duo-title{
+  position:absolute;z-index:5;left:6%;right:6%;top:5%;
+  display:grid;gap:2px;text-align:center;
+  padding:clamp(9px,1.5vh,14px) clamp(12px,1.5vw,18px);
+  border:4px solid #fff;border-radius:22px;background:#5d39a6;color:white;
+  box-shadow:0 10px 0 rgba(63,35,118,.14);
+}
+.kids-duo-title span{font-size:clamp(11px,1.8vh,15px);letter-spacing:.08em;font-weight:1000}
+.kids-duo-title b{font-size:clamp(23px,3.8vh,32px);line-height:1;font-weight:1000}
+.kids-duo-characters{
+  position:absolute;left:3%;right:3%;bottom:-1%;height:76%;
+  display:flex;align-items:end;justify-content:center;gap:0;
+}
+.kids-duo-characters img{
+  display:block;width:49%;height:100%;object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 16px 16px rgba(61,45,107,.18));
+}
+.kids-duo-callout{
+  position:absolute;z-index:4;top:26%;
+  padding:8px 12px;border:3px solid #fff;border-radius:999px;
+  background:#fff;color:#4e397c;font-size:clamp(12px,2vh,17px);font-weight:1000;
+  box-shadow:0 7px 18px rgba(61,45,107,.14);
+}
+.kids-duo-callout.is-left{left:4%;transform:rotate(-4deg)}
+.kids-duo-callout.is-right{right:4%;transform:rotate(4deg)}
+
+/* Two large illustrated clue cards replace the old empty form-like area. */
+.kids-team-card{justify-content:center}
+.kids-clue-pair{
+  width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(8px,1vw,14px);margin:clamp(5px,1vh,10px) 0;
+}
+.kids-clue-block{
+  min-width:0;display:flex;flex-direction:column;align-items:center;
+  padding:clamp(9px,1.5vh,14px);
+  border:4px solid #d8e7f6;border-radius:24px;background:#f8fbff;
+  box-shadow:0 7px 0 #e2edf8;
+}
+.kids-clue-picture{font-size:clamp(32px,5vh,46px);line-height:1;margin-bottom:2px}
+.kids-clue-block h2{
+  margin:clamp(4px,.7vh,7px) 0 clamp(5px,.8vh,8px);
+  font-size:clamp(18px,2.9vh,24px);line-height:1.02;font-weight:1000;text-transform:uppercase;
+}
+.kids-clue-block button{
+  width:100%;min-height:clamp(43px,6.8vh,58px);
+  margin:3px 0;padding:clamp(6px,1vh,9px) 8px;
+  border:4px solid #d2e2f2;border-radius:15px;background:#fff;color:#17305f;
+  font:inherit;font-size:clamp(13px,2vh,17px);font-weight:1000;line-height:1.02;
+  overflow-wrap:anywhere;cursor:pointer;
+}
+.kids-clue-block button.is-selected{border-color:#38b96d;background:#e5f8ec}
+.kids-clue-block button.wrong{border-color:#f3b95f;background:#fff4dc}
+.kids-team-card>.kids-coop-hint{margin:3px 0 5px}
+
+/* Shield screen keeps Luna visible while the three actions stay giant. */
+.kids-shield-game-card .kids-safe-steps{
+  width:100%;max-width:760px;flex:0 1 auto;
+  margin:clamp(5px,.9vh,9px) auto clamp(7px,1.1vh,11px);
+}
+.kids-shield-game-card .kids-safe-steps button{
+  min-height:clamp(55px,8.7vh,72px);
+}
+
+/* Finale uses the official team art as a real half-screen illustration. */
+.kids-finale-art{
+  position:relative;isolation:isolate;
+  display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,#eff8ff 0 28%,#cfe9ff 64%,#b7dcff 100%);
+}
+.kids-finale-art img{
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+  filter:drop-shadow(0 16px 18px rgba(28,67,121,.17));
+}
+.kids-finale-star{position:absolute;z-index:3;font-size:clamp(36px,6vh,58px);filter:drop-shadow(0 6px 8px rgba(28,67,121,.12))}
+.kids-finale-star.is-one{left:6%;top:11%;transform:rotate(-12deg)}
+.kids-finale-star.is-two{right:8%;top:14%;transform:rotate(11deg)}
+.kids-finale-star.is-three{right:11%;bottom:8%;transform:rotate(-8deg)}
+.kids-ending-card-v2 .kids-badges{width:100%;max-width:640px}
+
+/* Browser chrome often leaves only ~650px of vertical space. Keep the same
+ * composition, but tighten it rather than shrinking characters into corners. */
+@media(max-height:700px){
+  .kids-stage-grid{grid-template-columns:minmax(325px,.82fr) minmax(480px,1.18fr);gap:9px}
+  .kids-art-stage,.kids-visual-stage,.kids-duo-stage,.kids-finale-art,.kids-game-card{border-width:3px;border-radius:24px}
+  .kids-game-card{padding:9px 16px}
+  .kids-game-card h1{font-size:clamp(29px,5.1vh,38px);margin:3px auto 6px;line-height:.94}
+  .kids-game-card>p,.kids-game-card>.kids-short-copy{font-size:14px;margin:3px auto 6px}
+  .kids-card-emoji{width:52px;height:52px;border-width:3px;border-radius:18px;font-size:31px;margin-bottom:3px}
+  .kids-art-sticker{top:9px;left:9px;padding:6px 10px;border-width:3px;font-size:12px;box-shadow:0 5px 0 rgba(17,45,88,.2)}
+  .kids-guide-copy{left:4%;top:4%;width:66%;padding:8px 10px;border-width:3px;border-radius:17px 17px 17px 6px;box-shadow:0 6px 0 rgba(23,48,95,.14)}
+  .kids-guide-copy span{font-size:10px}.kids-guide-copy b{font-size:18px}
+  .kids-guide-icon{right:4%;top:25%;width:68px;height:68px;border-width:3px;font-size:39px}
+  .kids-visual-stage>img{max-height:79%;max-width:82%}
+  .kids-visual-equation{gap:8px;margin:3px 0}.kids-visual-equation span{min-width:72px;height:54px;border-width:3px;border-radius:16px;font-size:31px}.kids-visual-equation b{font-size:30px}
+  .kids-duo-title{top:4%;left:5%;right:5%;padding:7px 10px;border-width:3px;border-radius:17px;box-shadow:0 6px 0 rgba(63,35,118,.12)}
+  .kids-duo-title span{font-size:9px}.kids-duo-title b{font-size:19px}
+  .kids-duo-callout{top:24%;padding:5px 8px;border-width:2px;font-size:10px}.kids-duo-characters{height:78%}
+  .kids-clue-pair{gap:7px;margin:3px 0}.kids-clue-block{padding:6px;border-width:3px;border-radius:17px;box-shadow:0 4px 0 #e2edf8}
+  .kids-clue-picture{font-size:27px}.kids-clue-block h2{font-size:15px;margin:2px 0 4px}.kids-clue-block button{min-height:38px;padding:5px;border-width:3px;border-radius:11px;font-size:11px;margin:2px 0}
+  .kids-shield-game-card .kids-safe-steps{margin:3px auto 5px}.kids-shield-game-card .kids-safe-steps button{min-height:47px}
+  .kids-finale-star{font-size:33px}
+}
+
+/* Phone preview remains scroll-free: the visual becomes the top chapter panel
+ * and the interaction panel occupies the lower part of the same screen. */
+@media(max-width:600px){
+  .kids-stage-grid{
+    grid-template-columns:1fr;
+    grid-template-rows:minmax(0,34%) minmax(0,66%);
+    gap:5px;
+  }
+  .kids-art-stage,.kids-visual-stage,.kids-duo-stage,.kids-finale-art,.kids-game-card{border-width:2px;border-radius:15px}
+  .kids-game-card{padding:6px 8px}
+  .kids-game-card h1{font-size:21px;margin:2px auto 4px;line-height:.95}
+  .kids-game-card>p,.kids-game-card>.kids-short-copy{font-size:11px;margin:2px auto 4px}
+  .kids-card-emoji{width:38px;height:38px;border-width:2px;border-radius:13px;font-size:23px;margin-bottom:2px}
+  .kids-art-sticker{padding:4px 7px;border-width:2px;font-size:9px;top:6px;left:6px;box-shadow:none}
+  .kids-visual-stage>img{max-height:94%;max-width:48%;left:54%}
+  .kids-guide-copy{left:3%;top:5%;width:46%;padding:5px 6px;border-width:2px;border-radius:11px 11px 11px 4px;box-shadow:none}
+  .kids-guide-copy span{font-size:7px}.kids-guide-copy b{font-size:11px;line-height:1}
+  .kids-guide-icon{right:4%;top:7%;width:43px;height:43px;border-width:2px;font-size:25px}
+  .kids-visual-equation{gap:5px;margin:2px 0}.kids-visual-equation span{min-width:48px;height:38px;border-width:2px;border-radius:11px;font-size:22px;box-shadow:0 3px 0 #dce9f7}.kids-visual-equation b{font-size:20px}
+  .kids-duo-title{left:3%;right:auto;top:5%;width:43%;padding:5px;border-width:2px;border-radius:11px;box-shadow:none}.kids-duo-title span{font-size:7px}.kids-duo-title b{font-size:11px}
+  .kids-duo-characters{height:96%;left:28%;right:0}.kids-duo-callout{display:none}
+  .kids-clue-pair{gap:4px;margin:2px 0}.kids-clue-block{padding:4px;border-width:2px;border-radius:10px;box-shadow:none}.kids-clue-picture{font-size:19px}.kids-clue-block h2{font-size:10px;margin:1px 0 2px}.kids-clue-block .kids-player-label{font-size:7px;padding:2px 4px;border-width:1px}.kids-clue-block button{min-height:31px;padding:3px;border-width:2px;border-radius:8px;font-size:8px;margin:1px 0}
+  .kids-team-card>.kids-coop-hint{font-size:8px;padding:3px;margin:1px 0}
+  .kids-shield-game-card .kids-safe-steps button{min-height:39px}
+  .kids-finale-star{font-size:24px}
+}

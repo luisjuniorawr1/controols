@@ -12,6 +12,16 @@ type ChoiceCardProps = {
   onClick: () => void;
 };
 
+type GuideStageProps = {
+  kidId: KidId;
+  icon: string;
+  kicker: string;
+  line: string;
+  tone: 'blue' | 'green' | 'yellow';
+  alt: string;
+  testId: string;
+};
+
 function ChoiceCard({ icon, title, selected, onClick }: ChoiceCardProps) {
   return <button type="button" className={`kid-choice${selected ? ' is-selected' : ''}`} onClick={onClick}>
     <span className="kid-choice-icon" aria-hidden="true">{icon}</span>
@@ -25,6 +35,32 @@ function Progress({ screen }: { screen: Screen }) {
   return <div className="kid-progress" aria-label={`Parte ${current + 1} de ${order.length}`}>
     <span style={{ width: `${((current + 1) / order.length) * 100}%` }} />
   </div>;
+}
+
+function GuideStage({ kidId, icon, kicker, line, tone, alt, testId }: GuideStageProps) {
+  const kid = kids.find(item => item.id === kidId)!;
+  return <aside className={`kids-visual-stage kids-tone-${tone}`} data-testid={`${testId}-stage`}>
+    <div className="kids-guide-copy">
+      <span>{kicker}</span>
+      <b>{line}</b>
+    </div>
+    <div className="kids-guide-icon" aria-hidden="true">{icon}</div>
+    <img data-testid={testId} src={kid.asset} alt={alt} />
+  </aside>;
+}
+
+function DuoGuideStage() {
+  const maya = kids.find(item => item.id === 'maya')!;
+  const caio = kids.find(item => item.id === 'caio')!;
+  return <aside className="kids-duo-stage" data-testid="team-guide-stage">
+    <div className="kids-duo-title"><span>DUAS PISTAS</span><b>Junte as peças!</b></div>
+    <div className="kids-duo-callout is-left">🌐 SITE CERTO</div>
+    <div className="kids-duo-callout is-right">🤝 PESSOA CERTA</div>
+    <div className="kids-duo-characters">
+      <img data-testid="maya-guide" src={maya.asset} alt="Maya ajuda a encontrar o site certo" />
+      <img data-testid="caio-guide" src={caio.asset} alt="Caio ajuda a escolher uma pessoa de confiança" />
+    </div>
+  </aside>;
 }
 
 export default function KidsStoryPrototype() {
@@ -109,11 +145,13 @@ export default function KidsStoryPrototype() {
     </header>
     <Progress screen={screen} />
 
-    {screen === 'intro' && <section className="kids-scene">
-      <div className="kids-art-card">
+    {screen === 'intro' && <section className="kids-stage-grid" data-screen="intro">
+      <div className="kids-art-stage">
         <img src={firstKidsStory.scenes.message} alt="A turma observa uma mensagem suspeita do Clube Aurora" />
+        <div className="kids-art-sticker">📩 MENSAGEM NOVA!</div>
       </div>
-      <div className="kids-caption-card">
+      <div className="kids-game-card">
+        <div className="kids-card-emoji" aria-hidden="true">😯</div>
         <span className="kids-step-tag">MISSÃO 1</span>
         <h1>Mensagem estranha!</h1>
         <p>Ajude Luna antes do clique.</p>
@@ -121,9 +159,12 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'clues' && <section className="kids-scene">
-      <div className="kids-art-card"><img src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" /></div>
-      <div className="kids-caption-card">
+    {screen === 'clues' && <section className="kids-stage-grid" data-screen="clues">
+      <div className="kids-art-stage">
+        <img src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" />
+        <div className="kids-art-sticker">🔎 OLHO DE DETETIVE</div>
+      </div>
+      <div className="kids-game-card kids-clue-game-card">
         <span className="kids-step-tag">DESAFIO VISUAL</span>
         <h1>Ache 2 alertas!</h1>
         <div className="kids-choice-grid compact">
@@ -139,14 +180,19 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'https' && <section className="kids-scene kids-centered-scene">
-      <div className="kids-character-lesson">
-        <img src="/game/assets/characters/theo.png" alt="Theo mostra uma pista sobre o cadeado" />
-        <div className="kids-big-symbol" aria-hidden="true">🔒</div>
-        <small>PISTA DO THEO</small>
-      </div>
-      <div className="kids-caption-card wide">
+    {screen === 'https' && <section className="kids-stage-grid" data-screen="https">
+      <GuideStage
+        kidId="theo"
+        icon="🔒"
+        kicker="DICA DO THEO"
+        line="Só o cadeado não basta!"
+        tone="blue"
+        alt="Theo mostra uma pista sobre o cadeado"
+        testId="theo-guide"
+      />
+      <div className="kids-game-card">
         <span className="kids-step-tag">PEGADINHA DIGITAL</span>
+        <div className="kids-visual-equation" aria-hidden="true"><span>🔒</span><b>=</b><span>✅?</span></div>
         <h1>Cadeado = site verdadeiro?</h1>
         <div className="kids-choice-grid two">
           <ChoiceCard icon="✅" title="Sim" selected={httpsAnswer === 'yes'} onClick={() => setHttpsAnswer('yes')} />
@@ -160,12 +206,17 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'action' && <section className="kids-scene kids-centered-scene">
-      <div className="kids-character-moment">
-        <img src="/game/assets/characters/nina.png" alt="Nina" />
-        <div className="kids-speech"><b>Nina:</b><span>“Vamos pelo caminho seguro!”</span></div>
-      </div>
-      <div className="kids-caption-card wide">
+    {screen === 'action' && <section className="kids-stage-grid" data-screen="action">
+      <GuideStage
+        kidId="nina"
+        icon="🛡️"
+        kicker="DICA DA NINA"
+        line="Saia da mensagem e confira!"
+        tone="green"
+        alt="Nina mostra o caminho mais seguro"
+        testId="nina-guide"
+      />
+      <div className="kids-game-card">
         <span className="kids-step-tag">SUA DECISÃO</span>
         <h1>O que você faz?</h1>
         <div className="kids-choice-grid three">
@@ -181,55 +232,67 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'team' && <section className="kids-panel kids-coop-panel">
-      <div className="kids-team-helpers" aria-hidden="true">
-        <img src="/game/assets/characters/maya.png" alt="" />
-        <img src="/game/assets/characters/caio.png" alt="" />
+    {screen === 'team' && <section className="kids-stage-grid" data-screen="team">
+      <DuoGuideStage />
+      <div className="kids-game-card kids-team-card">
+        <span className="kids-step-tag">MISSÃO DA TURMA</span>
+        <h1>Junte as 2 pistas!</h1>
+        <div className="kids-clue-pair">
+          <article className="kids-clue-block">
+            <div className="kids-clue-picture" aria-hidden="true">🌐</div>
+            <div className="kids-player-label">PISTA A</div>
+            <h2>Qual é o site oficial?</h2>
+            <button className={domain === 'real' ? 'is-selected' : ''} type="button" onClick={() => setDomain('real')}>clubeaurora.com.br</button>
+            <button className={domain === 'fake' ? 'is-selected wrong' : ''} type="button" onClick={() => setDomain('fake')}>aurora-acesso-seguro.net</button>
+          </article>
+          <article className="kids-clue-block">
+            <div className="kids-clue-picture" aria-hidden="true">🤝</div>
+            <div className="kids-player-label">PISTA B</div>
+            <h2>Quem pode ajudar?</h2>
+            <button className={helper === 'adult' ? 'is-selected' : ''} type="button" onClick={() => setHelper('adult')}>Um adulto de confiança</button>
+            <button className={helper === 'sender' ? 'is-selected wrong' : ''} type="button" onClick={() => setHelper('sender')}>O número desconhecido</button>
+          </article>
+        </div>
+        {(domain || helper) && !teamDone && <p className="kids-coop-hint">💡 Caminho conhecido + pessoa de confiança.</p>}
+        <button className="kids-primary" type="button" disabled={!teamDone} onClick={() => setScreen('shield')}>Montar escudo ✨</button>
       </div>
-      <span className="kids-step-tag">MISSÃO DA TURMA</span>
-      <h1>Junte as 2 pistas!</h1>
-      <p className="kids-short-copy">Descubra o site certo e quem pode ajudar.</p>
-      <div className="kids-coop-grid">
-        <article>
-          <div className="kids-player-label">PISTA A 🌐</div>
-          <h2>Qual é o site oficial?</h2>
-          <button className={domain === 'real' ? 'is-selected' : ''} type="button" onClick={() => setDomain('real')}>clubeaurora.com.br</button>
-          <button className={domain === 'fake' ? 'is-selected wrong' : ''} type="button" onClick={() => setDomain('fake')}>aurora-acesso-seguro.net</button>
-        </article>
-        <article>
-          <div className="kids-player-label">PISTA B 💬</div>
-          <h2>Quem pode ajudar?</h2>
-          <button className={helper === 'adult' ? 'is-selected' : ''} type="button" onClick={() => setHelper('adult')}>Um adulto de confiança</button>
-          <button className={helper === 'sender' ? 'is-selected wrong' : ''} type="button" onClick={() => setHelper('sender')}>O número desconhecido</button>
-        </article>
-      </div>
-      {(domain || helper) && !teamDone && <p className="kids-coop-hint">💡 Use o caminho conhecido e alguém de confiança.</p>}
-      <button className="kids-primary" type="button" disabled={!teamDone} onClick={() => setScreen('shield')}>Montar escudo ✨</button>
     </section>}
 
-    {screen === 'shield' && <section className="kids-panel kids-shield-panel">
-      <div className="kids-big-symbol shield" aria-hidden="true">🛡️</div>
-      <div className="kids-shield-helpers" aria-hidden="true">
-        <img src="/game/assets/characters/luna.png" alt="" />
+    {screen === 'shield' && <section className="kids-stage-grid" data-screen="shield">
+      <GuideStage
+        kidId="luna"
+        icon="🛡️"
+        kicker="SUPERPODERES"
+        line="Você já sabe se proteger!"
+        tone="yellow"
+        alt="Luna comemora os superpoderes digitais"
+        testId="luna-guide"
+      />
+      <div className="kids-game-card kids-shield-game-card">
+        <span className="kids-step-tag">ESCUDO CONTROOLS</span>
+        <h1>Monte seu escudo!</h1>
+        <p className="kids-short-copy">Toque nos 3 superpoderes.</p>
+        <div className="kids-safe-steps">
+          {safeSteps.map(step => {
+            const selected = shieldSteps.includes(step.id);
+            return <button key={step.id} type="button" className={selected ? 'is-selected' : ''} onClick={() => setShieldSteps(current => current.includes(step.id) ? current : [...current, step.id])}>
+              <span>{step.icon}</span><b>{step.label}</b><i>{selected ? '✓' : '+'}</i>
+            </button>;
+          })}
+        </div>
+        <button className="kids-primary" type="button" disabled={!shieldDone} onClick={() => setScreen('ending')}>Missão cumprida! ⭐</button>
       </div>
-      <span className="kids-step-tag">ESCUDO CONTROOLS</span>
-      <h1>Monte seu escudo!</h1>
-      <p className="kids-short-copy">Toque nos 3 superpoderes.</p>
-      <div className="kids-safe-steps">
-        {safeSteps.map(step => {
-          const selected = shieldSteps.includes(step.id);
-          return <button key={step.id} type="button" className={selected ? 'is-selected' : ''} onClick={() => setShieldSteps(current => current.includes(step.id) ? current : [...current, step.id])}>
-            <span>{step.icon}</span><b>{step.label}</b><i>{selected ? '✓' : '+'}</i>
-          </button>;
-        })}
-      </div>
-      <button className="kids-primary" type="button" disabled={!shieldDone} onClick={() => setScreen('ending')}>Missão cumprida! ⭐</button>
     </section>}
 
-    {screen === 'ending' && <section className="kids-ending">
-      <img src={firstKidsStory.scenes.team} alt="A turma oficial do CONTROOLS" />
-      <div className="kids-ending-card">
-        <div className="kids-stars" aria-label="3 estrelas">★ ★ ★</div>
+    {screen === 'ending' && <section className="kids-stage-grid" data-screen="ending">
+      <div className="kids-finale-art">
+        <img src={firstKidsStory.scenes.team} alt="A turma oficial do CONTROOLS comemora a missão" />
+        <span className="kids-finale-star is-one" aria-hidden="true">⭐</span>
+        <span className="kids-finale-star is-two" aria-hidden="true">✨</span>
+        <span className="kids-finale-star is-three" aria-hidden="true">⭐</span>
+      </div>
+      <div className="kids-game-card kids-ending-card-v2">
+        <div className="kids-card-emoji" aria-hidden="true">🏆</div>
         <span className="kids-step-tag">MISSÃO CUMPRIDA</span>
         <h1>Você conseguiu!</h1>
         <p><b>Parar. Conferir. Pedir ajuda.</b><br />Esse é o superpoder digital!</p>
