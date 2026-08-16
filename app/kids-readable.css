@@ -1,0 +1,152 @@
+/*
+ * CONTROOLS child-first reading contract
+ *
+ * 7–10 year olds should understand each TV screen at a glance: few words,
+ * thick rounded letters, strong contrast, giant actions and illustrations that
+ * explain the moment before the child needs to read it.
+ */
+:root{
+  --kid-display-font:"Arial Rounded MT Bold","Trebuchet MS","Comic Sans MS",ui-rounded,system-ui,sans-serif;
+}
+
+.kids-game,.kids-game button{font-family:var(--kid-display-font);font-weight:900}
+.kids-game h1,.kids-game h2,.kids-game strong,.kids-game b{font-weight:1000;letter-spacing:-.025em}
+.kids-game h1{text-wrap:balance}
+.kids-game p{text-wrap:pretty}
+
+/* Public labels should read like playful stickers, not app metadata. */
+.kids-age,.kids-step-tag,.kids-player-label{
+  font-weight:1000;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  border-width:3px;
+  box-shadow:0 4px 0 rgba(31,72,128,.12);
+}
+
+/* Every main action is intentionally oversized for couch distance. */
+.kids-primary,.kids-mode-buttons button{
+  font-weight:1000;
+  letter-spacing:.015em;
+  text-transform:uppercase;
+}
+.kids-primary{font-size:clamp(20px,3.2vh,29px);border-radius:24px}
+.kids-mode-buttons button{font-size:clamp(25px,4.2vh,38px)}
+
+/* Character selection: names dominate, personality copy stays secondary. */
+.kids-character-select h1{font-size:clamp(36px,6.2vh,60px);line-height:.94;text-transform:uppercase}
+.kids-character-card strong{font-size:clamp(21px,3.4vh,30px);line-height:1}
+.kids-character-card span{font-size:clamp(11px,1.9vh,15px);font-weight:900;line-height:1.08}
+
+/* Story screens: one short headline is the visual anchor. */
+.kids-caption-card h1,.kids-panel h1,.kids-ending-card h1{
+  font-size:clamp(34px,6.2vh,58px);
+  line-height:.93;
+  text-transform:uppercase;
+  margin-top:clamp(6px,1vh,11px);
+  margin-bottom:clamp(8px,1.5vh,16px);
+}
+.kids-caption-card p,.kids-short-copy,.kids-ending-card p{
+  font-size:clamp(18px,3vh,25px);
+  line-height:1.16;
+  font-weight:1000;
+  color:#405f84;
+}
+
+.kid-choice{border-width:4px;box-shadow:0 7px 0 #d9e7f7}
+.kid-choice strong{font-size:clamp(17px,2.8vh,23px);line-height:1.02;text-transform:uppercase}
+.kid-choice-icon{font-size:clamp(30px,5.2vh,42px)}
+
+.kids-feedback{border-width:3px;text-align:center}
+.kids-feedback b{display:block;font-size:clamp(20px,3.4vh,28px);line-height:1.05;text-transform:uppercase}
+.kids-feedback p{font-size:clamp(15px,2.5vh,20px);line-height:1.12;font-weight:1000}
+.kids-feedback button{font-size:clamp(15px,2.4vh,19px);font-weight:1000;text-transform:uppercase}
+
+.kids-speech{font-weight:1000;font-size:clamp(18px,3vh,25px);line-height:1.08;border-width:5px}
+.kids-speech b{font-size:1.05em;text-transform:uppercase}
+
+.kids-coop-grid h2{font-size:clamp(21px,3.5vh,29px);line-height:1.02;text-transform:uppercase}
+.kids-coop-grid button{font-size:clamp(16px,2.6vh,21px);font-weight:1000;line-height:1.04;border-width:4px}
+.kids-coop-hint{font-size:clamp(16px,2.5vh,20px);font-weight:1000;line-height:1.08}
+
+.kids-safe-steps button{border-width:4px}
+.kids-safe-steps button>b{font-size:clamp(18px,3vh,24px);font-weight:1000;line-height:1.05;text-transform:uppercase}
+
+.kids-badges b{font-size:clamp(12px,2vh,17px);font-weight:1000;line-height:1.02;text-transform:uppercase}
+
+/* Existing official character masters are reused as illustrated guides on the
+ * text-only challenges, so every part of the story remains image-led. */
+.kids-character-lesson{
+  height:100%;min-height:0;
+  display:grid;grid-template-rows:minmax(0,1fr) auto;
+  place-items:center;align-items:end;
+  position:relative;
+}
+.kids-character-lesson img{
+  display:block;max-width:92%;max-height:min(48vh,350px);width:auto;height:auto;
+  object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 12px 16px rgba(28,67,121,.18));
+}
+.kids-character-lesson .kids-big-symbol{
+  position:absolute;right:3%;top:4%;
+  width:clamp(72px,11vw,135px);height:clamp(72px,11vw,135px);
+  border-radius:50%;display:grid;place-items:center;
+  background:#fff;border:5px solid #cfe2f7;
+  box-shadow:0 12px 28px rgba(28,67,121,.18);
+  font-size:clamp(44px,7vw,82px);
+}
+.kids-character-lesson small{
+  display:block;margin-top:-4px;padding:7px 12px;border-radius:999px;
+  background:#fff;border:3px solid #d7e6f5;color:#345b8b;
+  font-size:clamp(13px,2.2vh,18px);font-weight:1000;text-transform:uppercase;
+}
+
+.kids-team-helpers{
+  display:flex;justify-content:center;align-items:end;gap:clamp(3px,1vw,12px);
+  height:clamp(54px,10vh,92px);margin-bottom:clamp(-9px,-1vh,-4px);
+  pointer-events:none;
+}
+.kids-team-helpers img{height:100%;width:auto;object-fit:contain;filter:drop-shadow(0 7px 10px rgba(28,67,121,.12))}
+
+.kids-shield-helpers{
+  position:absolute;inset:auto 14px 10px auto;display:flex;align-items:end;
+  height:clamp(72px,13vh,116px);pointer-events:none;opacity:.98;
+}
+.kids-shield-panel{position:relative}
+.kids-shield-helpers img{height:100%;width:auto;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(28,67,121,.14))}
+
+@media(max-height:700px){
+  .kids-primary{font-size:18px;border-radius:17px}
+  .kids-character-select h1{font-size:32px}
+  .kids-character-card strong{font-size:17px}.kids-character-card span{font-size:10px}
+  .kids-caption-card h1,.kids-panel h1,.kids-ending-card h1{font-size:32px;line-height:.94}
+  .kids-caption-card p,.kids-short-copy,.kids-ending-card p{font-size:15px;line-height:1.1}
+  .kid-choice strong{font-size:14px}.kid-choice-icon{font-size:24px}
+  .kids-feedback b{font-size:16px}.kids-feedback p{font-size:12px}
+  .kids-speech{font-size:14px}
+  .kids-coop-grid h2{font-size:17px}.kids-coop-grid button{font-size:13px}
+  .kids-safe-steps button>b{font-size:15px}
+  .kids-character-lesson img{max-height:min(34vh,205px)}
+  .kids-character-lesson .kids-big-symbol{width:72px;height:72px;border-width:3px;font-size:40px}
+  .kids-character-lesson small{font-size:11px;padding:4px 8px;border-width:2px}
+  .kids-team-helpers{height:52px}
+  .kids-shield-helpers{height:68px;right:7px;bottom:5px}
+}
+
+@media(max-width:600px){
+  .kids-mode-buttons button{font-size:19px}
+  .kids-character-select h1{font-size:24px}
+  .kids-character-card strong{font-size:13px}.kids-character-card span{font-size:8px}
+  .kids-caption-card h1,.kids-panel h1,.kids-ending-card h1{font-size:23px;line-height:.95}
+  .kids-caption-card p,.kids-short-copy,.kids-ending-card p{font-size:12px;line-height:1.08}
+  .kids-primary{font-size:16px}
+  .kid-choice strong{font-size:11px}.kid-choice-icon{font-size:19px}
+  .kids-feedback b{font-size:12px}.kids-feedback p{font-size:10px}
+  .kids-coop-grid h2{font-size:13px}.kids-coop-grid button{font-size:10px}
+  .kids-safe-steps button>b{font-size:12px}
+  .kids-character-lesson{grid-template-rows:minmax(0,1fr)}
+  .kids-character-lesson img{max-height:21vh}
+  .kids-character-lesson small{display:none}
+  .kids-character-lesson .kids-big-symbol{width:54px;height:54px;font-size:30px;border-width:3px}
+  .kids-team-helpers{height:38px}
+  .kids-shield-helpers{height:50px}
+}
