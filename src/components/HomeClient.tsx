@@ -34,7 +34,7 @@ export default function HomeClient({locale}:{locale:Locale}){
           <input value={query} onChange={e=>setQuery(e.target.value)} placeholder={u.searchHint} autoComplete="off"/>
           {query&&<button type="button" onClick={()=>setQuery('')} aria-label={u.clear}>×</button>}
         </label>
-        <div className="hub-meta"><b>CONTROOLS</b><span>{tools.length} {u.tools}</span><span>{copy[locale].browserNote}</span></div>
+        <div className="hub-meta"><b className="system-online">SYS://ONLINE</b><span>{tools.length} {u.tools} · READY</span><span>{copy[locale].browserNote}</span></div>
       </div>
     </section>
 
