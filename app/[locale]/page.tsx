@@ -1,27 +1,27 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import StoryPrototype from '@/src/components/StoryPrototype';
-import { isLocale } from '@/src/i18n';
+import KidsStoryPrototype from '@/src/components/KidsStoryPrototype';
 
+const locales = ['en', 'pt', 'es', 'zh', 'hi'] as const;
 const base = 'https://controols.com';
 
 export function generateStaticParams() {
-  return [{ locale: 'pt' }];
+  return locales.map(locale => ({ locale }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  if (!isLocale(locale)) return {};
+  if (!locales.includes(locale as (typeof locales)[number])) return {};
   const url = `${base}/${locale}/`;
   return {
-    title: 'Controols — O Login da Meia-Noite',
-    description: 'Uma aventura de investigação e segurança digital para jogar sozinho ou com amigos. Cinco personagens, papéis secretos, pistas e decisões.',
+    title: 'CONTROOLS — A Mensagem Misteriosa',
+    description: 'Aventura cooperativa de segurança digital para crianças de 7 a 10 anos. Jogue sozinho ou em dupla e aprenda a pensar antes de clicar.',
     alternates: { canonical: url },
     openGraph: {
-      title: 'Controols — O Login da Meia-Noite',
-      description: 'Investigue um incidente digital, confronte evidências e descubra quem está manipulando o grupo.',
+      title: 'CONTROOLS — A Mensagem Misteriosa',
+      description: 'Uma aventura visual e cooperativa sobre segurança digital para crianças.',
       url,
-      siteName: 'Controols',
+      siteName: 'CONTROOLS',
       type: 'website',
     },
   };
@@ -29,6 +29,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LocaleHome({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-  return <StoryPrototype />;
+  if (!locales.includes(locale as (typeof locales)[number])) notFound();
+  return <KidsStoryPrototype />;
 }
