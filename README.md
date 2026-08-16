@@ -9,7 +9,9 @@ The game is **single-player by design**. One child chooses one of the recurring 
 - Every adventure is made for exactly one child playing at a time.
 - Luna, Theo, Maya, Caio and Nina are the recurring official cast across the game.
 - The child chooses one character to represent them; the other characters remain allies inside the story.
-- Gameplay is image-first and text-light, with large illustrations, short choices and visual challenges suitable for a TV-sized screen.
+- Gameplay is **image-first and text-light**. Illustrations should explain the moment before the child needs to read.
+- Child-facing text must use **large, thick, rounded/bold lettering**, short phrases and strong contrast. Prefer one giant headline, one short support line and one obvious action per scene; avoid paragraph-heavy screens.
+- Existing character art should be reused as visual guides whenever a challenge would otherwise become text-only.
 - **No CONTROOLS game screen may use page scrolling. Every game state must fit completely inside one physical viewport.** If a scene does not fit, redesign its layout, density, typography or controls instead of adding a scrollbar.
 - Stories teach safe digital behavior through adventure and problem solving rather than classroom-style lessons.
 - Approved game art is stored and served from the repository at its original resolution. Do not downscale or convert master artwork to a lossy replacement for deployment.
@@ -36,8 +38,9 @@ The active children's prototype lives in:
 - `src/components/KidsStoryPrototype.tsx` — playable Case 001 flow
 - `app/kids-game.css` — children's game visual system
 - `app/tv-viewport.css` — non-negotiable single-screen/no-scroll viewport contract
+- `app/kids-readable.css` — child-first bold typography and image-led presentation contract
 - `public/game/assets/` — original-resolution character, scene, reference and UI artwork
-- `tests/qa-smoke.spec.ts` — single-player, original-resolution and viewport-fit QA
+- `tests/qa-smoke.spec.ts` — single-player, original-resolution, typography and viewport-fit QA
 
 The prototype currently runs entirely in the browser. TV presentation and QR/controller pairing will be added only after the browser game loop is validated, while keeping the game single-player and scroll-free.
 
@@ -55,4 +58,4 @@ npm run build
 npm run qa:smoke
 ```
 
-The deploy workflow runs the static build, smoke QA and publishes to Firebase Hosting. One QA test plays the complete Case 001 in a 1280×650 TV-like browser viewport and fails if the page or interactive controls escape the single screen.
+The deploy workflow runs the static build, smoke QA and publishes to Firebase Hosting. QA plays the complete Case 001 in a 1280×650 TV-like browser viewport, fails if the page or interactive controls escape the single screen, and verifies that story typography remains large and heavy.
