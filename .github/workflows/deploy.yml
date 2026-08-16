@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 90
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
