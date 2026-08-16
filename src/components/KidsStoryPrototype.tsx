@@ -84,6 +84,7 @@ export default function KidsStoryPrototype() {
   const [helper, setHelper] = useState<'adult' | 'sender' | null>(null);
   const [shieldSteps, setShieldSteps] = useState<string[]>([]);
   const [observationSeconds, setObservationSeconds] = useState(OBSERVATION_SECONDS);
+  const [observationUnlocked, setObservationUnlocked] = useState(false);
 
   const selectedKid = kids.find(kid => kid.id === player)!;
   const maya = kids.find(kid => kid.id === 'maya')!;
@@ -92,7 +93,6 @@ export default function KidsStoryPrototype() {
   const actionSafe = action === 'official' || action === 'adult';
   const teamDone = domain === 'real' && helper === 'adult';
   const shieldDone = shieldSteps.length === safeSteps.length;
-  const observationUnlocked = observationSeconds === 0;
   const observationTip = useMemo(() => {
     const elapsed = OBSERVATION_SECONDS - observationSeconds;
     const index = Math.min(observationTips.length - 1, Math.floor(elapsed / 8));
@@ -100,10 +100,22 @@ export default function KidsStoryPrototype() {
   }, [observationSeconds]);
 
   useEffect(() => {
-    if (screen !== 'intro' || observationSeconds <= 0) return;
-    const timer = window.setTimeout(() => setObservationSeconds(current => Math.max(0, current - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [screen, observationSeconds]);
+    if (screen !== 'intro' || observationUnlocked) return;
+
+    const ticker = window.setInterval(() => {
+      setObservationSeconds(current => current > 1 ? current - 1 : current);
+    }, 1000);
+
+    const unlockTimer = window.setTimeout(() => {
+      setObservationSeconds(0);
+      setObservationUnlocked(true);
+    }, OBSERVATION_SECONDS * 1000);
+
+    return () => {
+      window.clearInterval(ticker);
+      window.clearTimeout(unlockTimer);
+    };
+  }, [screen, observationUnlocked]);
 
   function begin() {
     setScreen('choose');
@@ -111,6 +123,7 @@ export default function KidsStoryPrototype() {
 
   function startStory() {
     setObservationSeconds(OBSERVATION_SECONDS);
+    setObservationUnlocked(false);
     setScreen('intro');
   }
 
@@ -130,6 +143,7 @@ export default function KidsStoryPrototype() {
     setHelper(null);
     setShieldSteps([]);
     setObservationSeconds(OBSERVATION_SECONDS);
+    setObservationUnlocked(false);
   }
 
   if (screen === 'home') {
