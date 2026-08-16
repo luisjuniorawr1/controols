@@ -43,6 +43,34 @@ test('kids title screen is single-player only and keeps original-resolution artw
   await expectSingleViewport(page);
 });
 
+test('Case 001 uses large bold child-first type and illustrated guides', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/pt/');
+  await page.getByRole('button', { name: /jogar/i }).click();
+  await page.getByRole('button', { name: /começar/i }).click();
+
+  const heading = page.getByRole('heading', { name: /mensagem estranha/i });
+  const action = page.getByRole('button', { name: /ver pistas/i });
+  await expect(heading).toBeVisible();
+  await expect(action).toBeVisible();
+
+  const type = await heading.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { size: parseFloat(style.fontSize), weight: parseInt(style.fontWeight, 10), family: style.fontFamily };
+  });
+  expect(type.size).toBeGreaterThanOrEqual(34);
+  expect(type.weight).toBeGreaterThanOrEqual(900);
+  expect(type.family.toLowerCase()).toMatch(/rounded|trebuchet|comic|system/);
+
+  await action.click();
+  await page.getByRole('button', { name: /link estranho/i }).click();
+  await page.getByRole('button', { name: /muita pressa/i }).click();
+  await page.getByRole('button', { name: /^conferir$/i }).click();
+  await page.getByRole('button', { name: /próxima pista/i }).click();
+  await expect(page.getByRole('img', { name: /theo mostra uma pista/i })).toBeVisible();
+  await expectSingleViewport(page);
+});
+
 test('solo flow uses full-resolution character and scene masters', async ({ page }) => {
   await page.goto('/pt/');
   await page.getByRole('button', { name: /jogar/i }).click();
@@ -50,12 +78,12 @@ test('solo flow uses full-resolution character and scene masters', async ({ page
   await expect(luna).toBeVisible();
   await expect.poll(async () => luna.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
   await expect.poll(async () => luna.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
-  await page.getByRole('button', { name: /começar aventura/i }).click();
+  await page.getByRole('button', { name: /começar/i }).click();
   const scene = page.getByRole('img', { name: /mensagem suspeita do clube aurora/i });
   await expect(scene).toBeVisible();
   await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
   await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
-  await page.getByRole('button', { name: /procurar pistas/i }).click();
+  await page.getByRole('button', { name: /ver pistas/i }).click();
   const clues = page.getByRole('img', { name: /quadro colorido com pistas/i });
   await expect(clues).toBeVisible();
   await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
@@ -74,7 +102,7 @@ test('mobile character selection always has exactly one active player and no pag
   const firstImage = cards.first().locator('img');
   await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
   await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
-  await expect(page.getByRole('button', { name: /começar aventura/i })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /começar/i })).toBeEnabled();
   await expectSingleViewport(page);
 });
 
@@ -86,29 +114,29 @@ test('the complete episode fits in one 1280x650 TV-like browser viewport', async
   await page.getByRole('button', { name: /jogar/i }).click();
   await expectSingleViewport(page);
 
-  await page.getByRole('button', { name: /começar aventura/i }).click();
+  await page.getByRole('button', { name: /começar/i }).click();
   await expectSingleViewport(page);
 
-  await page.getByRole('button', { name: /procurar pistas/i }).click();
+  await page.getByRole('button', { name: /ver pistas/i }).click();
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /link estranho/i }).click();
   await page.getByRole('button', { name: /muita pressa/i }).click();
-  await page.getByRole('button', { name: /conferir pistas/i }).click();
+  await page.getByRole('button', { name: /^conferir$/i }).click();
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /próxima pista/i }).click();
 
   await page.getByRole('button', { name: /^não$/i }).click();
   await expectSingleViewport(page);
-  await page.getByRole('button', { name: /o que você faz agora/i }).click();
+  await page.getByRole('button', { name: /continuar/i }).click();
 
-  await page.getByRole('button', { name: /abrir o app oficial/i }).click();
+  await page.getByRole('button', { name: /abrir o app/i }).click();
   await expectSingleViewport(page);
-  await page.getByRole('button', { name: /juntar as pistas/i }).click();
+  await page.getByRole('button', { name: /juntar pistas/i }).click();
 
   await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
   await page.getByRole('button', { name: /um adulto de confiança/i }).click();
   await expectSingleViewport(page);
-  await page.getByRole('button', { name: /juntar as pistas/i }).click();
+  await page.getByRole('button', { name: /montar escudo/i }).click();
 
   await page.getByRole('button', { name: /parar antes de clicar/i }).click();
   await page.getByRole('button', { name: /abrir o app ou site oficial/i }).click();
@@ -116,6 +144,6 @@ test('the complete episode fits in one 1280x650 TV-like browser viewport', async
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /missão cumprida/i }).click();
 
-  await expect(page.getByRole('heading', { name: /você protegeu luna/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /você conseguiu/i })).toBeVisible();
   await expectSingleViewport(page);
 });
