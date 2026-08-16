@@ -1,4 +1,4 @@
-name: Asset bridge
+name: Finalize original asset migration
 
 on:
   push:
@@ -9,31 +9,14 @@ permissions:
   contents: write
 
 jobs:
-  bridge:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add original CONTROOLS PNG masters
+      - name: Switch game to original PNG masters
         run: |
           set -euo pipefail
-          if [ -f public/game/assets/scenes/title-a-mensagem-misteriosa.png ] && [ "$(stat -c%s public/game/assets/scenes/title-a-mensagem-misteriosa.png)" -gt 2000000 ]; then
-            echo 'Original assets already present.'
-            exit 0
-          fi
-          mkdir -p public/game/assets/characters public/game/assets/scenes public/game/assets/reference public/game/assets/ui
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-f99c-820e-a9ca-6db457c9ecff/raw?se=2026-08-16T21%3A31%3A42Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A47Z&ske=2026-08-17T12%3A18%3A47Z&sks=b&skv=2026-02-06&sig=BlS2a1mYlaKNggnUj/VQq1b35RRt%2BPLCA4euNcUc7Ys%3D' -o public/game/assets/characters/luna.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-dda0-820e-9429-0135300e3b34/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-15T22%3A31%3A41Z&ske=2026-08-16T22%3A31%3A41Z&sks=b&skv=2026-02-06&sig=HR0MQ483z0AKvWBa3vxPdOF888ZttGMEZBKXIEU7bds%3D' -o public/game/assets/characters/theo.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-02a0-820e-81b6-063b281a00b8/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T14%3A13%3A05Z&ske=2026-08-17T14%3A13%3A05Z&sks=b&skv=2026-02-06&sig=8j1ITzB1oAOc95J1TTfHxjG180LcBvT9w/VTiKFLXgw%3D' -o public/game/assets/characters/maya.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-5610-820e-9ac7-2b305552a1f9/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T09%3A30%3A33Z&ske=2026-08-17T09%3A30%3A33Z&sks=b&skv=2026-02-06&sig=vsOVp9oG8MHZmQXQVP12ilz9QQljhDb4x%2B2R/FDVlgc%3D' -o public/game/assets/characters/caio.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-4738-820e-8b16-4d3aaff706a4/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T13%3A27%3A52Z&ske=2026-08-17T13%3A27%3A52Z&sks=b&skv=2026-02-06&sig=J640OimzK6gSP%2B0y/pIQVUpsnf8BtZnczvDKCxUbX3U%3D' -o public/game/assets/characters/nina.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-2b30-820e-9bbb-14e30444bf20/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T14%3A13%3A05Z&ske=2026-08-17T14%3A13%3A05Z&sks=b&skv=2026-02-06&sig=GFX%2Bc%2BcnJJoI7b8d3LusjeKu/YjkfGtK%2Bl5Lzfau0WE%3D' -o public/game/assets/reference/character-lineup.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-c8a0-820e-b182-9ba9022b8a91/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A49Z&ske=2026-08-17T12%3A18%3A49Z&sks=b&skv=2026-02-06&sig=dnWgfIL2pCV9Dd2IEgJxEmYtfsbBKAdtzc6OuvshZhs%3D' -o public/game/assets/scenes/title-a-mensagem-misteriosa.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-5fc8-820e-aafd-47a228518a4f/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T13%3A27%3A27Z&ske=2026-08-17T13%3A27%3A27Z&sks=b&skv=2026-02-06&sig=FweYe%2BEAOUk50bU12RzzMY75Q/R5OoeGcBcPgKn1big%3D' -o public/game/assets/scenes/mensagem-suspeita.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-63bc-820e-a860-7e7e62ef65a7/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A52%3A35Z&ske=2026-08-17T12%3A52%3A35Z&sks=b&skv=2026-02-06&sig=7BkEtcOFglu0SemNvzYbvFsWBi6yzqTes3UNQ5JrWbc%3D' -o public/game/assets/scenes/quadro-de-pistas.png
-          curl -fL 'https://oaisdmntprbrazilsouth.blob.core.windows.net/files/00000000-b7c0-820e-8400-110959940e0d/raw?se=2026-08-16T21%3A33%3A14Z&sp=r&sv=2026-02-06&sr=b&scid=01a00c65-3106-7b74-b3a1-006d40a7de92&skoid=a6356955-0ca0-4033-9150-c0c162458498&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-16T12%3A18%3A49Z&ske=2026-08-17T12%3A18%3A49Z&sks=b&skv=2026-02-06&sig=%2BrmgCq8lSRLkSErecVHkE11sHJrxy4XMRgGC5%2Bf8pxM%3D' -o public/game/assets/ui/reward-icons-sheet.png
-          expected='luna.png:1045406 theo.png:905391 maya.png:902794 caio.png:927304 nina.png:971974 character-lineup.png:1785718 title-a-mensagem-misteriosa.png:2303570 mensagem-suspeita.png:2108740 quadro-de-pistas.png:2049145 reward-icons-sheet.png:1449264'
-          echo "$expected"
-          stat -c '%n %s bytes' public/game/assets/characters/*.png public/game/assets/reference/*.png public/game/assets/scenes/*.png public/game/assets/ui/*.png
+
           test "$(stat -c%s public/game/assets/characters/luna.png)" -eq 1045406
           test "$(stat -c%s public/game/assets/characters/theo.png)" -eq 905391
           test "$(stat -c%s public/game/assets/characters/maya.png)" -eq 902794
@@ -44,8 +27,103 @@ jobs:
           test "$(stat -c%s public/game/assets/scenes/mensagem-suspeita.png)" -eq 2108740
           test "$(stat -c%s public/game/assets/scenes/quadro-de-pistas.png)" -eq 2049145
           test "$(stat -c%s public/game/assets/ui/reward-icons-sheet.png)" -eq 1449264
+
+          sed -i 's/\.webp/\.png/g' src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx
+
+          node <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          delete p.scripts['assets:game'];
+          delete p.scripts.predev;
+          delete p.scripts.prebuild;
+          fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+          NODE
+
+          cat > public/game/assets/README.md <<'EOF'
+          # CONTROOLS game assets
+
+          Os arquivos desta pasta são os **masters oficiais em resolução original** do CONTROOLS para crianças de 7 a 10 anos.
+
+          ## Regra de qualidade
+
+          - Não reduzir resolução antes de publicar.
+          - Não converter os masters para formatos com perda.
+          - A interface pode redimensionar a exibição via CSS, mas deve carregar o master original.
+          - Novos assets devem entrar no repositório na resolução original em que forem aprovados.
+
+          ## Elenco oficial
+
+          - Luna — amarelo, cachos e presilha de estrela.
+          - Theo — turquesa, óculos e acessórios de tecnologia.
+          - Maya — roxo, tranças e tablet/caderno.
+          - Caio — laranja/vermelho, energético.
+          - Nina — verde, calma e bolsa com escudo.
+
+          Novas cenas devem preservar rosto, cabelo, roupas, cores e acessórios desses personagens.
+
+          ## Masters atuais
+
+          - Personagens: 1122 × 1402 px.
+          - Cenas 16:9: 1672 × 941 px.
+          - Lineup e folha de recompensas: 1448 × 1086 px.
+
+          A primeira aventura é **A Mensagem Misteriosa** e privilegia imagens, escolhas curtas e cooperação.
+          EOF
+
+          cat > tests/qa-smoke.spec.ts <<'EOF'
+          import { expect, test } from '@playwright/test';
+
+          async function expectSceneMaster(image: ReturnType<Parameters<typeof expect>[0] extends never ? never : never>) {}
+
+          test('kids title screen loads original-resolution artwork and play modes', async ({ page }) => {
+            await page.goto('/pt/');
+            const art = page.getByRole('img', { name: /luna, theo, maya, caio e nina/i });
+            await expect(art).toBeVisible();
+            await expect(page.getByRole('button', { name: /1 jogador/i })).toBeVisible();
+            await expect(page.getByRole('button', { name: /2 jogadores/i })).toBeVisible();
+            await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
+            await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+          });
+
+          test('one-player flow uses full-resolution character and scene masters', async ({ page }) => {
+            await page.goto('/pt/');
+            await page.getByRole('button', { name: /1 jogador/i }).click();
+            const luna = page.getByRole('img', { name: 'Luna', exact: true });
+            await expect(luna).toBeVisible();
+            await expect.poll(async () => luna.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
+            await expect.poll(async () => luna.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
+            await page.getByRole('button', { name: /começar aventura/i }).click();
+            const scene = page.getByRole('img', { name: /mensagem suspeita do clube aurora/i });
+            await expect(scene).toBeVisible();
+            await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
+            await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+            await page.getByRole('button', { name: /procurar pistas/i }).click();
+            const clues = page.getByRole('img', { name: /quadro colorido com pistas/i });
+            await expect(clues).toBeVisible();
+            await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
+            await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+          });
+
+          test('two-player selection keeps five official characters and original masters on mobile', async ({ page }) => {
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.goto('/pt/');
+            await page.getByRole('button', { name: /2 jogadores/i }).click();
+            const cards = page.getByTestId('character-grid').locator('button');
+            await expect(cards).toHaveCount(5);
+            await expect(page.getByTestId('character-grid').locator('.is-selected')).toHaveCount(2);
+            const firstImage = cards.first().locator('img');
+            await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
+            await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
+            await expect(page.getByRole('button', { name: /começar aventura/i })).toBeEnabled();
+          });
+          EOF
+
+          # Remove the old build-time image materializer and this one-time bridge itself.
+          git rm scripts/materialize-game-assets.mjs
+          git rm .github/workflows/asset-bridge.yml
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add public/game/assets
-          git commit -m 'Add original resolution CONTROOLS assets'
+          git add package.json src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts public/game/assets/README.md
+          git commit -m 'Use original-resolution game artwork'
           git push
