@@ -3,6 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 import './kids-game.css';
 import './tv-viewport.css';
+import './kids-readable.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
