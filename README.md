@@ -10,9 +10,10 @@ The game is **single-player by design**. One child chooses one of the recurring 
 - Luna, Theo, Maya, Caio and Nina are the recurring official cast across the game.
 - The child chooses one character to represent them; the other characters remain allies inside the story.
 - Gameplay is image-first and text-light, with large illustrations, short choices and visual challenges suitable for a TV-sized screen.
+- **No CONTROOLS game screen may use page scrolling. Every game state must fit completely inside one physical viewport.** If a scene does not fit, redesign its layout, density, typography or controls instead of adding a scrollbar.
 - Stories teach safe digital behavior through adventure and problem solving rather than classroom-style lessons.
 - Approved game art is stored and served from the repository at its original resolution. Do not downscale or convert master artwork to a lossy replacement for deployment.
-- Future TV/QR pairing should preserve this solo model: one child/session/controller, with the TV acting as the shared adventure screen rather than introducing multiplayer.
+- Future TV/QR pairing should preserve this solo model: one child/session/controller, with the TV acting as the adventure screen rather than introducing multiplayer.
 
 ## Current adventure
 
@@ -33,11 +34,12 @@ The active children's prototype lives in:
 
 - `src/game/kidsStory.ts` — official characters, story metadata and challenge data
 - `src/components/KidsStoryPrototype.tsx` — playable Case 001 flow
-- `app/story-game.css` — children's game visual system
+- `app/kids-game.css` — children's game visual system
+- `app/tv-viewport.css` — non-negotiable single-screen/no-scroll viewport contract
 - `public/game/assets/` — original-resolution character, scene, reference and UI artwork
-- `tests/qa-smoke.spec.ts` — critical single-player flow and original-resolution image checks
+- `tests/qa-smoke.spec.ts` — single-player, original-resolution and viewport-fit QA
 
-The prototype currently runs entirely in the browser. TV presentation and QR/controller pairing will be added only after the browser game loop is validated, while keeping the game single-player.
+The prototype currently runs entirely in the browser. TV presentation and QR/controller pairing will be added only after the browser game loop is validated, while keeping the game single-player and scroll-free.
 
 ## Development
 
@@ -53,4 +55,4 @@ npm run build
 npm run qa:smoke
 ```
 
-The deploy workflow runs the static build, three smoke tests and publishes to Firebase Hosting.
+The deploy workflow runs the static build, smoke QA and publishes to Firebase Hosting. One QA test plays the complete Case 001 in a 1280×650 TV-like browser viewport and fails if the page or interactive controls escape the single screen.
