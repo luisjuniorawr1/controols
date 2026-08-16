@@ -1,0 +1,95 @@
+/*
+ * CONTROOLS viewport contract
+ *
+ * Every game state must fit inside one physical viewport. TVs do not have a
+ * page-scrolling interaction, so the document itself is permanently locked
+ * and each scene adapts its density to the available space.
+ */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{min-height:0}
+.kids-game{width:100%;height:100dvh;min-height:0;max-height:100dvh;overflow:hidden;padding:clamp(10px,1.8vh,24px)}
+.kids-home{height:100dvh;min-height:0;max-height:100dvh;padding:0}
+.kids-title-stage{height:100%;min-height:0;max-height:100%;overflow:hidden}
+.kids-title-overlay{bottom:clamp(14px,3.2vh,42px)}
+.kids-title-overlay p{margin-top:clamp(8px,1.6vh,14px)}
+.kids-mode-buttons button{min-height:clamp(58px,10vh,82px)}
+
+.kids-character-select{height:100%;max-height:100%;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:clamp(12px,2.4vh,28px)}
+.kids-character-select h1{font-size:clamp(26px,5.2vh,46px);margin:clamp(5px,1vh,10px) auto clamp(7px,1.4vh,14px)}
+.kids-character-grid{flex:1;min-height:0;width:100%;align-items:stretch;margin:clamp(7px,1.4vh,14px) 0;gap:clamp(7px,1vw,13px)}
+.kids-character-card{height:100%;min-height:0;max-height:100%;padding:clamp(5px,1vh,9px) clamp(4px,.7vw,8px) clamp(7px,1.2vh,12px)}
+.kids-character-card img{height:min(33vh,238px);max-height:calc(100% - 64px);min-height:80px}
+.kids-character-card strong{font-size:clamp(16px,2.6vh,23px)}
+.kids-character-card span{font-size:clamp(10px,1.7vh,14px)}
+.kids-character-card i{width:clamp(24px,4.5vh,32px);height:clamp(24px,4.5vh,32px)}
+.kids-primary{min-height:clamp(46px,7.5vh,60px);padding:clamp(8px,1.6vh,13px) clamp(18px,2.5vw,28px);font-size:clamp(16px,2.6vh,22px)}
+
+.kids-story{height:100dvh;min-height:0;max-height:100dvh;display:grid;grid-template-rows:clamp(48px,8vh,68px) 7px minmax(0,1fr);gap:clamp(5px,1vh,9px);padding-top:0;overflow:hidden}
+.kids-topbar{height:100%;min-height:0;width:min(1400px,100%)}
+.kid-progress{height:7px;width:min(1400px,100%);margin:0 auto;align-self:center}
+.kids-scene,.kids-story>.kids-panel,.kids-ending{height:100%;min-height:0;max-height:100%;margin:0 auto;overflow:hidden}
+.kids-scene{align-items:stretch;gap:clamp(8px,1.4vw,18px);grid-template-columns:minmax(0,1.45fr) minmax(300px,.65fr)}
+.kids-art-card,.kids-caption-card{height:100%;min-height:0;max-height:100%}
+.kids-art-card{min-height:0}
+.kids-art-card img{height:100%;width:100%;object-fit:cover}
+.kids-caption-card{overflow:hidden;padding:clamp(12px,2.4vh,28px)}
+.kids-caption-card h1,.kids-panel h1{font-size:clamp(24px,5vh,44px);margin:clamp(5px,1vh,10px) auto clamp(8px,1.5vh,15px)}
+.kids-caption-card p,.kids-short-copy{font-size:clamp(13px,2.3vh,18px);line-height:1.32;margin:clamp(5px,1vh,10px) auto}
+.kids-step-tag{padding:clamp(4px,.8vh,7px) clamp(9px,1vw,13px);font-size:clamp(10px,1.7vh,13px)}
+
+.kids-centered-scene{min-height:0;grid-template-columns:minmax(180px,.42fr) minmax(0,1fr);place-items:stretch;align-items:center}
+.kids-centered-scene>.kids-caption-card{justify-self:stretch;width:100%;max-width:900px}
+.kids-big-symbol{font-size:clamp(70px,18vh,145px)}
+.kids-big-symbol.shield{font-size:clamp(58px,11vh,92px);margin:0 auto clamp(2px,.6vh,6px)}
+.kids-choice-grid{gap:clamp(6px,1.2vh,11px);margin:clamp(7px,1.3vh,13px) 0}
+.kid-choice{min-height:clamp(56px,10.5vh,86px);padding:clamp(7px,1.4vh,12px);gap:clamp(5px,.8vw,9px);border-radius:clamp(14px,2vh,20px)}
+.kid-choice-icon{font-size:clamp(22px,4.5vh,31px)}
+.kid-choice strong{font-size:clamp(13px,2.1vh,17px)}
+.kids-feedback{margin:clamp(5px,1vh,9px) 0;padding:clamp(8px,1.5vh,13px) clamp(10px,1.5vw,16px)}
+.kids-feedback b{font-size:clamp(15px,2.5vh,19px)}
+.kids-feedback p{font-size:clamp(12px,2vh,15px);line-height:1.25}
+.kids-character-moment{height:100%;min-height:0;align-items:center;gap:clamp(5px,1vw,10px)}
+.kids-character-moment img{height:auto;max-height:min(42vh,270px);max-width:52%;object-fit:contain}
+.kids-speech{max-width:320px;padding:clamp(9px,1.6vh,14px) clamp(10px,1.4vw,18px);font-size:clamp(13px,2.3vh,18px)}
+
+.kids-coop-panel,.kids-shield-panel{display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding:clamp(12px,2.3vh,26px)}
+.kids-coop-panel h1{margin-bottom:clamp(3px,.7vh,7px)}
+.kids-coop-grid{flex:1;min-height:0;max-height:100%;gap:clamp(8px,1.5vw,18px);margin:clamp(7px,1.2vh,13px) 0}
+.kids-coop-grid article{min-height:0;overflow:hidden;padding:clamp(9px,1.7vh,17px)}
+.kids-coop-icon{font-size:clamp(34px,7vh,54px);margin:clamp(3px,.8vh,7px)}
+.kids-coop-grid h2{font-size:clamp(16px,3vh,21px);margin:clamp(4px,.8vh,8px) 0 clamp(5px,1vh,10px)}
+.kids-coop-grid button{padding:clamp(7px,1.3vh,11px);margin:clamp(4px,.7vh,7px) 0;font-size:clamp(12px,2vh,15px);overflow-wrap:anywhere}
+.kids-coop-hint{margin:clamp(3px,.7vh,7px) 0;padding:clamp(6px,1vh,10px);font-size:clamp(12px,2vh,15px)}
+.kids-safe-steps{width:min(720px,100%);flex:1;min-height:0;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:clamp(6px,1vh,10px);margin:clamp(6px,1vh,11px) auto}
+.kids-safe-steps button{min-height:0;padding:clamp(7px,1.2vh,11px) clamp(10px,1.2vw,15px);grid-template-columns:clamp(36px,6vh,48px) 1fr clamp(28px,5vh,36px)}
+.kids-safe-steps button>span{font-size:clamp(24px,4.8vh,34px)}
+.kids-safe-steps button>b{font-size:clamp(13px,2.3vh,18px)}
+.kids-safe-steps button>i{width:clamp(26px,4.8vh,34px);height:clamp(26px,4.8vh,34px)}
+
+.kids-ending{grid-template-columns:1.2fr .8fr;gap:clamp(8px,1.5vw,18px);align-items:stretch}
+.kids-ending>img{height:100%;min-height:0;max-height:100%;object-fit:contain}
+.kids-ending-card{height:100%;min-height:0;max-height:100%;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(12px,2.4vh,28px)}
+.kids-ending-card h1{font-size:clamp(26px,5vh,44px);margin:clamp(5px,1vh,9px) 0}
+.kids-ending-card p{font-size:clamp(13px,2.3vh,18px);line-height:1.3;margin:clamp(4px,.9vh,8px) 0}
+.kids-stars{font-size:clamp(28px,5.5vh,42px)}
+.kids-badges{width:100%;gap:clamp(4px,.7vw,8px);margin:clamp(7px,1.4vh,14px) 0}
+.kids-badges span{padding:clamp(6px,1.1vh,10px) 4px;font-size:clamp(22px,4.5vh,32px)}
+
+@media(max-height:700px){
+  .kids-game{padding:8px 14px}.kids-home{padding:0}.kids-title-overlay{bottom:10px}.kids-title-overlay p{font-size:14px;margin-top:7px}.kids-age{padding:5px 11px;margin-bottom:7px;font-size:12px}.kids-mode-buttons button{min-height:54px;border-width:3px;border-radius:18px;font-size:20px}
+  .kids-character-select{padding:10px 18px}.kids-character-select h1{font-size:30px;margin:4px auto 6px}.kids-character-grid{margin:6px 0;gap:8px}.kids-character-card img{height:min(27vh,175px);max-height:calc(100% - 50px)}.kids-character-card strong{font-size:16px}.kids-character-card span{font-size:10px}.kids-primary{min-height:44px;padding:7px 18px;font-size:16px}
+  .kids-story{grid-template-rows:48px 6px minmax(0,1fr);gap:5px}.kids-topbar>b{font-size:19px}.kids-player-dots img{width:36px;height:36px}.kids-caption-card{padding:9px 14px}.kids-caption-card h1,.kids-panel h1{font-size:30px;margin:4px auto 7px}.kids-caption-card p,.kids-short-copy{font-size:13px;margin:4px auto}.kid-choice{min-height:55px;padding:6px}.kid-choice-icon{font-size:22px}.kid-choice strong{font-size:13px}.kids-feedback{padding:7px 10px;margin:4px 0}.kids-feedback b{font-size:15px}.kids-feedback p{font-size:12px}
+  .kids-character-moment img{max-height:165px}.kids-speech{font-size:12px;padding:8px 10px}.kids-coop-panel,.kids-shield-panel{padding:9px 16px}.kids-coop-grid{margin:5px 0;gap:8px}.kids-coop-grid article{padding:7px}.kids-coop-icon{font-size:29px;margin:2px}.kids-coop-grid h2{font-size:14px;margin:3px 0 5px}.kids-coop-grid button{padding:6px;margin:3px 0;font-size:11px}.kids-big-symbol.shield{font-size:52px}.kids-safe-steps{gap:5px;margin:5px auto}.kids-safe-steps button{padding:6px 9px}.kids-safe-steps button>span{font-size:22px}.kids-safe-steps button>b{font-size:13px}
+  .kids-ending-card{padding:9px 14px}.kids-ending-card h1{font-size:30px}.kids-ending-card p{font-size:13px}.kids-stars{font-size:27px}.kids-badges{margin:6px 0}.kids-badges span{font-size:21px;padding:5px 3px}
+}
+
+@media(max-width:600px){
+  .kids-game{padding:7px}.kids-home{padding:0}.kids-title-stage{height:100dvh;min-height:0}.kids-title-overlay{bottom:10px;width:94%}.kids-title-overlay p{font-size:12px;margin-top:6px}.kids-mode-buttons{grid-template-columns:1fr!important;gap:6px}.kids-mode-buttons button{min-height:50px;font-size:17px}
+  .kids-character-select{padding:9px 7px;border-radius:18px}.kids-character-select h1{font-size:21px;margin:3px auto 5px}.kids-step-tag{font-size:9px;padding:4px 7px}.kids-character-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:5px 0 7px}.kids-character-card,.kids-character-card:last-child{grid-column:auto;max-width:none;width:auto;border-width:2px;border-radius:12px;padding:3px 2px 5px}.kids-character-card img{height:min(16vh,105px);min-height:46px;max-height:calc(100% - 36px)}.kids-character-card strong{font-size:12px}.kids-character-card span{font-size:8px}.kids-character-card i{right:3px;top:3px;width:18px;height:18px;font-size:10px}.kids-primary{min-height:42px;border-radius:14px;box-shadow:0 5px 0 #17479e;font-size:15px;padding:7px 13px}
+  .kids-story{grid-template-rows:44px 6px minmax(0,1fr);gap:4px;padding:0 7px 7px}.kids-topbar{height:100%;gap:5px}.kids-topbar>b{font-size:16px}.kids-player-dots img{width:31px;height:31px;border-width:2px}.kids-scene{grid-template-columns:1fr;grid-template-rows:minmax(0,42%) minmax(0,58%);gap:5px}.kids-art-card{height:100%;aspect-ratio:auto;border-radius:15px;border-width:2px}.kids-art-card img{object-fit:cover}.kids-caption-card{height:100%;border-radius:15px;border-width:2px;padding:7px 9px}.kids-caption-card h1,.kids-panel h1{font-size:20px;margin:3px auto 5px}.kids-caption-card p,.kids-short-copy{font-size:11px;line-height:1.2;margin:3px auto}.kids-choice-grid{gap:4px;margin:5px 0}.kids-choice-grid.compact,.kids-choice-grid.two{grid-template-columns:repeat(2,1fr)}.kids-choice-grid.three{grid-template-columns:repeat(3,1fr)}.kid-choice{min-height:48px;border-width:2px;border-radius:11px;box-shadow:0 3px 0 #e3edf8;padding:4px;gap:3px;flex-direction:column}.kid-choice-icon{font-size:17px}.kid-choice strong{font-size:10px;line-height:1.05}.kids-feedback{padding:5px 7px;border-width:1px;border-radius:10px;margin:3px 0}.kids-feedback b{font-size:11px}.kids-feedback p{font-size:9px;line-height:1.1;margin:2px 0 0}.kids-feedback button{font-size:10px;margin-top:2px}
+  .kids-centered-scene{grid-template-columns:1fr;grid-template-rows:minmax(0,24%) minmax(0,76%);align-items:stretch}.kids-big-symbol{font-size:55px;display:grid;place-items:center}.kids-character-moment{height:100%;align-items:center}.kids-character-moment img{max-height:110px;max-width:38%}.kids-speech{font-size:10px;padding:5px 7px;border-width:2px;border-radius:12px;max-width:190px}
+  .kids-coop-panel,.kids-shield-panel{padding:7px;border-radius:16px}.kids-coop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:4px 0}.kids-coop-grid article{padding:5px;border-width:2px;border-radius:12px}.kids-player-label{font-size:8px;padding:3px 5px}.kids-coop-icon{font-size:24px;margin:1px}.kids-coop-grid h2{font-size:11px;line-height:1.1;margin:2px 0 4px}.kids-coop-grid button{border-width:2px;border-radius:8px;padding:5px 2px;margin:3px 0;font-size:9px;line-height:1.1}.kids-coop-hint{font-size:9px;padding:4px;margin:2px 0}.kids-big-symbol.shield{font-size:44px}.kids-safe-steps{gap:4px;margin:4px auto}.kids-safe-steps button{grid-template-columns:28px 1fr 24px;border-width:2px;border-radius:11px;padding:4px 6px}.kids-safe-steps button>span{font-size:19px}.kids-safe-steps button>b{font-size:10px;line-height:1.1}.kids-safe-steps button>i{width:22px;height:22px;font-size:10px}
+  .kids-ending{grid-template-columns:1fr;grid-template-rows:minmax(0,28%) minmax(0,72%);gap:5px}.kids-ending>img{height:100%;max-height:100%}.kids-ending-card{height:100%;border-radius:15px;border-width:2px;padding:6px 8px}.kids-ending-card h1{font-size:21px;margin:3px 0}.kids-ending-card p{font-size:10px;line-height:1.15;margin:2px 0}.kids-stars{font-size:22px}.kids-badges{grid-template-columns:repeat(3,1fr);gap:3px;margin:4px 0}.kids-badges span{border-width:1px;border-radius:9px;padding:4px 2px;font-size:17px}.kids-badges b{font-size:7px;margin-top:2px}
+}
+
+@supports not (height:100dvh){.kids-game,.kids-home{height:100vh;max-height:100vh}.kids-title-stage{height:100vh}.kids-story{height:100vh;max-height:100vh}}

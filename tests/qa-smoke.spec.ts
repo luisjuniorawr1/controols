@@ -1,4 +1,36 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function expectSingleViewport(page: Page) {
+  const metrics = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    htmlWidth: document.documentElement.scrollWidth,
+    htmlHeight: document.documentElement.scrollHeight,
+    bodyWidth: document.body.scrollWidth,
+    bodyHeight: document.body.scrollHeight,
+  }));
+
+  expect(metrics.htmlWidth).toBeLessThanOrEqual(metrics.innerWidth + 1);
+  expect(metrics.bodyWidth).toBeLessThanOrEqual(metrics.innerWidth + 1);
+  expect(metrics.htmlHeight).toBeLessThanOrEqual(metrics.innerHeight + 1);
+  expect(metrics.bodyHeight).toBeLessThanOrEqual(metrics.innerHeight + 1);
+
+  const activeScreen = page.locator('main.kids-game > section:visible').first();
+  await expect(activeScreen).toBeVisible();
+  const screenBox = await activeScreen.boundingBox();
+  expect(screenBox).not.toBeNull();
+  expect(screenBox!.x).toBeGreaterThanOrEqual(-1);
+  expect(screenBox!.y).toBeGreaterThanOrEqual(-1);
+  expect(screenBox!.x + screenBox!.width).toBeLessThanOrEqual(metrics.innerWidth + 1);
+  expect(screenBox!.y + screenBox!.height).toBeLessThanOrEqual(metrics.innerHeight + 1);
+
+  const clippedButtons = await page.locator('main.kids-game button:visible').evaluateAll((buttons) => buttons.flatMap((button) => {
+    const rect = button.getBoundingClientRect();
+    const clipped = rect.left < -1 || rect.top < -1 || rect.right > window.innerWidth + 1 || rect.bottom > window.innerHeight + 1;
+    return clipped ? [button.textContent?.trim() || 'unnamed button'] : [];
+  }));
+  expect(clippedButtons).toEqual([]);
+}
 
 test('kids title screen is single-player only and keeps original-resolution artwork', async ({ page }) => {
   await page.goto('/pt/');
@@ -8,6 +40,7 @@ test('kids title screen is single-player only and keeps original-resolution artw
   await expect(page.getByRole('button', { name: /2 jogadores/i })).toHaveCount(0);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+  await expectSingleViewport(page);
 });
 
 test('solo flow uses full-resolution character and scene masters', async ({ page }) => {
@@ -29,7 +62,7 @@ test('solo flow uses full-resolution character and scene masters', async ({ page
   await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
 });
 
-test('mobile character selection always has exactly one active player', async ({ page }) => {
+test('mobile character selection always has exactly one active player and no page scroll', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
   await page.getByRole('button', { name: /jogar/i }).click();
@@ -42,4 +75,47 @@ test('mobile character selection always has exactly one active player', async ({
   await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
   await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
   await expect(page.getByRole('button', { name: /começar aventura/i })).toBeEnabled();
+  await expectSingleViewport(page);
+});
+
+test('the complete episode fits in one 1280x650 TV-like browser viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: /jogar/i }).click();
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: /começar aventura/i }).click();
+  await expectSingleViewport(page);
+
+  await page.getByRole('button', { name: /procurar pistas/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /link estranho/i }).click();
+  await page.getByRole('button', { name: /muita pressa/i }).click();
+  await page.getByRole('button', { name: /conferir pistas/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /próxima pista/i }).click();
+
+  await page.getByRole('button', { name: /^não$/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /o que você faz agora/i }).click();
+
+  await page.getByRole('button', { name: /abrir o app oficial/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /juntar as pistas/i }).click();
+
+  await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
+  await page.getByRole('button', { name: /um adulto de confiança/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /juntar as pistas/i }).click();
+
+  await page.getByRole('button', { name: /parar antes de clicar/i }).click();
+  await page.getByRole('button', { name: /abrir o app ou site oficial/i }).click();
+  await page.getByRole('button', { name: /pedir ajuda a um adulto de confiança/i }).click();
+  await expectSingleViewport(page);
+  await page.getByRole('button', { name: /missão cumprida/i }).click();
+
+  await expect(page.getByRole('heading', { name: /você protegeu luna/i })).toBeVisible();
+  await expectSingleViewport(page);
 });
