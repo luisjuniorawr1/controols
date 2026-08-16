@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
+    "qa:smoke": "playwright test tests/qa-smoke.spec.ts --project=chromium",
     "qa:e2e": "playwright test tests/qa-all-tools.spec.ts tests/qa-mp4-fixture.spec.ts --project=chromium --grep-invert mp4-to-webm"
   },
   "dependencies": {
@@ -37,10 +38,10 @@
     "@types/node": "^24.0.0",
     "@types/pako": "^2.0.4",
     "@types/papaparse": "^5.3.16",
-    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/turndown": "^5.0.5",
+    "turndown": "^7.2.1",
+    "yaml": "^2.8.1",
     "typescript": "^5.9.0"
   }
 }
