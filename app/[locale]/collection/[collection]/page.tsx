@@ -16,7 +16,7 @@ export async function generateMetadata({params}:{params:Promise<{locale:string;c
   const item=getCollection(collection);
   if(!item)return{};
   const url=`${base}/${locale}/collection/${collection}/`;
-  return{title:`${item.labels[locale]} | Controols`,description:item.descriptions[locale],alternates:{canonical:url,languages:Object.fromEntries(locales.map(l=>[l,`${base}/${l}/collection/${collection}/`]))}};
+  return{title:item.labels[locale],description:item.descriptions[locale],alternates:{canonical:url,languages:{...Object.fromEntries(locales.map(l=>[l,`${base}/${l}/collection/${collection}/`])),'x-default':`${base}/en/collection/${collection}/`}},openGraph:{title:`${item.labels[locale]} | Controols`,description:item.descriptions[locale],url,siteName:'Controols',type:'website'}};
 }
 
 export default async function CollectionPage({params}:{params:Promise<{locale:string;collection:string}>}){

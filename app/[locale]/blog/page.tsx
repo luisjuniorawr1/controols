@@ -5,6 +5,7 @@ import Header from '@/src/components/Header';
 import { blogLocaleMap, blogPath, blogPosts, blogUi } from '@/src/data/blog';
 import { locales, tools } from '@/src/data/extendedCatalog';
 import { isLocale } from '@/src/i18n';
+import { safeContentDate } from '@/src/seoContent';
 
 const base = 'https://controols.com';
 
@@ -85,12 +86,13 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
         <div className="blog-grid">
           {blogPosts.map(post => {
             const article = post.translations[locale];
+            const publishedAt=safeContentDate(post.publishedAt);
             return <article className="blog-card" key={post.id}>
               <Link className="blog-card-cover" href={blogPath(post, locale)} aria-label={article.title}>
                 <img src={post.cover} alt={article.alt} width="1200" height="630" loading="lazy"/>
               </Link>
               <div className="blog-card-body">
-                <div className="blog-card-meta"><span>{article.category}</span><time dateTime={post.publishedAt}>{dateFormat.format(new Date(`${post.publishedAt}T12:00:00Z`))}</time></div>
+                <div className="blog-card-meta"><span>{article.category}</span><time dateTime={publishedAt}>{dateFormat.format(new Date(`${publishedAt}T12:00:00Z`))}</time></div>
                 <h3><Link href={blogPath(post, locale)}>{article.title}</Link></h3>
                 <p>{article.description}</p>
                 <Link className="blog-read-link" href={blogPath(post, locale)}>{ui.readArticle}<span>→</span></Link>
