@@ -7,6 +7,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: [
+        '/*/tools/',
+        '/*/category/',
+        '/*/collection/',
+        '/*/blog/',
+      ],
     },
     sitemap: 'https://controols.com/sitemap.xml',
     host: 'https://controols.com',
