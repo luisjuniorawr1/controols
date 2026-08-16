@@ -32,7 +32,7 @@ jobs:
           const assertion = `${input}.${sig}`;
           const body = new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion}).toString();
           const request = (options, body) => new Promise((resolve,reject) => {
-            const req=https.request(options,res=>{let chunks=[];res.on('data',d=>chunks.push(d));res.on('end',()=>resolve({status:res.statusCode,body:Buffer.concat(chunks)}));});
+            const req=https.request(options,res=>{let chunks=[];res.on('data',d=>chunks.push(d));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks)}));});
             req.on('error',reject); if(body) req.write(body); req.end();
           });
           (async()=>{
@@ -40,10 +40,14 @@ jobs:
             if(tokenRes.status<200||tokenRes.status>=300) throw new Error(`token ${tokenRes.status}: ${tokenRes.body}`);
             const token=JSON.parse(tokenRes.body.toString()).access_token;
             const fileId=process.env.DRIVE_FILE_ID;
-            const dl=await request({hostname:'www.googleapis.com',path:`/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`,method:'GET',headers:{Authorization:`Bearer ${token}`}});
-            if(dl.status<200||dl.status>=300) throw new Error(`download ${dl.status}: ${dl.body}`);
+            let dl=await request({hostname:'drive.usercontent.google.com',path:`/download?id=${encodeURIComponent(fileId)}&export=download&confirm=t`,method:'GET',headers:{Authorization:`Bearer ${token}`,'User-Agent':'Mozilla/5.0'}});
+            if(dl.status>=300&&dl.status<400&&dl.headers.location){
+              const u=new URL(dl.headers.location);
+              dl=await request({hostname:u.hostname,path:u.pathname+u.search,method:'GET',headers:{Authorization:`Bearer ${token}`,'User-Agent':'Mozilla/5.0'}});
+            }
+            if(dl.status<200||dl.status>=300) throw new Error(`download ${dl.status}: ${dl.body.toString().slice(0,1000)}`);
             fs.writeFileSync('/tmp/controols-assets.zip',dl.body);
-            console.log(`Downloaded ${dl.body.length} bytes`);
+            console.log(`Downloaded ${dl.body.length} bytes; type=${dl.headers['content-type']||''}`);
           })().catch(err=>{console.error(err);process.exit(1)});
           NODE
           unzip -t /tmp/controols-assets.zip >/dev/null
@@ -57,9 +61,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add public/game/assets
-          if git diff --cached --quiet; then
-            echo 'Original assets already present.'
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo 'Original assets already present.'; exit 0; fi
           git commit -m 'Add original resolution CONTROOLS assets'
           git push
