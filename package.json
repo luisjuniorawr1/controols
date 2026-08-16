@@ -38,8 +38,10 @@
     "@types/node": "^24.0.0",
     "@types/pako": "^2.0.4",
     "@types/papaparse": "^5.3.16",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/turndown": "^5.0.5",
     "typescript": "^5.9.0"
   }
 }
