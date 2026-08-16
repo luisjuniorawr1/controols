@@ -75,7 +75,7 @@ export default function KidsStoryPrototype() {
           <div className="kids-mode-buttons" style={{ gridTemplateColumns: 'minmax(260px, 520px)', justifyContent: 'center' }}>
             <button type="button" onClick={begin}><span>▶️</span><b>Jogar</b></button>
           </div>
-          <p>Entre na aventura e ajude a turma a tomar boas decisões na internet.</p>
+          <p>Ajude a turma e vire um Guardião Digital!</p>
         </div>
       </section>
     </main>;
@@ -84,8 +84,8 @@ export default function KidsStoryPrototype() {
   if (screen === 'choose') {
     return <main className="kids-game">
       <section className="kids-panel kids-character-select">
-        <div className="kids-step-tag">ESCOLHA SEU PERSONAGEM</div>
-        <h1>Quem vai representar você na aventura?</h1>
+        <div className="kids-step-tag">ESCOLHA SEU HERÓI</div>
+        <h1>Quem vai com você?</h1>
         <div className="kids-character-grid" data-testid="character-grid">
           {kids.map(kid => {
             const selected = player === kid.id;
@@ -96,7 +96,7 @@ export default function KidsStoryPrototype() {
             </button>;
           })}
         </div>
-        <button className="kids-primary" type="button" onClick={() => setScreen('intro')}>Começar aventura →</button>
+        <button className="kids-primary" type="button" onClick={() => setScreen('intro')}>Começar →</button>
       </section>
     </main>;
   }
@@ -115,9 +115,9 @@ export default function KidsStoryPrototype() {
       </div>
       <div className="kids-caption-card">
         <span className="kids-step-tag">MISSÃO 1</span>
-        <h1>Algo está estranho nessa mensagem…</h1>
-        <p>Ajude Luna antes que ela toque no botão.</p>
-        <button className="kids-primary" type="button" onClick={() => setScreen('clues')}>Procurar pistas 🔎</button>
+        <h1>Mensagem estranha!</h1>
+        <p>Ajude Luna antes do clique.</p>
+        <button className="kids-primary" type="button" onClick={() => setScreen('clues')}>Ver pistas 🔎</button>
       </div>
     </section>}
 
@@ -125,14 +125,14 @@ export default function KidsStoryPrototype() {
       <div className="kids-art-card"><img src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" /></div>
       <div className="kids-caption-card">
         <span className="kids-step-tag">DESAFIO VISUAL</span>
-        <h1>Escolha 2 sinais de alerta</h1>
+        <h1>Ache 2 alertas!</h1>
         <div className="kids-choice-grid compact">
           {redFlags.map(flag => <ChoiceCard key={flag.id} icon={flag.icon} title={flag.label} selected={flags.includes(flag.id)} onClick={() => toggleFlag(flag.id)} />)}
         </div>
-        {!flagsChecked && <button className="kids-primary" type="button" disabled={flags.length !== 2} onClick={() => setFlagsChecked(true)}>Conferir pistas</button>}
+        {!flagsChecked && <button className="kids-primary" type="button" disabled={flags.length !== 2} onClick={() => setFlagsChecked(true)}>Conferir</button>}
         {flagsChecked && <div className={`kids-feedback ${clueSuccess ? 'good' : 'hint'}`}>
-          <b>{clueSuccess ? 'Boa investigação! ⭐' : 'Quase! Olhe de novo 👀'}</b>
-          <p>{clueSuccess ? 'Pressa, endereço estranho e remetente desconhecido são ótimos sinais para parar e conferir.' : 'O cadeado protege a conexão, mas não prova que a pessoa ou o site são verdadeiros.'}</p>
+          <b>{clueSuccess ? 'Você achou! ⭐' : 'Olhe de novo! 👀'}</b>
+          <p>{clueSuccess ? 'Pressa + endereço estranho = pare e confira.' : 'Cadeado sozinho não prova que o site é verdadeiro.'}</p>
           {!clueSuccess && <button type="button" onClick={() => { setFlags([]); setFlagsChecked(false); }}>Tentar outra vez</button>}
         </div>}
         {flagsChecked && clueSuccess && <button className="kids-primary" type="button" onClick={() => setScreen('https')}>Próxima pista →</button>}
@@ -140,72 +140,81 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'https' && <section className="kids-scene kids-centered-scene">
-      <div className="kids-big-symbol" aria-hidden="true">🔒</div>
+      <div className="kids-character-lesson">
+        <img src="/game/assets/characters/theo.png" alt="Theo mostra uma pista sobre o cadeado" />
+        <div className="kids-big-symbol" aria-hidden="true">🔒</div>
+        <small>PISTA DO THEO</small>
+      </div>
       <div className="kids-caption-card wide">
-        <span className="kids-step-tag">PISTA DO THEO</span>
-        <h1>O cadeado quer dizer que o site é verdadeiro?</h1>
+        <span className="kids-step-tag">PEGADINHA DIGITAL</span>
+        <h1>Cadeado = site verdadeiro?</h1>
         <div className="kids-choice-grid two">
           <ChoiceCard icon="✅" title="Sim" selected={httpsAnswer === 'yes'} onClick={() => setHttpsAnswer('yes')} />
           <ChoiceCard icon="🧐" title="Não" selected={httpsAnswer === 'no'} onClick={() => setHttpsAnswer('no')} />
         </div>
         {httpsAnswer && <div className={`kids-feedback ${httpsAnswer === 'no' ? 'good' : 'hint'}`}>
-          <b>{httpsAnswer === 'no' ? 'Isso! 🎉' : 'Tem uma pegadinha aqui!'}</b>
-          <p>Um site falso também pode ter cadeado. O melhor é entrar pelo aplicativo ou endereço oficial.</p>
+          <b>{httpsAnswer === 'no' ? 'Isso! 🎉' : 'Pegadinha!'}</b>
+          <p>Site falso também pode ter cadeado.</p>
         </div>}
-        {httpsAnswer && <button className="kids-primary" type="button" onClick={() => setScreen('action')}>O que você faz agora?</button>}
+        {httpsAnswer && <button className="kids-primary" type="button" onClick={() => setScreen('action')}>Continuar →</button>}
       </div>
     </section>}
 
     {screen === 'action' && <section className="kids-scene kids-centered-scene">
       <div className="kids-character-moment">
         <img src="/game/assets/characters/nina.png" alt="Nina" />
-        <div className="kids-speech"><b>Nina:</b><span>“Vamos escolher o caminho mais seguro!”</span></div>
+        <div className="kids-speech"><b>Nina:</b><span>“Vamos pelo caminho seguro!”</span></div>
       </div>
       <div className="kids-caption-card wide">
-        <span className="kids-step-tag">DECISÃO</span>
-        <h1>Como você ajuda Luna?</h1>
+        <span className="kids-step-tag">SUA DECISÃO</span>
+        <h1>O que você faz?</h1>
         <div className="kids-choice-grid three">
-          <ChoiceCard icon="👆" title="Tocar no link" selected={action === 'click'} onClick={() => setAction('click')} />
-          <ChoiceCard icon="📱" title="Abrir o app oficial" selected={action === 'official'} onClick={() => setAction('official')} />
+          <ChoiceCard icon="👆" title="Clicar no link" selected={action === 'click'} onClick={() => setAction('click')} />
+          <ChoiceCard icon="📱" title="Abrir o app" selected={action === 'official'} onClick={() => setAction('official')} />
           <ChoiceCard icon="🤝" title="Pedir ajuda" selected={action === 'adult'} onClick={() => setAction('adult')} />
         </div>
         {action && <div className={`kids-feedback ${actionSafe ? 'good' : 'hint'}`}>
-          <b>{actionSafe ? 'Boa escolha! 🛡️' : 'Melhor não clicar ainda.'}</b>
-          <p>{actionSafe ? 'Quando uma mensagem assusta ou apressa, vale sair dela e conferir por um caminho conhecido.' : 'Se a mensagem for falsa, o botão pode levar para uma armadilha. Vamos conferir por outro caminho.'}</p>
+          <b>{actionSafe ? 'Boa escolha! 🛡️' : 'Pare! ✋'}</b>
+          <p>{actionSafe ? 'Confira no app oficial ou peça ajuda.' : 'Não clique. Confira por outro caminho.'}</p>
         </div>}
-        {action && actionSafe && <button className="kids-primary" type="button" onClick={() => setScreen('team')}>Juntar as pistas →</button>}
+        {action && actionSafe && <button className="kids-primary" type="button" onClick={() => setScreen('team')}>Juntar pistas →</button>}
       </div>
     </section>}
 
     {screen === 'team' && <section className="kids-panel kids-coop-panel">
+      <div className="kids-team-helpers" aria-hidden="true">
+        <img src="/game/assets/characters/maya.png" alt="" />
+        <img src="/game/assets/characters/caio.png" alt="" />
+      </div>
       <span className="kids-step-tag">MISSÃO DA TURMA</span>
-      <h1>Resolva as duas partes</h1>
-      <p className="kids-short-copy">Junte as duas pistas para confirmar o caminho seguro.</p>
+      <h1>Junte as 2 pistas!</h1>
+      <p className="kids-short-copy">Descubra o site certo e quem pode ajudar.</p>
       <div className="kids-coop-grid">
         <article>
-          <div className="kids-player-label">PISTA A</div>
-          <div className="kids-coop-icon">🌐</div>
-          <h2>Qual parece ser o endereço oficial?</h2>
+          <div className="kids-player-label">PISTA A 🌐</div>
+          <h2>Qual é o site oficial?</h2>
           <button className={domain === 'real' ? 'is-selected' : ''} type="button" onClick={() => setDomain('real')}>clubeaurora.com.br</button>
           <button className={domain === 'fake' ? 'is-selected wrong' : ''} type="button" onClick={() => setDomain('fake')}>aurora-acesso-seguro.net</button>
         </article>
         <article>
-          <div className="kids-player-label">PISTA B</div>
-          <div className="kids-coop-icon">💬</div>
-          <h2>Quem pode ajudar a conferir?</h2>
+          <div className="kids-player-label">PISTA B 💬</div>
+          <h2>Quem pode ajudar?</h2>
           <button className={helper === 'adult' ? 'is-selected' : ''} type="button" onClick={() => setHelper('adult')}>Um adulto de confiança</button>
           <button className={helper === 'sender' ? 'is-selected wrong' : ''} type="button" onClick={() => setHelper('sender')}>O número desconhecido</button>
         </article>
       </div>
-      {(domain || helper) && !teamDone && <p className="kids-coop-hint">💡 Procure o caminho conhecido e uma pessoa em quem você já confia.</p>}
-      <button className="kids-primary" type="button" disabled={!teamDone} onClick={() => setScreen('shield')}>Juntar as pistas ✨</button>
+      {(domain || helper) && !teamDone && <p className="kids-coop-hint">💡 Use o caminho conhecido e alguém de confiança.</p>}
+      <button className="kids-primary" type="button" disabled={!teamDone} onClick={() => setScreen('shield')}>Montar escudo ✨</button>
     </section>}
 
     {screen === 'shield' && <section className="kids-panel kids-shield-panel">
       <div className="kids-big-symbol shield" aria-hidden="true">🛡️</div>
+      <div className="kids-shield-helpers" aria-hidden="true">
+        <img src="/game/assets/characters/luna.png" alt="" />
+      </div>
       <span className="kids-step-tag">ESCUDO CONTROOLS</span>
-      <h1>Monte o escudo da internet segura</h1>
-      <p className="kids-short-copy">Toque nos 3 passos que você aprendeu.</p>
+      <h1>Monte seu escudo!</h1>
+      <p className="kids-short-copy">Toque nos 3 superpoderes.</p>
       <div className="kids-safe-steps">
         {safeSteps.map(step => {
           const selected = shieldSteps.includes(step.id);
@@ -222,9 +231,9 @@ export default function KidsStoryPrototype() {
       <div className="kids-ending-card">
         <div className="kids-stars" aria-label="3 estrelas">★ ★ ★</div>
         <span className="kids-step-tag">MISSÃO CUMPRIDA</span>
-        <h1>Você protegeu Luna!</h1>
-        <p>Agora a turma sabe: <b>parar, conferir e pedir ajuda</b> é um superpoder digital.</p>
-        <div className="kids-badges"><span>🔎<b>Olho de Detetive</b></span><span>🛡️<b>Escudo Digital</b></span><span>🤝<b>Time Unido</b></span></div>
+        <h1>Você conseguiu!</h1>
+        <p><b>Parar. Conferir. Pedir ajuda.</b><br />Esse é o superpoder digital!</p>
+        <div className="kids-badges"><span>🔎<b>Olho atento</b></span><span>🛡️<b>Escudo digital</b></span><span>⭐<b>Guardião</b></span></div>
         <button className="kids-primary" type="button" onClick={restart}>Jogar de novo</button>
       </div>
     </section>}
