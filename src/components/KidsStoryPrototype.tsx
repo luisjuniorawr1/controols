@@ -173,7 +173,7 @@ export default function KidsStoryPrototype() {
 
     {screen === 'action' && <section className="kids-scene kids-centered-scene">
       <div className="kids-character-moment">
-        <img src="/game/assets/characters/nina.webp" alt="Nina" />
+        <img src="/game/assets/characters/nina.png" alt="Nina" />
         <div className="kids-speech"><b>Nina:</b><span>“Vamos escolher o caminho mais seguro!”</span></div>
       </div>
       <div className="kids-caption-card wide">
