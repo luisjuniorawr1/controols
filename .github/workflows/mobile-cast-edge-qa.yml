@@ -1,0 +1,40 @@
+name: Mobile Cast Edge QA
+on:
+  push:
+    branches: [agent/home-mobile-cast-edge]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify cast stays inside mobile viewport
+        run: |
+          python3 -m http.server 4173 --directory out >/tmp/http.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep .5; done
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            for (const width of [390, 430, 500, 760]) {
+              const page = await browser.newPage({ viewport: { width, height: 844 } });
+              await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+              const kids = await page.locator('.marketing-lineup-kid').evaluateAll(imgs => imgs.map(img => img.getBoundingClientRect().toJSON()));
+              if (kids.length !== 5) throw new Error(`Expected 5 kids at ${width}`);
+              for (const rect of kids) {
+                if (rect.x < -1 || rect.x + rect.width > width + 1) throw new Error(`Clipped at ${width}: ${JSON.stringify(rect)}`);
+              }
+              await page.close();
+            }
+            await browser.close();
+          })();
+          NODE
