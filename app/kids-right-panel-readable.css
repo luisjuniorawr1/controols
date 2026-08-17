@@ -2,16 +2,16 @@
    Desktop/TV scenes use the entire right edge as one calm, readable interaction area. */
 @media (min-width: 761px) {
   .kids3-scene:after {
-    background: linear-gradient(90deg, transparent 0 57%, rgba(3,16,42,.12) 66%, rgba(3,16,42,.42) 100%);
+    background: linear-gradient(90deg, transparent 0 55%, rgba(3,16,42,.12) 64%, rgba(3,16,42,.44) 100%);
   }
 
   .kids3-panel {
     right: 0 !important;
     top: 0 !important;
     bottom: 0 !important;
-    width: clamp(430px, 35vw, 560px) !important;
+    width: clamp(450px, 38vw, 600px) !important;
     min-height: 100% !important;
-    padding: clamp(22px, 3.2vh, 34px) clamp(22px, 2.5vw, 36px) !important;
+    padding: clamp(20px, 3vh, 32px) clamp(24px, 2.7vw, 40px) !important;
     border-radius: 0 !important;
     background: linear-gradient(155deg, rgba(7,27,62,.95), rgba(14,43,91,.94)) !important;
     box-shadow: -18px 0 42px rgba(0,0,0,.22), inset 1px 0 0 rgba(255,255,255,.10) !important;
@@ -19,122 +19,127 @@
   }
 
   .kids3-panel-meta {
-    min-height: 30px;
+    min-height: 32px;
     gap: 12px;
   }
   .kids3-panel-meta > span {
-    padding: 7px 13px;
-    font-size: clamp(12px, 1.75vh, 15px);
+    padding: 8px 14px;
+    font-size: clamp(14px, 1.95vh, 17px);
   }
   .kids3-panel-meta > small {
-    font-size: clamp(12px, 1.75vh, 15px);
+    font-size: clamp(14px, 1.95vh, 17px);
   }
   .kids3-progress {
     height: 10px;
-    margin: 11px 0 10px;
+    margin: 10px 0 9px;
   }
 
   .kids3-panel-body,
   .kids3-panel.is-compact .kids3-panel-body {
     justify-content: center;
-    gap: clamp(11px, 1.7vh, 17px);
+    gap: clamp(10px, 1.55vh, 15px);
   }
 
   .kids3-panel h1 {
-    font-size: clamp(38px, 5.8vh, 56px);
-    line-height: .96;
-    letter-spacing: -.025em;
+    font-size: clamp(42px, 6.1vh, 60px);
+    line-height: .95;
+    letter-spacing: -.03em;
   }
   .kids3-panel.is-compact h1 {
-    font-size: clamp(34px, 5.1vh, 50px);
+    font-size: clamp(38px, 5.45vh, 54px);
   }
   .kids3-panel h2 {
-    font-size: clamp(18px, 2.7vh, 24px);
-    line-height: 1.08;
+    font-size: clamp(20px, 2.95vh, 26px);
+    line-height: 1.06;
   }
   .kids3-panel p {
-    max-width: 34ch;
-    font-size: clamp(17px, 2.45vh, 22px);
-    line-height: 1.18;
+    max-width: 32ch;
+    font-size: clamp(19px, 2.75vh, 24px);
+    line-height: 1.17;
   }
   .kids3-tag {
-    padding: 7px 14px;
-    font-size: clamp(12px, 1.8vh, 15px);
+    padding: 8px 15px;
+    font-size: clamp(14px, 1.95vh, 17px);
   }
   .kids3-story-chip,
   .kids3-tip {
-    padding: clamp(11px, 1.6vh, 15px);
+    padding: clamp(11px, 1.55vh, 14px);
     border-radius: 18px;
-    font-size: clamp(16px, 2.25vh, 20px);
+    font-size: clamp(18px, 2.5vh, 22px);
     line-height: 1.12;
   }
 
+  .kids3-timer small,
+  .kids3-timer span {
+    font-size: clamp(11px, 1.55vh, 14px);
+  }
+
   .kids3-choice-grid {
-    gap: clamp(9px, 1.35vh, 13px);
+    gap: clamp(8px, 1.2vh, 12px);
   }
   .kids3-choice {
-    min-height: clamp(68px, 9.4vh, 84px);
-    padding: clamp(10px, 1.4vh, 14px) clamp(15px, 1.5vw, 22px);
+    min-height: clamp(68px, 9.2vh, 84px);
+    padding: clamp(10px, 1.35vh, 13px) clamp(16px, 1.6vw, 24px);
     border-radius: 19px;
     gap: 13px;
   }
   .kids3-choice > span {
-    font-size: clamp(27px, 4vh, 36px);
+    font-size: clamp(29px, 4.15vh, 38px);
   }
   .kids3-choice > b {
-    font-size: clamp(18px, 2.65vh, 23px);
-    line-height: 1.12;
+    font-size: clamp(20px, 2.9vh, 25px);
+    line-height: 1.1;
   }
   .kids3-choice-grid.tiny {
-    gap: 8px;
+    gap: 7px;
   }
   .kids3-choice-grid.tiny .kids3-choice {
-    min-height: clamp(52px, 7vh, 64px);
+    min-height: clamp(52px, 6.8vh, 64px);
     padding: 8px 14px;
   }
   .kids3-choice-grid.tiny .kids3-choice > b {
-    font-size: clamp(16px, 2.25vh, 20px);
+    font-size: clamp(18px, 2.5vh, 22px);
   }
   .password-options .kids3-choice > b {
-    font-size: clamp(19px, 2.75vh, 24px);
+    font-size: clamp(21px, 3vh, 26px);
   }
 
   .kids3-counter > b {
-    font-size: clamp(25px, 3.7vh, 32px);
+    font-size: clamp(27px, 3.9vh, 34px);
   }
   .kids3-counter span {
-    font-size: clamp(15px, 2.15vh, 19px);
+    font-size: clamp(17px, 2.35vh, 20px);
   }
 
   .kids3-primary,
   .kids3-secondary {
     width: 100%;
-    min-height: clamp(62px, 8.5vh, 74px);
+    min-height: clamp(62px, 8.4vh, 74px);
     padding: 11px 20px;
     border-radius: 19px;
-    font-size: clamp(18px, 2.6vh, 22px);
-    line-height: 1.08;
+    font-size: clamp(20px, 2.85vh, 24px);
+    line-height: 1.06;
   }
   .kids3-secondary {
     min-height: clamp(52px, 7vh, 62px);
   }
 
   .kids3-feedback {
-    padding: clamp(11px, 1.55vh, 15px) clamp(14px, 1.5vw, 20px);
+    padding: clamp(10px, 1.45vh, 14px) clamp(14px, 1.5vw, 20px);
     border-radius: 18px;
   }
   .kids3-feedback b {
-    font-size: clamp(17px, 2.45vh, 21px);
+    font-size: clamp(19px, 2.7vh, 23px);
     line-height: 1.08;
   }
   .kids3-feedback p {
     margin-top: 5px !important;
-    font-size: clamp(14px, 2vh, 18px) !important;
-    line-height: 1.16 !important;
+    font-size: clamp(16px, 2.25vh, 20px) !important;
+    line-height: 1.15 !important;
   }
   .kids3-feedback button {
     padding: 9px 14px;
-    font-size: 15px;
+    font-size: 17px;
   }
 
   .kids3-badges {
@@ -142,51 +147,54 @@
   }
   .kids3-badges span {
     padding: 12px 8px;
-    font-size: clamp(24px, 3.6vh, 32px);
+    font-size: clamp(25px, 3.7vh, 34px);
   }
   .kids3-badges b {
-    font-size: clamp(12px, 1.8vh, 15px);
+    font-size: clamp(14px, 1.95vh, 17px);
   }
 }
 
-/* 1280x650 remains a supported TV viewport: keep text large while guaranteeing one-screen fit. */
+/* 1280x650 remains a supported TV viewport: keep everything easy to read from a distance. */
 @media (min-width: 761px) and (max-height: 700px) {
   .kids3-panel {
-    width: clamp(430px, 36vw, 520px) !important;
-    padding: 15px 22px !important;
+    width: clamp(470px, 39vw, 540px) !important;
+    padding: 13px 24px !important;
   }
-  .kids3-panel-meta { min-height: 24px; }
+  .kids3-panel-meta { min-height: 26px; }
   .kids3-panel-meta > span,
-  .kids3-panel-meta > small { font-size: 11px; }
-  .kids3-progress { height: 8px; margin: 7px 0 6px; }
+  .kids3-panel-meta > small { font-size: 13px; }
+  .kids3-progress { height: 8px; margin: 6px 0 5px; }
   .kids3-panel-body,
-  .kids3-panel.is-compact .kids3-panel-body { gap: 7px; }
-  .kids3-panel h1 { font-size: 36px; }
-  .kids3-panel.is-compact h1 { font-size: 33px; }
-  .kids3-panel h2 { font-size: 16px; }
-  .kids3-panel p { font-size: 15px; }
-  .kids3-tag { padding: 5px 11px; font-size: 11px; }
+  .kids3-panel.is-compact .kids3-panel-body { gap: 6px; }
+  .kids3-panel h1 { font-size: 40px; }
+  .kids3-panel.is-compact h1 { font-size: 37px; }
+  .kids3-panel h2 { font-size: 18px; }
+  .kids3-panel p { font-size: 17px; line-height: 1.14; }
+  .kids3-tag { padding: 6px 12px; font-size: 13px; }
   .kids3-story-chip,
-  .kids3-tip { padding: 8px 10px; font-size: 14px; }
-  .kids3-choice-grid { gap: 6px; }
+  .kids3-tip { padding: 8px 11px; font-size: 16px; }
+  .kids3-timer small,
+  .kids3-timer span { font-size: 11px; }
+  .kids3-choice-grid { gap: 5px; }
   .kids3-choice {
-    min-height: 56px;
-    padding: 7px 12px;
+    min-height: 55px;
+    padding: 7px 13px;
     border-radius: 15px;
   }
-  .kids3-choice > span { font-size: 23px; }
-  .kids3-choice > b { font-size: 17px; }
-  .password-options .kids3-choice > b { font-size: 18px; }
-  .kids3-choice-grid.tiny .kids3-choice { min-height: 45px; padding: 5px 10px; }
-  .kids3-choice-grid.tiny .kids3-choice > b { font-size: 15px; }
+  .kids3-choice > span { font-size: 25px; }
+  .kids3-choice > b { font-size: 19px; line-height: 1.05; }
+  .password-options .kids3-choice > b { font-size: 20px; }
+  .kids3-choice-grid.tiny .kids3-choice { min-height: 44px; padding: 5px 10px; }
+  .kids3-choice-grid.tiny .kids3-choice > b { font-size: 17px; }
   .kids3-primary,
-  .kids3-secondary { min-height: 50px; font-size: 16px; padding: 7px 13px; }
-  .kids3-secondary { min-height: 42px; }
-  .kids3-feedback { padding: 8px 11px; }
-  .kids3-feedback b { font-size: 16px; }
-  .kids3-feedback p { font-size: 14px !important; }
-  .kids3-counter > b { font-size: 23px; }
-  .kids3-counter span { font-size: 14px; }
-  .kids3-badges span { padding: 7px 4px; font-size: 22px; }
-  .kids3-badges b { font-size: 10px; }
+  .kids3-secondary { min-height: 49px; font-size: 18px; padding: 7px 13px; }
+  .kids3-secondary { min-height: 41px; }
+  .kids3-feedback { padding: 7px 11px; }
+  .kids3-feedback b { font-size: 18px; }
+  .kids3-feedback p { font-size: 16px !important; }
+  .kids3-feedback button { font-size: 15px; padding: 7px 12px; }
+  .kids3-counter > b { font-size: 25px; }
+  .kids3-counter span { font-size: 15px; }
+  .kids3-badges span { padding: 7px 4px; font-size: 23px; }
+  .kids3-badges b { font-size: 12px; }
 }
