@@ -54,11 +54,16 @@ export default function HomePage() {
         <div className="marketing-cast-stage" aria-label="Turma do CONTROOLS">
           <div className="marketing-orbit orbit-one" />
           <div className="marketing-orbit orbit-two" />
-          <img
-            className="marketing-hero-lineup"
-            src="/game/assets/reference/character-lineup.png"
-            alt="Luna, Theo, Maya, Caio e Nina, a turma do CONTROOLS"
-          />
+          <div className="marketing-hero-lineup-row">
+            {characters.map(character => (
+              <img
+                key={character.id}
+                className={`marketing-lineup-kid lineup-${character.id}`}
+                src={`/game/assets/characters/${character.id}.png`}
+                alt={character.name}
+              />
+            ))}
+          </div>
           <span className="marketing-stage-badge badge-one">DESCOBRIR</span>
           <span className="marketing-stage-badge badge-two">JOGAR</span>
           <span className="marketing-stage-badge badge-three">APRENDER</span>
