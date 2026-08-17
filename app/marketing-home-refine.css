@@ -193,14 +193,17 @@
 
 @media(max-width:760px){
   .marketing-hero-lineup-row{
-    inset:72px -8% 0;
+    inset:72px 0 0;
   }
   .marketing-lineup-kid{
     bottom:24px;
-    height:245px;
+    height:215px;
   }
-  .lineup-maya{height:260px;}
-  .lineup-nina{height:235px;}
+  .lineup-luna{left:14%;}
+  .lineup-theo{left:32%;}
+  .lineup-maya{left:50%;height:228px;}
+  .lineup-caio{left:68%;}
+  .lineup-nina{left:86%;height:205px;}
   .marketing-demo{
     padding-top:56px;
   }
@@ -225,14 +228,17 @@
 
 @media(max-width:430px){
   .marketing-hero-lineup-row{
-    inset:64px -10% 0;
+    inset:64px 0 0;
   }
   .marketing-lineup-kid{
     bottom:26px;
-    height:218px;
+    height:190px;
   }
-  .lineup-maya{height:230px;}
-  .lineup-nina{height:208px;}
+  .lineup-luna{left:14%;}
+  .lineup-theo{left:32%;}
+  .lineup-maya{left:50%;height:202px;}
+  .lineup-caio{left:68%;}
+  .lineup-nina{left:86%;height:182px;}
   .marketing-demo-copy h3{
     font-size:32px;
   }
