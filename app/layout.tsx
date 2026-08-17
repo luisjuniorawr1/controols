@@ -11,6 +11,7 @@ import './kids-scenes-v2.css';
 import './kids-scenes-v2-fixes.css';
 import './kids-game-v3.css';
 import './kids-right-panel-readable.css';
+import './library-card-right-safe-zone.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
