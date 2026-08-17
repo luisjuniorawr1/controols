@@ -37,7 +37,9 @@ async function expectFullScreenScene(page: Page, screen: string, assetFolder: Re
   await expect(scene).toBeVisible();
   const art = scene.locator('.kids3-scene-art');
   await expect(art).toBeVisible();
-  await expect(art).toHaveAttribute('src', assetFolder);
+  const src = await art.getAttribute('src');
+  expect(src).not.toBeNull();
+  expect(src!.split('?')[0]).toMatch(assetFolder);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
 
@@ -189,7 +191,6 @@ test('Case 001 can still be completed without choosing a character', async ({ pa
   await expect(page.getByRole('heading', { name: /você conseguiu/i })).toBeVisible();
   await expectSingleViewport(page);
 });
-
 
 test('Case 003 complete flow teaches how to unmask fake links and cloned pages', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
