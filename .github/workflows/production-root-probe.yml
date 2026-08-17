@@ -1,0 +1,23 @@
+name: Production Root Probe
+
+on:
+  push:
+    branches: [agent/fix-root-redirect]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe production root
+        run: |
+          set -x
+          curl -sS -D /tmp/root.headers -o /tmp/root.body https://controols.com/
+          cat /tmp/root.headers
+          echo '--- BODY SIGNALS ---'
+          grep -o -E 'CONTROOLS — Um universo de jogos e aventuras|window\.location\.replace\([^)]*\)|/pt/' /tmp/root.body | head -20 || true
+          echo '--- FOLLOW REDIRECTS ---'
+          curl -sS -L -o /dev/null -w 'final_url=%{url_effective}\nstatus=%{http_code}\nredirects=%{num_redirects}\n' https://controols.com/
