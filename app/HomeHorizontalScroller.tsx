@@ -60,6 +60,7 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
     if ((event.target as HTMLElement).closest('a,button,input,textarea,select')) return;
     const track = trackRef.current;
     if (!track) return;
+    event.preventDefault();
     dragRef.current = { active: true, startX: event.clientX, startScroll: track.scrollLeft };
     track.setPointerCapture(event.pointerId);
     track.dataset.dragging = 'true';
@@ -68,6 +69,7 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const track = trackRef.current;
     if (!track || !dragRef.current.active) return;
+    event.preventDefault();
     track.scrollLeft = dragRef.current.startScroll - (event.clientX - dragRef.current.startX);
   };
 
@@ -107,6 +109,7 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
         className="marketing-horizontal-track"
         tabIndex={0}
         aria-label="Página inicial do CONTROOLS. Navegue horizontalmente entre as seções."
+        onDragStart={event => event.preventDefault()}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
