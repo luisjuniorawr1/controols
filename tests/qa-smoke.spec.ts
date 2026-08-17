@@ -68,34 +68,35 @@ async function expectFullScreenScene(page: Page, screen: string, assetFolder: Re
   await expectSingleViewport(page);
 }
 
-async function startCase(page: Page, number: '001' | '002') {
+async function startCase(page: Page, number: '001' | '002' | '003') {
   const card = page.getByRole('button', { name: new RegExp(`caso ${number}`, 'i') });
   await expect(card).toBeVisible();
   await card.click();
-  await expect(page.locator(`[data-screen="loading-case-00${number === '001' ? '1' : '2'}"]`)).toBeVisible();
+  await expect(page.locator(`[data-screen="loading-case-${number}"]`)).toBeVisible();
   await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
 }
 
-async function startCaseWithRealClock(page: Page, number: '001' | '002') {
+async function startCaseWithRealClock(page: Page, number: '001' | '002' | '003') {
   await startCase(page, number);
-  const firstScreen = number === '001' ? 'case001-intro' : 'case002-warning';
+  const firstScreen = number === '001' ? 'case001-intro' : number === '002' ? 'case002-warning' : 'case003-warning';
   await expect(page.locator(`[data-screen="${firstScreen}"]`)).toBeVisible({ timeout: 5_000 });
 }
 
-async function startCaseWithMockClock(page: Page, number: '001' | '002') {
+async function startCaseWithMockClock(page: Page, number: '001' | '002' | '003') {
   await page.clock.install();
   await startCase(page, number);
   await page.clock.runFor(800);
-  const firstScreen = number === '001' ? 'case001-intro' : 'case002-warning';
+  const firstScreen = number === '001' ? 'case001-intro' : number === '002' ? 'case002-warning' : 'case003-warning';
   await expect(page.locator(`[data-screen="${firstScreen}"]`)).toBeVisible();
 }
 
-test('library shows two games and no character-selection step', async ({ page }) => {
+test('library shows three games and no character-selection step', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
   await expect(page.getByRole('heading', { name: /escolha uma aventura/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /caso 001/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /caso 003/i })).toBeVisible();
   await expect(page.getByText(/escolha seu amigo/i)).toHaveCount(0);
   await expect(page.locator('[data-testid="character-grid"]')).toHaveCount(0);
   await expectSingleViewport(page);
@@ -189,10 +190,42 @@ test('Case 001 can still be completed without choosing a character', async ({ pa
   await expectSingleViewport(page);
 });
 
+
+test('Case 003 complete flow teaches how to unmask fake links and cloned pages', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCaseWithRealClock(page, '003');
+
+  await expectFullScreenScene(page, 'case003-warning', /\/game\/assets\/case-003\/01_luna_link_suspeito\.png$/);
+  await page.getByRole('button', { name: /seguir as pistas/i }).click();
+  await expectFullScreenScene(page, 'case003-clues', /\/game\/assets\/case-003\/02_maya_pistas_link\.png$/);
+  await page.getByRole('button', { name: /quem enviou/i }).click();
+  await page.getByRole('button', { name: /comparar endereços/i }).click();
+  await expectFullScreenScene(page, 'case003-address', /\/game\/assets\/case-003\/03_endereco_suspeito\.png$/);
+  await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
+  await page.getByRole('button', { name: /escolher caminho/i }).click();
+  await expectFullScreenScene(page, 'case003-path', /\/game\/assets\/case-003\/04_nina_caminho_oficial\.png$/);
+  await page.getByRole('button', { name: /abrir o app\/site oficial/i }).click();
+  await page.getByRole('button', { name: /ver a página/i }).click();
+  await expectFullScreenScene(page, 'case003-clone', /\/game\/assets\/case-003\/05_caio_pagina_pede_codigo\.png$/);
+  await page.getByRole('button', { name: /fechar e abrir o site oficial/i }).click();
+  await page.getByRole('button', { name: /montar o mapa/i }).click();
+  await expectFullScreenScene(page, 'case003-map', /\/game\/assets\/case-003\/06_luna_mapa_link_seguro\.png$/);
+  await page.getByRole('button', { name: /ler o endereço inteiro/i }).click();
+  await page.getByRole('button', { name: /abrir pelo app ou site oficial/i }).click();
+  await page.getByRole('button', { name: /pedir ajuda se tiver dúvida/i }).click();
+  await page.getByRole('button', { name: /testar o mapa/i }).click();
+  await page.getByRole('button', { name: /ver resultado/i }).click();
+  await expect(page.getByRole('heading', { name: /fantasma revelado/i })).toBeVisible();
+  await expectFullScreenScene(page, 'case003-ending', /\/game\/assets\/case-003\/07_final_link_desmascarado\.png$/);
+  await expectSingleViewport(page);
+});
+
 test('game library also fits a phone viewport without scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
   await expect(page.getByRole('button', { name: /caso 001/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /caso 003/i })).toBeVisible();
   await expectSingleViewport(page);
 });
