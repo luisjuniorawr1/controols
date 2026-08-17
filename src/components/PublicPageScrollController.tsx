@@ -4,12 +4,10 @@ import { useEffect } from 'react';
 
 export default function PublicPageScrollController() {
   useEffect(() => {
+    if (window.location.pathname !== '/') return;
+
     const html = document.documentElement;
     const body = document.body;
-    const marketingHome = document.querySelector('.marketing-home');
-
-    if (!marketingHome) return;
-
     const previous = {
       htmlHeight: html.style.height,
       htmlOverflowX: html.style.overflowX,
