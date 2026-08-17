@@ -1,0 +1,118 @@
+/* CONTROOLS Kids v3 — full-screen scene + one interaction panel on the right. */
+html,body{overflow:hidden!important}
+.kids3-root{
+  width:100vw!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;background:#071936;color:#fff;
+  font-family:"Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;
+}
+.kids3-root>section{width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden}
+.kids3-root button{font:inherit;cursor:pointer}
+
+/* Library */
+.kids3-library{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(14px,2.6vh,24px);padding:clamp(18px,3vh,30px)!important;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(55,171,255,.2),transparent 28%),
+    radial-gradient(circle at 82% 75%,rgba(142,91,217,.22),transparent 30%),
+    linear-gradient(145deg,#071936,#102b5d 58%,#132250);
+}
+.kids3-library:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.34;background-image:radial-gradient(circle,rgba(255,255,255,.35) 1.5px,transparent 1.7px);background-size:34px 34px}
+.kids3-library-heading{position:relative;z-index:1;text-align:center;display:grid;gap:3px}
+.kids3-library-heading>b{font-size:clamp(18px,3.6vh,30px);letter-spacing:.08em;color:#63b6ff}
+.kids3-library-heading h1{margin:0;font-size:clamp(30px,5.6vh,52px);line-height:.95;font-weight:1000;text-transform:uppercase;text-shadow:0 4px 0 rgba(0,0,0,.18)}
+.kids3-library-heading p{margin:3px 0 0;font-size:clamp(13px,2.2vh,18px);font-weight:900;color:#d9ecff}
+.kids3-game-grid{position:relative;z-index:1;width:min(1180px,96vw);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,2vw,24px)}
+.kids3-game-card{position:relative;isolation:isolate;overflow:hidden;aspect-ratio:16/9;border:0;border-radius:clamp(18px,2vw,30px);padding:0;background:#132a55;box-shadow:0 16px 36px rgba(0,0,0,.28);text-align:left;color:#fff;transform:translateZ(0);transition:transform .18s ease,box-shadow .18s ease}
+.kids3-game-card:hover,.kids3-game-card:focus-visible{transform:translateY(-4px) scale(1.01);box-shadow:0 22px 44px rgba(0,0,0,.36);outline:4px solid rgba(255,255,255,.9);outline-offset:3px}
+.kids3-game-card>img{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover}
+.kids3-game-card-shade{position:absolute;z-index:-1;inset:0;background:linear-gradient(0deg,rgba(4,14,35,.94) 0%,rgba(4,14,35,.58) 39%,rgba(4,14,35,.04) 76%)}
+.kids3-game-card>div{position:absolute;left:clamp(15px,2vw,26px);right:clamp(15px,2vw,26px);bottom:clamp(14px,2.2vh,24px);display:grid;gap:3px}
+.kids3-game-card small{font-size:clamp(10px,1.7vh,14px);font-weight:1000;letter-spacing:.08em;color:#ffd45c}
+.kids3-game-card h2{margin:0;font-size:clamp(21px,3.8vh,35px);line-height:.95;font-weight:1000;text-transform:uppercase}
+.kids3-game-card p{margin:2px 0;font-size:clamp(11px,1.9vh,16px);font-weight:900;color:#dcecff}
+.kids3-game-card div>b{justify-self:start;margin-top:4px;padding:7px 14px;border-radius:999px;background:#fff;color:#0d2b5c;font-size:clamp(11px,1.8vh,15px);font-weight:1000}
+
+/* Loading cover */
+.kids3-loader{position:relative;isolation:isolate;background:#081936}
+.kids3-loader-art{position:absolute;z-index:-3;inset:0;width:100%;height:100%;object-fit:cover}
+.kids3-loader-shade{position:absolute;z-index:-2;inset:0;background:linear-gradient(90deg,rgba(3,12,31,.04) 0 57%,rgba(3,12,31,.28) 68%,rgba(3,12,31,.68) 100%)}
+.kids3-loader-card{position:absolute;right:clamp(22px,4vw,66px);top:50%;transform:translateY(-50%);width:min(34vw,480px);min-width:330px;padding:clamp(20px,4vh,38px);border-radius:30px;background:rgba(7,27,62,.88);box-shadow:0 18px 46px rgba(0,0,0,.28);backdrop-filter:blur(8px);text-align:center;display:flex;flex-direction:column;align-items:center}
+.kids3-loader-card>span{font-size:clamp(11px,1.8vh,15px);font-weight:1000;letter-spacing:.12em;color:#ffd34e}
+.kids3-loader-card h1{margin:8px 0 4px;font-size:clamp(31px,5.2vh,48px);line-height:.92;font-weight:1000;text-transform:uppercase}
+.kids3-loader-card p{margin:5px 0 12px;font-size:clamp(14px,2.2vh,18px);font-weight:900;color:#dcecff}
+.kids3-loader-bar{width:100%;height:16px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.18)}
+.kids3-loader-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#42d28e,#58b8ff,#ffd34e);transition:width .2s ease}
+.kids3-loader-card>strong{margin-top:8px;font-size:clamp(18px,3.3vh,27px)}
+.kids3-loader-card>button{margin-top:10px;border:0;border-radius:16px;background:#fff;color:#17305f;padding:12px 22px;font-weight:1000}
+
+/* Gameplay scene */
+.kids3-scene{position:relative;isolation:isolate;background:#081936}
+.kids3-scene-art{position:absolute;z-index:-3;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
+.kids3-scene:after{content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 57%,rgba(3,16,42,.08) 68%,rgba(3,16,42,.28) 100%)}
+.kids3-panel{
+  position:absolute;z-index:3;right:clamp(14px,1.8vw,28px);top:clamp(14px,2vh,24px);bottom:clamp(14px,2vh,24px);
+  width:clamp(350px,35vw,520px);min-height:0;padding:clamp(16px,2.8vh,27px) clamp(16px,2vw,26px);
+  border:0;border-radius:clamp(22px,2.2vw,32px);background:linear-gradient(155deg,rgba(9,31,70,.92),rgba(15,42,88,.88));
+  box-shadow:0 16px 38px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(9px);
+  display:flex;flex-direction:column;overflow:hidden;color:#fff;text-align:center;
+}
+.kids3-panel-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;text-align:left}
+.kids3-panel-meta>span{padding:5px 10px;border-radius:999px;background:#ffd34e;color:#17305f;font-size:clamp(9px,1.45vh,12px);font-weight:1000;letter-spacing:.07em;white-space:nowrap}
+.kids3-panel-meta>small{font-size:clamp(9px,1.5vh,12px);font-weight:900;color:#cfe5ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kids3-progress{width:100%;height:7px;margin:8px 0 6px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;flex:none}
+.kids3-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#48d58b,#69b8ff,#ffd34e)}
+.kids3-panel-body{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.1vh,10px);overflow:hidden}
+.kids3-panel.is-compact .kids3-panel-body{gap:clamp(4px,.75vh,7px)}
+.kids3-panel h1{margin:0;max-width:100%;font-size:clamp(29px,5vh,48px);line-height:.94;font-weight:1000;text-transform:uppercase;letter-spacing:-.02em;text-wrap:balance}
+.kids3-panel.is-compact h1{font-size:clamp(26px,4.5vh,42px)}
+.kids3-panel h2{margin:2px 0 0;font-size:clamp(12px,2vh,17px);line-height:1.05;font-weight:1000;color:#d8ebff}
+.kids3-panel p{margin:0;max-width:42ch;font-size:clamp(13px,2.2vh,18px);line-height:1.15;font-weight:900;color:#e7f3ff}
+.kids3-tag{display:inline-flex;align-items:center;justify-content:center;padding:5px 12px;border-radius:999px;background:#ffd34e;color:#17305f;font-size:clamp(9px,1.55vh,12px);font-weight:1000;letter-spacing:.08em}
+.kids3-tag.blue{background:#69d7ff;color:#11325d}
+.kids3-story-chip,.kids3-tip{width:100%;padding:clamp(8px,1.3vh,12px);border-radius:15px;background:rgba(255,255,255,.12);font-size:clamp(12px,2vh,16px);font-weight:900}
+.kids3-tip{color:#eaf6ff}
+.kids3-timer{width:clamp(116px,19vh,168px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;align-content:center;gap:1px;padding:10px;background:linear-gradient(155deg,#426be0,#234c9e);box-shadow:0 8px 0 rgba(2,15,42,.32),0 12px 25px rgba(0,0,0,.23);outline:4px solid #fff}
+.kids3-timer.is-ready{background:linear-gradient(155deg,#34aa69,#57cf88)}
+.kids3-timer small,.kids3-timer span{font-size:clamp(8px,1.25vh,11px);font-weight:1000;letter-spacing:.06em}
+.kids3-timer strong{font-size:clamp(43px,7.7vh,68px);line-height:.88}
+
+.kids3-choice-grid{width:100%;display:grid;gap:clamp(6px,1vh,9px);margin:1px 0}
+.kids3-choice-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kids3-choice-grid.one{grid-template-columns:1fr}
+.kids3-choice{width:100%;min-height:clamp(52px,8vh,68px);border:0;border-radius:clamp(13px,1.4vw,18px);padding:clamp(7px,1.1vh,11px) clamp(10px,1vw,14px);display:flex;align-items:center;justify-content:center;gap:9px;background:rgba(255,255,255,.95);color:#17305f;box-shadow:0 5px 0 rgba(1,16,43,.32);font-weight:1000;text-align:center;transition:transform .12s ease,background .12s ease}
+.kids3-choice:hover,.kids3-choice:focus-visible{transform:translateY(-1px);outline:3px solid #8ec9ff;outline-offset:2px}
+.kids3-choice>span{font-size:clamp(18px,3.2vh,28px);flex:none}.kids3-choice>b{font-size:clamp(12px,2vh,16px);line-height:1.05}
+.kids3-choice.is-selected{background:#dcecff;box-shadow:0 5px 0 #24589b;outline:3px solid #68b9ff;outline-offset:-3px}
+.kids3-choice.is-wrong.is-selected{background:#ffe3de;box-shadow:0 5px 0 #b85146;outline-color:#ff897c}
+.kids3-choice-grid.tiny{gap:5px}.kids3-choice-grid.tiny .kids3-choice{min-height:clamp(39px,5.8vh,48px);padding:5px 9px}.kids3-choice-grid.tiny .kids3-choice>b{font-size:clamp(10px,1.65vh,13px)}
+.password-options .kids3-choice>b{letter-spacing:.01em}
+.kids3-counter{display:flex;align-items:baseline;gap:4px;color:#dcecff;font-weight:900}.kids3-counter>b{font-size:clamp(20px,3.2vh,28px);color:#fff}.kids3-counter span{font-size:clamp(11px,1.7vh,14px)}
+
+.kids3-primary,.kids3-secondary{width:min(100%,420px);min-height:clamp(46px,7vh,58px);border:0;border-radius:clamp(14px,1.4vw,18px);padding:9px 16px;font-size:clamp(13px,2.1vh,17px);font-weight:1000;text-transform:uppercase;letter-spacing:.02em}
+.kids3-primary{background:linear-gradient(180deg,#ffd85d,#f5b832);color:#17305f;box-shadow:0 6px 0 #b97910}
+.kids3-primary.cyan{background:linear-gradient(180deg,#7ee2ff,#43b8ee);box-shadow:0 6px 0 #176a9c}
+.kids3-primary:disabled{cursor:not-allowed;opacity:.52;filter:saturate(.5);box-shadow:0 4px 0 rgba(0,0,0,.22)}
+.kids3-secondary{min-height:40px;background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
+.kids3-feedback{width:100%;padding:clamp(7px,1.1vh,11px) clamp(9px,1vw,13px);border-radius:15px;text-align:center;background:#fff0c8;color:#654711}
+.kids3-feedback.good{background:#ddf7e7;color:#20583a}.kids3-feedback.hint{background:#fff0c8;color:#654711}
+.kids3-feedback b{display:block;font-size:clamp(12px,2vh,16px);font-weight:1000}.kids3-feedback p{margin:2px 0 0!important;color:inherit!important;font-size:clamp(10px,1.7vh,13px)!important;line-height:1.08!important}
+.kids3-feedback button{margin-top:5px;border:0;border-radius:10px;background:#fff;color:#17305f;padding:6px 11px;font-weight:1000;font-size:11px}
+.kids3-badges{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.kids3-badges span{min-width:0;padding:8px 5px;border-radius:14px;background:rgba(255,255,255,.12);display:grid;gap:2px;font-size:clamp(18px,3.2vh,26px)}.kids3-badges b{font-size:clamp(8px,1.35vh,11px);line-height:1.05}
+
+@media(max-height:700px){
+  .kids3-library{gap:10px;padding:12px 20px!important}.kids3-library-heading>b{font-size:18px}.kids3-library-heading h1{font-size:32px}.kids3-library-heading p{font-size:12px}.kids3-game-grid{width:min(1080px,94vw);gap:16px}.kids3-game-card>div{bottom:12px}.kids3-game-card h2{font-size:24px}.kids3-game-card p{font-size:11px}
+  .kids3-panel{top:10px;right:12px;bottom:10px;width:clamp(340px,35vw,475px);padding:12px 15px;border-radius:22px}.kids3-panel-body{gap:5px}.kids3-panel h1{font-size:29px}.kids3-panel.is-compact h1{font-size:25px}.kids3-panel p{font-size:12px}.kids3-tag{font-size:9px;padding:4px 9px}
+  .kids3-timer{width:112px;outline-width:3px}.kids3-timer strong{font-size:43px}.kids3-tip,.kids3-story-chip{padding:7px;font-size:11px}
+  .kids3-choice-grid{gap:5px}.kids3-choice{min-height:44px;padding:5px 8px;border-radius:12px;box-shadow:0 4px 0 rgba(1,16,43,.3)}.kids3-choice>b{font-size:11px}.kids3-choice>span{font-size:18px}.kids3-choice-grid.tiny .kids3-choice{min-height:33px}.kids3-choice-grid.tiny .kids3-choice>b{font-size:9.5px}
+  .kids3-primary,.kids3-secondary{min-height:42px;padding:6px 12px;font-size:11px}.kids3-feedback{padding:6px 8px}.kids3-feedback b{font-size:11px}.kids3-feedback p{font-size:9.5px!important}.kids3-panel h2{font-size:11px}.kids3-badges span{padding:5px 3px;font-size:18px}.kids3-badges b{font-size:8px}
+  .kids3-loader-card{padding:22px;width:min(35vw,440px)}.kids3-loader-card h1{font-size:34px}
+}
+
+@media(max-width:760px){
+  .kids3-library{justify-content:flex-start;gap:10px;padding:16px 12px!important}.kids3-library-heading h1{font-size:30px}.kids3-library-heading p{font-size:12px}.kids3-game-grid{width:100%;grid-template-columns:1fr;gap:10px;flex:1;min-height:0}.kids3-game-card{aspect-ratio:auto;min-height:0;height:100%}.kids3-game-card>div{bottom:10px}.kids3-game-card h2{font-size:22px}.kids3-game-card p{font-size:11px}.kids3-game-card div>b{font-size:10px;padding:5px 10px}
+  .kids3-loader-shade{background:linear-gradient(0deg,rgba(3,12,31,.82) 0 53%,rgba(3,12,31,.08) 78%)}.kids3-loader-card{left:10px;right:10px;top:auto;bottom:10px;transform:none;width:auto;min-width:0;padding:16px;border-radius:22px}.kids3-loader-card h1{font-size:28px}.kids3-loader-card p{font-size:12px}
+  .kids3-scene:after{background:linear-gradient(0deg,rgba(3,16,42,.76) 0 55%,transparent 78%)}.kids3-scene-art{object-position:center top}.kids3-panel{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:auto;max-height:62%;padding:10px 12px;border-radius:20px}.kids3-panel h1,.kids3-panel.is-compact h1{font-size:25px}.kids3-panel-body{gap:4px}.kids3-panel p{font-size:11px}.kids3-choice{min-height:40px}.kids3-choice>b{font-size:10.5px}.kids3-choice>span{font-size:17px}.kids3-primary,.kids3-secondary{min-height:39px;font-size:10.5px}.kids3-timer{width:96px}.kids3-timer strong{font-size:38px}.kids3-panel-meta>small{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){.kids3-game-card,.kids3-choice,.kids3-loader-bar i{transition:none!important}}
