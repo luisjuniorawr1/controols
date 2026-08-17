@@ -47,7 +47,8 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const token = JSON.parse(fs.readFileSync('/tmp/google-token.json', 'utf8'));
-          if (!token.access_token) throw new Error(`access token missing: ${JSON.stringify(token)}`);
+          if (!token.access_token) throw new Error('access token missing');
+          console.log(`::add-mask::${token.access_token}`);
           fs.appendFileSync(process.env.GITHUB_ENV, `DRIVE_ACCESS_TOKEN=${token.access_token}\n`);
           NODE
           rm -f /tmp/google-assertion.jwt /tmp/google-token.json
@@ -57,11 +58,26 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/controols-assets
-          curl --fail --location --retry 3 \
-            -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
-            "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" \
-            -o /tmp/controols-assets/controols-assets-v2.zip
-          test -s /tmp/controols-assets/controols-assets-v2.zip
+          OUT=/tmp/controols-assets/controols-assets-v2.zip
+          URLS=(
+            "https://drive.usercontent.google.com/download?id=${DRIVE_FILE_ID}&export=download&confirm=t"
+            "https://drive.google.com/uc?export=download&id=${DRIVE_FILE_ID}&confirm=t"
+            "https://drive.usercontent.google.com/download?id=${DRIVE_FILE_ID}&export=download&authuser=0&confirm=t"
+          )
+          ok=0
+          for url in "${URLS[@]}"; do
+            rm -f "$OUT"
+            status=$(curl --silent --show-error --location --retry 2 \
+              -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
+              -o "$OUT" -w '%{http_code}' "$url" || true)
+            echo "Drive download endpoint returned HTTP ${status}."
+            if [ "$status" = "200" ] && unzip -tq "$OUT" >/dev/null 2>&1; then
+              ok=1
+              break
+            fi
+          done
+          test "$ok" -eq 1
+          test -s "$OUT"
 
       - name: Install real Case 001 PNG masters
         shell: bash
