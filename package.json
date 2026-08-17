@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "qa:smoke": "playwright test tests/qa-smoke.spec.ts tests/qa-right-panel.spec.ts --project=chromium",
+    "qa:smoke": "playwright test tests/qa-smoke.spec.ts tests/qa-right-panel.spec.ts tests/qa-case002-weak-screen.spec.ts --project=chromium",
     "qa:e2e": "playwright test tests/qa-all-tools.spec.ts tests/qa-mp4-fixture.spec.ts --project=chromium --grep-invert mp4-to-webm"
   },
   "dependencies": {

@@ -368,13 +368,13 @@ function Case002Game({ onExit }: { onExit: () => void }) {
   if (screen === 'weak') return (
     <Scene src={secondKidsStory.scenes.weak} alt="Maya compara exemplos de senhas fáceis de adivinhar" screen="case002-weak" caseNumber="002" caseTitle={secondKidsStory.title} progress={28} compact>
       <span className="kids3-tag blue">PISTA 1</span>
-      <h1>Qual é fácil de adivinhar?</h1>
+      <h1>Qual senha é fácil de adivinhar?</h1>
       <div className="kids3-choice-grid one password-options">
         <Choice label="123456" selected={weakAnswer === 'easy'} onClick={() => setWeakAnswer('easy')} />
-        <Choice label="Nuvem Salta Sobre 4 Luas" selected={weakAnswer === 'long1'} wrong={weakAnswer === 'long1'} onClick={() => setWeakAnswer('long1')} />
-        <Choice label="Pato Roxo Viaja 27" selected={weakAnswer === 'long2'} wrong={weakAnswer === 'long2'} onClick={() => setWeakAnswer('long2')} />
+        <Choice label="Bolo com 3 Velas" selected={weakAnswer === 'long1'} wrong={weakAnswer === 'long1'} onClick={() => setWeakAnswer('long1')} />
+        <Choice label="3 Chaves Douradas" selected={weakAnswer === 'long2'} wrong={weakAnswer === 'long2'} onClick={() => setWeakAnswer('long2')} />
       </div>
-      {weakAnswer && <div className={`kids3-feedback ${weakAnswer === 'easy' ? 'good' : 'hint'}`}><b>{weakAnswer === 'easy' ? 'Isso! 🔓' : 'Olhe de novo.'}</b><p>{weakAnswer === 'easy' ? 'Sequências muito comuns são fáceis de tentar.' : 'Uma frase longa costuma ser mais difícil de adivinhar.'}</p></div>}
+      {weakAnswer && <div className={`kids3-feedback case002-weak-feedback ${weakAnswer === 'easy' ? 'good' : 'hint'}`}><b>{weakAnswer === 'easy' ? 'Isso! 🔓' : 'Olhe de novo.'}</b><p>{weakAnswer === 'easy' ? '123456 é uma sequência muito comum e fácil de tentar.' : 'Pense nas três pistas da imagem: a sequência de números é a mais óbvia.'}</p></div>}
       {weakAnswer === 'easy' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('strong')}>Fortalecer o cofre →</button>}
     </Scene>
   );
