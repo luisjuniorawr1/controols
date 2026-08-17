@@ -1,0 +1,55 @@
+name: Case 003 Real Assets QA
+
+on:
+  push:
+    branches: [fix/case003-real-link-assets-v2]
+  workflow_dispatch:
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Case 003 masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          expected = [
+              '00_capa_link_fantasma.png',
+              '01_luna_link_suspeito.png',
+              '02_maya_pistas_link.png',
+              '03_endereco_suspeito.png',
+              '04_nina_caminho_oficial.png',
+              '05_caio_pagina_pede_codigo.png',
+              '06_luna_mapa_link_seguro.png',
+              '07_final_link_desmascarado.png',
+          ]
+          folder = Path('public/game/assets/case-003')
+          paths = sorted(folder.glob('*.png'))
+          assert [p.name for p in paths] == expected
+          for p in paths:
+              raw = p.read_bytes()[:24]
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n'
+              w,h = struct.unpack('>II', raw[16:24])
+              assert (w,h) == (1672,941), (p,w,h)
+              print(p.name, p.stat().st_size, w, h)
+          PY
+      - run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Smoke all kids cases
+        run: npm run qa:smoke
