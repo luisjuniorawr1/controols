@@ -1,0 +1,312 @@
+name: Case 003 Implementation QA
+
+on:
+  push:
+    branches: [feature/case003-link-fantasma]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Implement Case 003 game flow and QA
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if new in text:
+                  return
+              if old not in text:
+                  raise SystemExit(f'Expected block not found in {path}: {old[:120]!r}')
+              p.write_text(text.replace(old, new, 1))
+
+          component = Path('src/components/KidsStoryPrototype.tsx')
+          text = component.read_text()
+
+          old_import = '''  case001Assets,
+  case002Assets,
+  firstKidsStory,
+  kidsGames,
+  passwordHabits,
+  redFlags,
+  safeSteps,
+  secondKidsStory,
+  type KidsGameId,
+'''
+          new_import = '''  case001Assets,
+  case002Assets,
+  case003Assets,
+  firstKidsStory,
+  kidsGames,
+  linkHabits,
+  passwordHabits,
+  redFlags,
+  safeSteps,
+  secondKidsStory,
+  thirdKidsStory,
+  type KidsGameId,
+'''
+          if new_import not in text:
+              if old_import not in text:
+                  raise SystemExit('Import block not found')
+              text = text.replace(old_import, new_import, 1)
+
+          old_types = "type Case002Screen = 'warning' | 'weak' | 'strong' | 'reuse' | 'code' | 'key' | 'ending';\n"
+          new_types = old_types + "type Case003Screen = 'warning' | 'clues' | 'address' | 'path' | 'clone' | 'map' | 'ending';\n"
+          if "type Case003Screen" not in text:
+              text = text.replace(old_types, new_types, 1)
+
+          text = text.replace("<small>{index === 1 ? 'NOVO · ' : ''}CASO {game.number}</small>", "<small>{index === kidsGames.length - 1 ? 'NOVO · ' : ''}CASO {game.number}</small>")
+
+          marker = '\nexport default function KidsStoryPrototype() {'
+          if 'function Case003Game' not in text:
+              case003 = r'''
+
+function Case003Game({ onExit }: { onExit: () => void }) {
+  const [screen, setScreen] = useState<Case003Screen>('warning');
+  const [clueAnswer, setClueAnswer] = useState<'sender' | 'colors' | 'lock' | null>(null);
+  const [addressAnswer, setAddressAnswer] = useState<'official' | 'prize' | 'zero' | null>(null);
+  const [pathAnswer, setPathAnswer] = useState<'official' | 'message' | null>(null);
+  const [cloneAnswer, setCloneAnswer] = useState<'official' | 'type' | 'send' | null>(null);
+  const [mapHabits, setMapHabits] = useState<string[]>([]);
+  const [mapChecked, setMapChecked] = useState(false);
+
+  const mapSuccess = mapHabits.length === 3 && mapHabits.every(id => linkHabits.find(item => item.id === id)?.correct);
+
+  function toggleMapHabit(id: string) {
+    if (mapChecked) return;
+    setMapHabits(current => current.includes(id) ? current.filter(item => item !== id) : current.length < 3 ? [...current, id] : current);
+  }
+
+  function reset() {
+    setScreen('warning');
+    setClueAnswer(null);
+    setAddressAnswer(null);
+    setPathAnswer(null);
+    setCloneAnswer(null);
+    setMapHabits([]);
+    setMapChecked(false);
+  }
+
+  if (screen === 'warning') return (
+    <Scene src={thirdKidsStory.scenes.warning} alt="Luna encontra um link suspeito enviado por mensagem" screen="case003-warning" caseNumber="003" caseTitle={thirdKidsStory.title} progress={14}>
+      <span className="kids3-tag blue">NOVA MISSÃO</span>
+      <h1>Um link apareceu!</h1>
+      <p>Parece do Clube Aurora, mas o endereço está estranho.</p>
+      <div className="kids3-story-chip">👻 <b>Um link pode imitar um site conhecido.</b></div>
+      <button className="kids3-primary cyan" type="button" onClick={() => setScreen('clues')}>Seguir as pistas →</button>
+    </Scene>
+  );
+
+  if (screen === 'clues') return (
+    <Scene src={thirdKidsStory.scenes.clues} alt="Maya investiga quem enviou a mensagem e outras pistas" screen="case003-clues" caseNumber="003" caseTitle={thirdKidsStory.title} progress={28} compact>
+      <span className="kids3-tag blue">PISTA 1</span>
+      <h1>Qual pista pede uma pausa?</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="❓" label="Quem enviou?" selected={clueAnswer === 'sender'} onClick={() => setClueAnswer('sender')} />
+        <Choice icon="🎨" label="A cor da mensagem" selected={clueAnswer === 'colors'} wrong={clueAnswer === 'colors'} onClick={() => setClueAnswer('colors')} />
+        <Choice icon="🔒" label="Só o cadeado" selected={clueAnswer === 'lock'} wrong={clueAnswer === 'lock'} onClick={() => setClueAnswer('lock')} />
+      </div>
+      {clueAnswer && <div className={`kids3-feedback ${clueAnswer === 'sender' ? 'good' : 'hint'}`}><b>{clueAnswer === 'sender' ? 'Boa pista! 🔎' : 'Olhe de novo.'}</b><p>{clueAnswer === 'sender' ? 'Antes de confiar no link, confira quem enviou e leia o endereço.' : 'Cor e cadeado sozinhos não dizem quem criou o link.'}</p></div>}
+      {clueAnswer === 'sender' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('address')}>Comparar endereços →</button>}
+    </Scene>
+  );
+
+  if (screen === 'address') return (
+    <Scene src={thirdKidsStory.scenes.address} alt="Caio investiga um endereço de site que parece com o oficial" screen="case003-address" caseNumber="003" caseTitle={thirdKidsStory.title} progress={42} compact>
+      <span className="kids3-tag blue">PISTA 2</span>
+      <h1>Qual parece oficial?</h1>
+      <div className="kids3-choice-grid one tiny password-options">
+        <Choice label="clubeaurora.com.br" selected={addressAnswer === 'official'} onClick={() => setAddressAnswer('official')} />
+        <Choice label="clube-aurora-premio.net" selected={addressAnswer === 'prize'} wrong={addressAnswer === 'prize'} onClick={() => setAddressAnswer('prize')} />
+        <Choice label="clubeaur0ra.com.br" selected={addressAnswer === 'zero'} wrong={addressAnswer === 'zero'} onClick={() => setAddressAnswer('zero')} />
+      </div>
+      {addressAnswer && <div className={`kids3-feedback ${addressAnswer === 'official' ? 'good' : 'hint'}`}><b>{addressAnswer === 'official' ? 'Isso! ⭐' : 'Tem um disfarce aí!'}</b><p>{addressAnswer === 'official' ? 'Leia o endereço inteiro, devagar, antes de entrar.' : 'Palavras extras e letras trocadas podem esconder um site falso.'}</p></div>}
+      {addressAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('path')}>Escolher caminho →</button>}
+    </Scene>
+  );
+
+  if (screen === 'path') return (
+    <Scene src={thirdKidsStory.scenes.path} alt="Nina escolhe entre um caminho seguro e um caminho de alerta" screen="case003-path" caseNumber="003" caseTitle={thirdKidsStory.title} progress={56}>
+      <span className="kids3-tag blue">CAMINHO SEGURO</span>
+      <h1>Como entrar com segurança?</h1>
+      <div className="kids3-choice-grid two">
+        <Choice icon="📱" label="Abrir o app/site oficial" selected={pathAnswer === 'official'} onClick={() => setPathAnswer('official')} />
+        <Choice icon="🔗" label="Seguir o link da mensagem" selected={pathAnswer === 'message'} wrong={pathAnswer === 'message'} onClick={() => setPathAnswer('message')} />
+      </div>
+      {pathAnswer && <div className={`kids3-feedback ${pathAnswer === 'official' ? 'good' : 'hint'}`}><b>{pathAnswer === 'official' ? 'Caminho certo! 🛡️' : 'Esse atalho pode enganar.'}</b><p>Quando tiver dúvida, abra você mesmo o app ou digite o endereço oficial.</p></div>}
+      {pathAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('clone')}>Ver a página →</button>}
+    </Scene>
+  );
+
+  if (screen === 'clone') return (
+    <Scene src={thirdKidsStory.scenes.clone} alt="Caio percebe que uma página aberta por link pede um código secreto" screen="case003-clone" caseNumber="003" caseTitle={thirdKidsStory.title} progress={70} compact>
+      <span className="kids3-tag blue">PÁGINA CLONADA</span>
+      <h1>A página pediu um código!</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="🛡️" label="Fechar e abrir o site oficial" selected={cloneAnswer === 'official'} onClick={() => setCloneAnswer('official')} />
+        <Choice icon="⌨️" label="Digitar para continuar" selected={cloneAnswer === 'type'} wrong={cloneAnswer === 'type'} onClick={() => setCloneAnswer('type')} />
+        <Choice icon="📤" label="Enviar para quem pediu" selected={cloneAnswer === 'send'} wrong={cloneAnswer === 'send'} onClick={() => setCloneAnswer('send')} />
+      </div>
+      {cloneAnswer && <div className={`kids3-feedback ${cloneAnswer === 'official' ? 'good' : 'hint'}`}><b>{cloneAnswer === 'official' ? 'Boa! 👻➡️🛡️' : 'Pare por aí!'}</b><p>Uma página falsa pode copiar cores e desenhos. O endereço e o caminho importam mais.</p></div>}
+      {cloneAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('map')}>Montar o mapa →</button>}
+    </Scene>
+  );
+
+  if (screen === 'map') return (
+    <Scene src={thirdKidsStory.scenes.map} alt="Luna monta um mapa de hábitos para navegar por links com segurança" screen="case003-map" caseNumber="003" caseTitle={thirdKidsStory.title} progress={84} compact>
+      <span className="kids3-tag blue">MAPA DO LINK</span>
+      <h1>Escolha 3 hábitos!</h1>
+      <div className="kids3-choice-grid one tiny">
+        {linkHabits.map(item => <Choice key={item.id} icon={item.icon} label={item.label} selected={mapHabits.includes(item.id)} onClick={() => toggleMapHabit(item.id)} />)}
+      </div>
+      <div className="kids3-counter"><b>{mapHabits.length}</b><span>/3 hábitos</span></div>
+      {!mapChecked && <button className="kids3-primary cyan" type="button" disabled={mapHabits.length !== 3} onClick={() => setMapChecked(true)}>Testar o mapa 🗺️</button>}
+      {mapChecked && !mapSuccess && <div className="kids3-feedback hint"><b>O fantasma ainda está escondido.</b><p>Não confie só no visual ou no cadeado.</p><button type="button" onClick={() => { setMapHabits([]); setMapChecked(false); }}>Tentar outra vez</button></div>}
+      {mapChecked && mapSuccess && <><div className="kids3-feedback good"><b>Mapa completo! ✨</b></div><button className="kids3-primary cyan" type="button" onClick={() => setScreen('ending')}>Ver resultado →</button></>}
+    </Scene>
+  );
+
+  return (
+    <Scene src={thirdKidsStory.scenes.ending} alt="A turma comemora depois de desmascarar o link fantasma" screen="case003-ending" caseNumber="003" caseTitle={thirdKidsStory.title} progress={100} compact>
+      <span className="kids3-tag blue">LINK DESMASCARADO</span>
+      <h1>Fantasma revelado!</h1>
+      <p><b>Leia. Confira. Entre pelo caminho oficial.</b></p>
+      <div className="kids3-badges"><span>🔎<b>Olho no endereço</b></span><span>📱<b>Caminho oficial</b></span><span>⭐<b>Guardião de links</b></span></div>
+      <button className="kids3-primary cyan" type="button" onClick={reset}>Jogar de novo ↻</button>
+      <button className="kids3-secondary" type="button" onClick={onExit}>Outros casos</button>
+    </Scene>
+  );
+}
+'''
+              if marker not in text:
+                  raise SystemExit('Export marker not found')
+              text = text.replace(marker, case003 + marker, 1)
+
+          old_game = "  const game = gameId === 'case-001' ? firstKidsStory : secondKidsStory;\n  const assets = gameId === 'case-001' ? case001Assets : case002Assets;"
+          new_game = "  const game = gameId === 'case-001' ? firstKidsStory : gameId === 'case-002' ? secondKidsStory : thirdKidsStory;\n  const assets = gameId === 'case-001' ? case001Assets : gameId === 'case-002' ? case002Assets : case003Assets;"
+          if new_game not in text:
+              if old_game not in text:
+                  raise SystemExit('game/assets selector not found')
+              text = text.replace(old_game, new_game, 1)
+
+          old_render = "      {mode === 'playing' && gameId === 'case-002' && <Case002Game onExit={exitGame} />}"
+          new_render = old_render + "\n      {mode === 'playing' && gameId === 'case-003' && <Case003Game onExit={exitGame} />}"
+          if "gameId === 'case-003'" not in text:
+              if old_render not in text:
+                  raise SystemExit('Case002 render line not found')
+              text = text.replace(old_render, new_render, 1)
+
+          component.write_text(text)
+
+          qa = Path('tests/qa-smoke.spec.ts')
+          q = qa.read_text()
+          q = q.replace("number: '001' | '002'", "number: '001' | '002' | '003'")
+          q = q.replace("await expect(page.locator(`[data-screen=\"loading-case-00${number === '001' ? '1' : '2'}\"]`)).toBeVisible();", "await expect(page.locator(`[data-screen=\"loading-case-${number}\"]`)).toBeVisible();")
+          q = q.replace("const firstScreen = number === '001' ? 'case001-intro' : 'case002-warning';", "const firstScreen = number === '001' ? 'case001-intro' : number === '002' ? 'case002-warning' : 'case003-warning';")
+          q = q.replace("test('library shows two games and no character-selection step'", "test('library shows three games and no character-selection step'")
+          old_library = "  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();\n  await expect(page.getByText(/escolha seu amigo/i)).toHaveCount(0);"
+          new_library = "  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();\n  await expect(page.getByRole('button', { name: /caso 003/i })).toBeVisible();\n  await expect(page.getByText(/escolha seu amigo/i)).toHaveCount(0);"
+          if new_library not in q:
+              q = q.replace(old_library, new_library, 1)
+
+          case003_test = r'''
+
+test('Case 003 complete flow teaches how to unmask fake links and cloned pages', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCaseWithRealClock(page, '003');
+
+  await expectFullScreenScene(page, 'case003-warning', /\/game\/assets\/case-003\/01_luna_link_suspeito\.png$/);
+  await page.getByRole('button', { name: /seguir as pistas/i }).click();
+
+  await expectFullScreenScene(page, 'case003-clues', /\/game\/assets\/case-003\/02_maya_pistas_link\.png$/);
+  await page.getByRole('button', { name: /quem enviou/i }).click();
+  await page.getByRole('button', { name: /comparar endereços/i }).click();
+
+  await expectFullScreenScene(page, 'case003-address', /\/game\/assets\/case-003\/03_endereco_suspeito\.png$/);
+  await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
+  await page.getByRole('button', { name: /escolher caminho/i }).click();
+
+  await expectFullScreenScene(page, 'case003-path', /\/game\/assets\/case-003\/04_nina_caminho_oficial\.png$/);
+  await page.getByRole('button', { name: /abrir o app\/site oficial/i }).click();
+  await page.getByRole('button', { name: /ver a página/i }).click();
+
+  await expectFullScreenScene(page, 'case003-clone', /\/game\/assets\/case-003\/05_caio_pagina_pede_codigo\.png$/);
+  await page.getByRole('button', { name: /fechar e abrir o site oficial/i }).click();
+  await page.getByRole('button', { name: /montar o mapa/i }).click();
+
+  await expectFullScreenScene(page, 'case003-map', /\/game\/assets\/case-003\/06_luna_mapa_link_seguro\.png$/);
+  await page.getByRole('button', { name: /ler o endereço inteiro/i }).click();
+  await page.getByRole('button', { name: /abrir pelo app ou site oficial/i }).click();
+  await page.getByRole('button', { name: /pedir ajuda se tiver dúvida/i }).click();
+  await page.getByRole('button', { name: /testar o mapa/i }).click();
+  await page.getByRole('button', { name: /ver resultado/i }).click();
+
+  await expect(page.getByRole('heading', { name: /fantasma revelado/i })).toBeVisible();
+  await expectFullScreenScene(page, 'case003-ending', /\/game\/assets\/case-003\/07_final_link_desmascarado\.png$/);
+  await expectSingleViewport(page);
+});
+'''
+          phone_marker = "\ntest('game library also fits a phone viewport without scrolling'"
+          if "Case 003 complete flow" not in q:
+              if phone_marker not in q:
+                  raise SystemExit('phone test marker not found')
+              q = q.replace(phone_marker, case003_test + phone_marker, 1)
+
+          old_phone = "  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();\n  await expectSingleViewport(page);"
+          new_phone = "  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();\n  await expect(page.getByRole('button', { name: /caso 003/i })).toBeVisible();\n  await expectSingleViewport(page);"
+          if new_phone not in q:
+              q = q.replace(old_phone, new_phone, 1)
+          qa.write_text(q)
+          PY
+      - name: Commit implementation
+        run: |
+          if git diff --quiet; then
+            echo "Implementation already present"
+          else
+            git config user.name "controols-qa-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts
+            git commit -m "Build Case 003 Link Fantasma game flow"
+            git push origin HEAD:feature/case003-link-fantasma
+          fi
+      - run: npm install
+      - name: Validate Case 003 masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths = sorted(Path('public/game/assets/case-003').glob('*.png'))
+          assert len(paths) == 8
+          for path in paths:
+              raw = path.read_bytes()[:24]
+              width, height = struct.unpack('>II', raw[16:24])
+              assert (width, height) == (1672, 941), (path, width, height)
+          PY
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Smoke QA all three cases
+        run: npm run qa:smoke
