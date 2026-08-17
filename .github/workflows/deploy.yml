@@ -23,6 +23,14 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: Prepare real Case 001 artwork
+        run: |
+          test -f asset-packs/controols-assets-v2.zip
+          rm -rf public/game/assets/v2-real
+          mkdir -p public/game/assets/v2-real /tmp/controols-assets-v2
+          unzip -q asset-packs/controols-assets-v2.zip -d /tmp/controols-assets-v2
+          cp /tmp/controols-assets-v2/controols-assets-v2/scenes/*.png public/game/assets/v2-real/
+          test "$(find public/game/assets/v2-real -maxdepth 1 -name '*.png' | wc -l)" -eq 8
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
       - name: Build static site
