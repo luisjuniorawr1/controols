@@ -1,0 +1,30 @@
+/* Tight viewport fixes for the clean Case 001 scene system. */
+.kids-home-v2{
+  position:relative;
+  padding:0!important;
+}
+.kids-home-v2-stage{
+  position:absolute!important;
+  inset:0;
+  width:auto!important;
+  height:auto!important;
+  min-height:0;
+  max-width:100%;
+  max-height:100%;
+}
+
+/* The scene owns a 3px frame. Let its backplate extend beneath that frame so
+ * there is never a thin unpainted edge around the illustration. */
+.kids-scene-v2-art{
+  inset:-3px!important;
+  width:calc(100% + 6px)!important;
+  height:calc(100% + 6px)!important;
+  max-width:none!important;
+  max-height:none!important;
+}
+
+.kids-story-v2>.kids-scene-v2{
+  min-height:0;
+  max-height:100%;
+  box-sizing:border-box;
+}
