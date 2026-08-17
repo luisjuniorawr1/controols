@@ -7,6 +7,8 @@ const panelLabels = ['Início', 'Projeto', 'Turma', 'Temas', 'Demo', 'Próximos 
 export default function HomeHorizontalScroller({ children }: PropsWithChildren) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, startScroll: 0 });
+  const wheelLockRef = useRef(false);
+  const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activePanel, setActivePanel] = useState(0);
   const panelCount = Children.count(children);
 
@@ -27,16 +29,29 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
     };
 
     const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       event.preventDefault();
-      track.scrollLeft += event.deltaY;
+      if (wheelLockRef.current) return;
+
+      const width = track.clientWidth || 1;
+      const current = Math.round(track.scrollLeft / width);
+      const direction = event.deltaY > 0 ? 1 : -1;
+      const next = Math.max(0, Math.min(panelCount - 1, current + direction));
+      track.scrollTo({ left: next * width, behavior: 'smooth' });
+
+      wheelLockRef.current = true;
+      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+      wheelTimerRef.current = setTimeout(() => {
+        wheelLockRef.current = false;
+      }, 420);
     };
 
     track.addEventListener('scroll', onScroll, { passive: true });
-    track.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       track.removeEventListener('scroll', onScroll);
-      track.removeEventListener('wheel', onWheel);
+      window.removeEventListener('wheel', onWheel);
+      if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
   }, [panelCount]);
 
