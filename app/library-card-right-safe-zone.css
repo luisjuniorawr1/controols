@@ -67,8 +67,8 @@
   .kids3-library { gap: 8px; }
   .kids3-game-grid { width: min(1120px, 94vw); gap: 12px; }
   .kids3-game-card > div {
-    right: 14px;
-    width: 47%;
+    right: 16px;
+    width: 41%;
     gap: 3px;
   }
   .kids3-game-card small { font-size: 10px; }
