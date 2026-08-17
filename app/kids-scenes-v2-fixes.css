@@ -29,6 +29,26 @@
   box-sizing:border-box;
 }
 
+/* The real 1672×941 scene masters already contain the characters. Never add
+ * the old standalone guide art on top or the scene becomes visually doubled. */
+.kids-story-v2 .kids-scene-v2-character,
+.kids-home-v2 .kids-home-v2-cast,
+.kids-story-v2 .kids-ending-v2-cast{
+  display:none!important;
+}
+
+/* Scene 07 was illustrated with a calm interaction area along the bottom.
+ * Put the shield controls there instead of covering the characters at right. */
+.scene-shield .kids-scene-v2-ui{
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:8px!important;
+  width:min(900px,74%)!important;
+  max-height:43%!important;
+  transform:translateX(-50%);
+}
+
 /* The legacy pop-in animation translates panels downward for a few hundred
  * milliseconds. On a TV this can temporarily put the character selector
  * outside the physical viewport, so selection stays visually stable. */

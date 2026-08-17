@@ -23,6 +23,20 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      - name: Validate real Case 001 artwork
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths = sorted(Path('public/game/assets/v2-real').glob('*.png'))
+          assert len(paths) == 8, f'Expected 8 Case 001 PNGs, got {len(paths)}'
+          for path in paths:
+              raw = path.read_bytes()[:24]
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
+              width, height = struct.unpack('>II', raw[16:24])
+              print(path.name, width, height)
+              assert width >= 1600 and height >= 900, (path, width, height)
+          PY
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
       - name: Build static site

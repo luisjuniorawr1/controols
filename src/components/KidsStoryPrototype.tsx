@@ -39,11 +39,6 @@ function SceneArt({ src, alt }: { src: string; alt: string }) {
   return <img className="kids-scene-v2-art" src={src} alt={alt} />;
 }
 
-function Character({ id, className, alt, testId }: { id: KidId; className?: string; alt: string; testId?: string }) {
-  const kid = kids.find(item => item.id === id)!;
-  return <img data-testid={testId} className={`kids-scene-v2-character ${className || ''}`} src={kid.asset} alt={alt} />;
-}
-
 export default function KidsStoryPrototype() {
   const [screen, setScreen] = useState<Screen>('home');
   const [player, setPlayer] = useState<KidId>('luna');
@@ -116,9 +111,6 @@ export default function KidsStoryPrototype() {
     return <main className="kids-game kids-home kids-home-v2">
       <section className="kids-home-v2-stage">
         <SceneArt src={firstKidsStory.scenes.title} alt="Sala de aventuras do CONTROOLS" />
-        <div className="kids-home-v2-cast" aria-hidden="true">
-          {kids.map(kid => <img key={kid.id} src={kid.asset} alt="" className={`cast-${kid.id}`} />)}
-        </div>
         <div className="kids-home-v2-ui">
           <span className="kids-age">{firstKidsStory.age}</span>
           <h1>CONTROOLS</h1>
@@ -160,7 +152,6 @@ export default function KidsStoryPrototype() {
 
     {screen === 'intro' && <section className="kids-scene-v2 scene-intro" data-screen="intro">
       <SceneArt src={firstKidsStory.scenes.message} alt="Mensagem suspeita do Clube Aurora pedindo atualização antes das 20h" />
-      <Character id="luna" className="character-luna" alt="Luna observa a mensagem suspeita" />
       <div className="kids-scene-v2-ui ui-right kids-observation-ui">
         <span className="kids-step-tag">MISSÃO 1</span>
         <h1>Olhe com atenção!</h1>
@@ -179,7 +170,6 @@ export default function KidsStoryPrototype() {
 
     {screen === 'clues' && <section className="kids-scene-v2 scene-clues" data-screen="clues">
       <SceneArt src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" />
-      <Character id="maya" className="character-maya" alt="Maya ajuda a procurar as pistas" testId="maya-guide" />
       <div className="kids-scene-v2-ui ui-right compact-ui">
         <span className="kids-step-tag">DESAFIO VISUAL</span>
         <h1>Escolha 2 pistas!</h1>
@@ -199,8 +189,7 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'https' && <section className="kids-scene-v2 scene-https" data-screen="https">
-      <SceneArt src={firstKidsStory.scenes.https} alt="Cadeado e navegador em uma cena de segurança digital" />
-      <Character id="theo" className="character-theo" alt="Theo explica a pista do cadeado" testId="theo-guide" />
+      <SceneArt src={firstKidsStory.scenes.https} alt="Theo com cadeado e navegador em uma cena de segurança digital" />
       <div className="kids-scene-v2-ui ui-right">
         <span className="kids-step-tag">PEGADINHA DIGITAL</span>
         <p className="kids-v2-dialogue">Theo: “Só o cadeado não basta!”</p>
@@ -218,8 +207,7 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'action' && <section className="kids-scene-v2 scene-action" data-screen="action">
-      <SceneArt src={firstKidsStory.scenes.action} alt="Três escolhas visuais para decidir o caminho mais seguro" />
-      <Character id="nina" className="character-nina" alt="Nina ajuda a escolher a ação mais segura" testId="nina-guide" />
+      <SceneArt src={firstKidsStory.scenes.action} alt="Nina apresenta três escolhas para decidir o caminho mais seguro" />
       <div className="kids-scene-v2-ui ui-bottom wide-ui">
         <span className="kids-step-tag">SUA DECISÃO</span>
         <h1>O que fazer agora?</h1>
@@ -237,9 +225,7 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'team' && <section className="kids-scene-v2 scene-team" data-screen="team">
-      <SceneArt src={firstKidsStory.scenes.team} alt="Duas peças de pista se juntam: site oficial e adulto de confiança" />
-      <Character id="maya" className="character-maya team-left" alt="Maya ajuda a juntar as respostas" testId="maya-guide" />
-      <Character id="caio" className="character-caio team-right" alt="Caio ajuda a juntar as respostas" testId="caio-guide" />
+      <SceneArt src={firstKidsStory.scenes.team} alt="Maya e Caio juntam as respostas: site oficial e adulto de confiança" />
       <div className="kids-scene-v2-ui ui-bottom wide-ui team-ui" data-testid="team-guide-stage">
         <span className="kids-step-tag">DESAFIO DAS PISTAS</span>
         <h1>Junte as 2 respostas!</h1>
@@ -264,8 +250,7 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'shield' && <section className="kids-scene-v2 scene-shield" data-screen="shield">
-      <SceneArt src={firstKidsStory.scenes.shield} alt="Escudo digital com três atitudes seguras" />
-      <Character id="luna" className="character-luna" alt="Luna apresenta o escudo digital" testId="luna-guide" />
+      <SceneArt src={firstKidsStory.scenes.shield} alt="Luna e a turma montam um escudo digital com três atitudes seguras" />
       <div className="kids-scene-v2-ui ui-right compact-ui">
         <span className="kids-step-tag">ESCUDO CONTROOLS</span>
         <h1>Monte seu escudo!</h1>
@@ -285,10 +270,7 @@ export default function KidsStoryPrototype() {
     </section>}
 
     {screen === 'ending' && <section className="kids-scene-v2 scene-ending" data-screen="ending">
-      <SceneArt src={firstKidsStory.scenes.ending} alt="Final da missão com escudo e confetes" />
-      <div className="kids-ending-v2-cast" aria-hidden="true">
-        {kids.map(kid => <img key={kid.id} src={kid.asset} alt="" className={`cast-${kid.id}`} />)}
-      </div>
+      <SceneArt src={firstKidsStory.scenes.ending} alt="Turma do CONTROOLS comemora o final da missão" />
       <div className="kids-scene-v2-ui ui-bottom ending-ui">
         <span className="kids-step-tag">MISSÃO CUMPRIDA</span>
         <h1>Você conseguiu!</h1>
