@@ -11,13 +11,49 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Probe production root after cache fix
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Verify production homepage scrolling and game lock
         run: |
-          set -x
-          curl -sS -D /tmp/root.headers -o /tmp/root.body https://controols.com/
-          cat /tmp/root.headers
-          echo '--- BODY SIGNALS ---'
-          grep -o -E 'CONTROOLS — Um universo de jogos e aventuras|window\.location\.replace\([^)]*\)|/pt/' /tmp/root.body | head -20 || true
-          echo '--- FOLLOW REDIRECTS ---'
-          curl -sS -L -o /dev/null -w 'final_url=%{url_effective}\nstatus=%{http_code}\nredirects=%{num_redirects}\n' https://controols.com/
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+            await page.goto('https://controols.com/', { waitUntil: 'networkidle' });
+            const publicState = await page.evaluate(() => ({
+              url: location.href,
+              scrollHeight: document.documentElement.scrollHeight,
+              innerHeight,
+              htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+              bodyOverflowY: getComputedStyle(document.body).overflowY,
+            }));
+            if (publicState.url !== 'https://controols.com/') throw new Error(`Unexpected root URL: ${publicState.url}`);
+            if (publicState.scrollHeight <= publicState.innerHeight) throw new Error(`Homepage does not extend beyond viewport: ${JSON.stringify(publicState)}`);
+            if (publicState.htmlOverflowY === 'hidden' && publicState.bodyOverflowY === 'hidden') throw new Error(`Homepage remains scroll-locked: ${JSON.stringify(publicState)}`);
+            await page.mouse.wheel(0, 900);
+            await page.waitForTimeout(200);
+            const publicY = await page.evaluate(() => window.scrollY);
+            if (publicY < 100) throw new Error(`Production homepage did not physically scroll: ${publicY}`);
+
+            await page.goto('https://controols.com/pt/', { waitUntil: 'networkidle' });
+            await page.mouse.wheel(0, 500);
+            await page.waitForTimeout(200);
+            const gameState = await page.evaluate(() => ({
+              scrollY,
+              scrollHeight: document.documentElement.scrollHeight,
+              innerHeight,
+            }));
+            if (gameState.scrollY !== 0) throw new Error(`Game route unexpectedly scrolls: ${JSON.stringify(gameState)}`);
+
+            console.log(JSON.stringify({ publicState, publicY, gameState }, null, 2));
+            await browser.close();
+          })();
+          NODE
