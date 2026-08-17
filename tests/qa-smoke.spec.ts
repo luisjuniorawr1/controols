@@ -15,7 +15,7 @@ async function expectSingleViewport(page: Page) {
   expect(metrics.htmlHeight).toBeLessThanOrEqual(metrics.innerHeight + 1);
   expect(metrics.bodyHeight).toBeLessThanOrEqual(metrics.innerHeight + 1);
 
-  const activeScreen = page.locator('main.kids-game > section:visible').first();
+  const activeScreen = page.locator('main.kids3-root > section:visible').first();
   await expect(activeScreen).toBeVisible();
   const screenBox = await activeScreen.boundingBox();
   expect(screenBox).not.toBeNull();
@@ -24,7 +24,7 @@ async function expectSingleViewport(page: Page) {
   expect(screenBox!.x + screenBox!.width).toBeLessThanOrEqual(metrics.innerWidth + 1);
   expect(screenBox!.y + screenBox!.height).toBeLessThanOrEqual(metrics.innerHeight + 1);
 
-  const clippedButtons = await page.locator('main.kids-game button:visible').evaluateAll((buttons) => buttons.flatMap((button) => {
+  const clippedButtons = await page.locator('main.kids3-root button:visible').evaluateAll((buttons) => buttons.flatMap((button) => {
     const rect = button.getBoundingClientRect();
     const clipped = rect.left < -1 || rect.top < -1 || rect.right > window.innerWidth + 1 || rect.bottom > window.innerHeight + 1;
     return clipped ? [button.textContent?.trim() || 'unnamed button'] : [];
@@ -32,172 +32,167 @@ async function expectSingleViewport(page: Page) {
   expect(clippedButtons).toEqual([]);
 }
 
-async function unlockObservation(page: Page) {
-  const locked = page.getByRole('button', { name: /observe primeiro/i });
-  await expect(locked).toBeVisible();
-  await expect(locked).toBeDisabled();
-  await expect(page.locator('.kids-v2-timer strong')).toHaveText('30');
-  await page.clock.runFor(31_000);
-  const unlocked = page.getByRole('button', { name: /ver pistas/i });
-  await expect(unlocked).toBeVisible();
-  await expect(unlocked).toBeEnabled();
-}
-
-async function expectVisualScene(page: Page, screen: string) {
+async function expectFullScreenScene(page: Page, screen: string, assetFolder: RegExp) {
   const scene = page.locator(`[data-screen="${screen}"]`);
   await expect(scene).toBeVisible();
-  const art = scene.locator('.kids-scene-v2-art');
+  const art = scene.locator('.kids3-scene-art');
   await expect(art).toBeVisible();
-  await expect(art).toHaveAttribute('src', /\/game\/assets\/v2-real\/.+\.png$/);
+  await expect(art).toHaveAttribute('src', assetFolder);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
   await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
-  const boxes = await Promise.all([scene.boundingBox(), art.boundingBox()]);
-  expect(boxes[0]).not.toBeNull();
-  expect(boxes[1]).not.toBeNull();
-  expect(boxes[1]!.width).toBeGreaterThanOrEqual(boxes[0]!.width - 4);
-  expect(boxes[1]!.height).toBeGreaterThanOrEqual(boxes[0]!.height - 4);
-  await expect(scene.locator('.kids-scene-v2-ui')).toBeVisible();
-  await expect(scene.locator('.kids-scene-v2-character')).toHaveCount(0);
+
+  const geometry = await scene.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const panel = node.querySelector('.kids3-panel')?.getBoundingClientRect();
+    const image = node.querySelector('.kids3-scene-art')?.getBoundingClientRect();
+    return {
+      scene: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      image: image ? { x: image.x, y: image.y, width: image.width, height: image.height } : null,
+      panel: panel ? { x: panel.x, y: panel.y, width: panel.width, height: panel.height } : null,
+      border: [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth],
+      viewport: { width: innerWidth, height: innerHeight },
+    };
+  });
+
+  expect(geometry.scene.x).toBeCloseTo(0, 0);
+  expect(geometry.scene.y).toBeCloseTo(0, 0);
+  expect(geometry.scene.width).toBeGreaterThanOrEqual(geometry.viewport.width - 1);
+  expect(geometry.scene.height).toBeGreaterThanOrEqual(geometry.viewport.height - 1);
+  expect(geometry.image).not.toBeNull();
+  expect(geometry.image!.width).toBeGreaterThanOrEqual(geometry.viewport.width - 1);
+  expect(geometry.image!.height).toBeGreaterThanOrEqual(geometry.viewport.height - 1);
+  expect(geometry.border).toEqual(['0px', '0px', '0px', '0px']);
+  expect(geometry.panel).not.toBeNull();
+  expect(geometry.panel!.x).toBeGreaterThan(geometry.viewport.width * .55);
+  await expectSingleViewport(page);
 }
 
-test('title uses the real full-resolution Case 001 hub artwork', async ({ page }) => {
+async function startCase(page: Page, number: '001' | '002') {
+  const card = page.getByRole('button', { name: new RegExp(`caso ${number}`, 'i') });
+  await expect(card).toBeVisible();
+  await card.click();
+  await expect(page.locator(`[data-screen="loading-case-00${number === '001' ? '1' : '2'}"]`)).toBeVisible();
+  await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
+}
+
+async function startCaseWithRealClock(page: Page, number: '001' | '002') {
+  await startCase(page, number);
+  const firstScreen = number === '001' ? 'case001-intro' : 'case002-warning';
+  await expect(page.locator(`[data-screen="${firstScreen}"]`)).toBeVisible({ timeout: 5_000 });
+}
+
+async function startCaseWithMockClock(page: Page, number: '001' | '002') {
+  await page.clock.install();
+  await startCase(page, number);
+  await page.clock.runFor(800);
+  const firstScreen = number === '001' ? 'case001-intro' : 'case002-warning';
+  await expect(page.locator(`[data-screen="${firstScreen}"]`)).toBeVisible();
+}
+
+test('library shows two games and no character-selection step', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
-  const art = page.getByRole('img', { name: /sala de aventuras do controols/i });
-  await expect(art).toBeVisible();
-  await expect(art).toHaveAttribute('src', /\/game\/assets\/v2-real\/01_capa_hub\.png$/);
-  await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
-  await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
-  await expect(page.getByRole('button', { name: /jogar/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /2 jogadores/i })).toHaveCount(0);
-  await expect(page.locator('.kids-home-v2-cast')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: /escolha uma aventura/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /caso 001/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();
+  await expect(page.getByText(/escolha seu amigo/i)).toHaveCount(0);
+  await expect(page.locator('[data-testid="character-grid"]')).toHaveCount(0);
   await expectSingleViewport(page);
 });
 
-test('Case 001 observation mission keeps 30 seconds and uses the real message artwork', async ({ page }) => {
-  await page.clock.install();
+test('each game uses its cover as a preload screen before gameplay', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
-  await page.getByRole('button', { name: /jogar/i }).click();
-  await page.getByRole('button', { name: /começar aventura/i }).click();
+  await startCaseWithRealClock(page, '002');
 
-  const heading = page.getByRole('heading', { name: /olhe com atenção/i });
-  await expect(heading).toBeVisible();
-  await expect(page.getByText(/tem pistas escondidas/i)).toBeVisible();
-  await expectVisualScene(page, 'intro');
-  await expectSingleViewport(page);
+  const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => name.includes('/game/assets/case-002/')));
+  expect(new Set(resources).size).toBeGreaterThanOrEqual(8);
+  await expect(page.locator('.kids3-loader')).toHaveCount(0);
+  await expectFullScreenScene(page, 'case002-warning', /\/game\/assets\/case-002\/01_tentativa_senha_fraca\.png$/);
+});
 
-  const type = await heading.evaluate((node) => {
-    const style = getComputedStyle(node);
-    return { size: parseFloat(style.fontSize), weight: parseInt(style.fontWeight, 10), family: style.fontFamily };
-  });
-  expect(type.size).toBeGreaterThanOrEqual(29);
-  expect(type.weight).toBeGreaterThanOrEqual(900);
-  expect(type.family.toLowerCase()).toMatch(/rounded|trebuchet|comic|system/);
+test('Case 001 starts directly after preload and keeps the 30-second observation mission', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCaseWithMockClock(page, '001');
 
-  await unlockObservation(page);
+  await expect(page.getByRole('heading', { name: /olhe com atenção/i })).toBeVisible();
+  await expect(page.locator('.kids3-timer strong')).toHaveText('30');
+  const locked = page.getByRole('button', { name: /observe primeiro/i });
+  await expect(locked).toBeDisabled();
+  await expectFullScreenScene(page, 'case001-intro', /\/game\/assets\/v2-real\/02_luna_mensagem_suspeita\.png$/);
+
+  await page.clock.runFor(31_000);
+  await expect(page.getByRole('button', { name: /ver pistas/i })).toBeEnabled();
   await page.getByRole('button', { name: /ver pistas/i }).click();
-  await expect(page.getByRole('heading', { name: /escolha 2 pistas/i })).toBeVisible();
-  await expectVisualScene(page, 'clues');
-  await expectSingleViewport(page);
+  await expectFullScreenScene(page, 'case001-clues', /\/game\/assets\/v2-real\/03_maya_pistas\.png$/);
 });
 
-test('story challenges use the real scene masters without duplicate character overlays', async ({ page }) => {
-  await page.clock.install();
+test('Case 002 complete flow teaches long unique passwords and secret verification codes', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
-  await page.getByRole('button', { name: /jogar/i }).click();
-  await page.getByRole('button', { name: /começar aventura/i }).click();
-  await unlockObservation(page);
+  await startCaseWithRealClock(page, '002');
+
+  await expectFullScreenScene(page, 'case002-warning', /\/game\/assets\/case-002\/01_tentativa_senha_fraca\.png$/);
+  await page.getByRole('button', { name: /descobrir o problema/i }).click();
+
+  await expectFullScreenScene(page, 'case002-weak', /\/game\/assets\/case-002\/02_maya_senhas_fracas\.png$/);
+  await page.getByRole('button', { name: /^123456$/ }).click();
+  await page.getByRole('button', { name: /fortalecer o cofre/i }).click();
+
+  await expectFullScreenScene(page, 'case002-strong', /\/game\/assets\/case-002\/03_theo_senha_forte\.png$/);
+  await page.getByRole('button', { name: /uma frase longa e só minha/i }).click();
+  await page.getByRole('button', { name: /próxima pista/i }).click();
+
+  await expectFullScreenScene(page, 'case002-reuse', /\/game\/assets\/case-002\/04_nina_reutilizar_senha\.png$/);
+  await page.getByRole('button', { name: /^não$/i }).click();
+  await page.getByRole('button', { name: /continuar/i }).click();
+
+  await expectFullScreenScene(page, 'case002-code', /\/game\/assets\/case-002\/05_caio_codigo_secreto\.png$/);
+  await page.getByRole('button', { name: /não compartilhar/i }).click();
+  await page.getByRole('button', { name: /montar a chave/i }).click();
+
+  await expectFullScreenScene(page, 'case002-key', /\/game\/assets\/case-002\/06_luna_chave_mestra\.png$/);
+  await page.getByRole('button', { name: /usar uma senha longa/i }).click();
+  await page.getByRole('button', { name: /uma senha diferente em cada conta/i }).click();
+  await page.getByRole('button', { name: /manter códigos de verificação em segredo/i }).click();
+  await page.getByRole('button', { name: /testar a chave/i }).click();
+  await page.getByRole('button', { name: /abrir o resultado/i }).click();
+
+  await expect(page.getByRole('heading', { name: /missão cumprida/i })).toBeVisible();
+  await expectFullScreenScene(page, 'case002-ending', /\/game\/assets\/case-002\/07_final_cofre_protegido\.png$/);
+});
+
+test('Case 001 can still be completed without choosing a character', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCaseWithMockClock(page, '001');
+  await page.clock.runFor(31_000);
   await page.getByRole('button', { name: /ver pistas/i }).click();
   await page.getByRole('button', { name: /link estranho/i }).click();
   await page.getByRole('button', { name: /muita pressa/i }).click();
   await page.getByRole('button', { name: /^conferir$/i }).click();
   await page.getByRole('button', { name: /próxima missão/i }).click();
-
-  await expectVisualScene(page, 'https');
-  await expectSingleViewport(page);
   await page.getByRole('button', { name: /^não$/i }).click();
   await page.getByRole('button', { name: /continuar/i }).click();
-
-  await expectVisualScene(page, 'action');
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /abrir o app/i }).click();
+  await page.getByRole('button', { name: /abrir o app oficial/i }).click();
   await page.getByRole('button', { name: /juntar respostas/i }).click();
-
-  await expect(page.getByTestId('team-guide-stage')).toBeVisible();
-  await expectVisualScene(page, 'team');
-  await expectSingleViewport(page);
   await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
   await page.getByRole('button', { name: /um adulto de confiança/i }).click();
   await page.getByRole('button', { name: /montar escudo/i }).click();
-
-  await expectVisualScene(page, 'shield');
-  await expectSingleViewport(page);
-});
-
-test('official character masters stay full resolution on character selection', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/pt/');
-  await page.getByRole('button', { name: /jogar/i }).click();
-  const cards = page.getByTestId('character-grid').locator('button');
-  await expect(cards).toHaveCount(5);
-  await expect(page.getByTestId('character-grid').locator('.is-selected')).toHaveCount(1);
-  await page.getByRole('button', { name: /theo/i }).click();
-  await expect(page.getByTestId('character-grid').locator('.is-selected')).toHaveCount(1);
-  const firstImage = cards.first().locator('img');
-  await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1100);
-  await expect.poll(async () => firstImage.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(1400);
-  await expect(page.getByRole('button', { name: /começar aventura/i })).toBeEnabled();
-  await expectSingleViewport(page);
-});
-
-test('the complete episode fits one 1280x650 viewport using the real PNG scenes', async ({ page }) => {
-  await page.clock.install();
-  await page.setViewportSize({ width: 1280, height: 650 });
-  await page.goto('/pt/');
-  await expectSingleViewport(page);
-
-  await page.getByRole('button', { name: /jogar/i }).click();
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /começar aventura/i }).click();
-  await expectVisualScene(page, 'intro');
-  await expectSingleViewport(page);
-  await unlockObservation(page);
-
-  await page.getByRole('button', { name: /ver pistas/i }).click();
-  await expectVisualScene(page, 'clues');
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /link estranho/i }).click();
-  await page.getByRole('button', { name: /muita pressa/i }).click();
-  await page.getByRole('button', { name: /^conferir$/i }).click();
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /próxima missão/i }).click();
-
-  await expectVisualScene(page, 'https');
-  await page.getByRole('button', { name: /^não$/i }).click();
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /continuar/i }).click();
-
-  await expectVisualScene(page, 'action');
-  await page.getByRole('button', { name: /abrir o app/i }).click();
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /juntar respostas/i }).click();
-
-  await expectVisualScene(page, 'team');
-  await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
-  await page.getByRole('button', { name: /um adulto de confiança/i }).click();
-  await expectSingleViewport(page);
-  await page.getByRole('button', { name: /montar escudo/i }).click();
-
-  await expectVisualScene(page, 'shield');
   await page.getByRole('button', { name: /parar antes de clicar/i }).click();
   await page.getByRole('button', { name: /abrir o app ou site oficial/i }).click();
   await page.getByRole('button', { name: /pedir ajuda a um adulto de confiança/i }).click();
-  await expectSingleViewport(page);
   await page.getByRole('button', { name: /ver resultado/i }).click();
-
   await expect(page.getByRole('heading', { name: /você conseguiu/i })).toBeVisible();
-  await expectVisualScene(page, 'ending');
-  await expect(page.locator('.kids-ending-v2-cast')).toHaveCount(0);
+  await expectSingleViewport(page);
+});
+
+test('game library also fits a phone viewport without scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/pt/');
+  await expect(page.getByRole('button', { name: /caso 001/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /caso 002/i })).toBeVisible();
   await expectSingleViewport(page);
 });
