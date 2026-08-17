@@ -68,7 +68,7 @@ async function expectFullScreenScene(page: Page, screen: string, assetFolder: Re
   await expectSingleViewport(page);
 }
 
-async function startCase(page: Page, number: '001' | '002' | '003') {
+async function startCase(page: Page, number: '001' | '002' | '003' | '003') {
   const card = page.getByRole('button', { name: new RegExp(`caso ${number}`, 'i') });
   await expect(card).toBeVisible();
   await card.click();
@@ -76,13 +76,13 @@ async function startCase(page: Page, number: '001' | '002' | '003') {
   await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
 }
 
-async function startCaseWithRealClock(page: Page, number: '001' | '002' | '003') {
+async function startCaseWithRealClock(page: Page, number: '001' | '002' | '003' | '003') {
   await startCase(page, number);
   const firstScreen = number === '001' ? 'case001-intro' : number === '002' ? 'case002-warning' : 'case003-warning';
   await expect(page.locator(`[data-screen="${firstScreen}"]`)).toBeVisible({ timeout: 5_000 });
 }
 
-async function startCaseWithMockClock(page: Page, number: '001' | '002' | '003') {
+async function startCaseWithMockClock(page: Page, number: '001' | '002' | '003' | '003') {
   await page.clock.install();
   await startCase(page, number);
   await page.clock.runFor(800);
