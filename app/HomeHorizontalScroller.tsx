@@ -26,10 +26,15 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
     let dragStartX = 0;
     let dragStartScroll = 0;
 
-    const snapToPanel = (index: number) => {
+    const snapToPanel = (index: number, behavior: ScrollBehavior = 'smooth') => {
       const width = track.clientWidth || 1;
       const safeIndex = Math.max(0, Math.min(panelCount - 1, index));
-      track.scrollTo({ left: safeIndex * width, behavior: 'smooth' });
+      track.scrollTo({ left: safeIndex * width, behavior });
+    };
+
+    const restoreSnap = () => {
+      track.style.removeProperty('scroll-snap-type');
+      track.style.removeProperty('scroll-behavior');
     };
 
     const onScroll = () => {
@@ -63,6 +68,8 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
       dragStartX = event.clientX;
       dragStartScroll = track.scrollLeft;
       track.dataset.dragging = 'true';
+      track.style.setProperty('scroll-snap-type', 'none', 'important');
+      track.style.setProperty('scroll-behavior', 'auto', 'important');
     };
 
     const onMouseMove = (event: MouseEvent) => {
@@ -77,15 +84,14 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
       const delta = track.scrollLeft - dragStartScroll;
       const startPanel = Math.round(dragStartScroll / width);
       const threshold = Math.min(120, width * 0.12);
+      const targetPanel = Math.abs(delta) >= threshold
+        ? startPanel + (delta > 0 ? 1 : -1)
+        : startPanel;
 
       dragging = false;
       delete track.dataset.dragging;
-
-      if (Math.abs(delta) >= threshold) {
-        snapToPanel(startPanel + (delta > 0 ? 1 : -1));
-      } else {
-        snapToPanel(startPanel);
-      }
+      snapToPanel(targetPanel, 'auto');
+      requestAnimationFrame(() => requestAnimationFrame(restoreSnap));
     };
 
     track.addEventListener('scroll', onScroll, { passive: true });
@@ -102,6 +108,7 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
       window.removeEventListener('mouseup', finishMouseDrag);
       window.removeEventListener('blur', finishMouseDrag);
       window.removeEventListener('wheel', onWheel);
+      restoreSnap();
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
   }, [panelCount]);
