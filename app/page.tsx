@@ -21,12 +21,6 @@ const characters = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', copy: 'Pensa antes de agir e ajuda a turma a encontrar bons caminhos.', color: '#76ad42' },
 ] as const;
 
-const cases = [
-  { number: '001', title: 'A Mensagem Misteriosa', copy: 'Pense antes de clicar.', image: '/game/assets/v2-real/01_capa_hub.png' },
-  { number: '002', title: 'O Cofre das Senhas', copy: 'Proteja seus segredos digitais.', image: '/game/assets/case-002/00_capa_cofre_das_senhas.png' },
-  { number: '003', title: 'O Link Fantasma', copy: 'Nem todo link é o que parece.', image: '/game/assets/case-003/00_capa_link_fantasma.png?v3-20260817' },
-] as const;
-
 export default function HomePage() {
   return (
     <main className="marketing-home">
@@ -35,10 +29,10 @@ export default function HomePage() {
         <nav aria-label="Navegação principal">
           <a href="#projeto">O projeto</a>
           <a href="#turma">A turma</a>
-          <a href="#aventuras">Aventuras</a>
-          <a href="#acesso">Como jogar</a>
+          <a href="#temas">Temas</a>
+          <a href="#demo">Demo</a>
         </nav>
-        <a className="marketing-header-action" href="#acesso">Tenho um código</a>
+        <a className="marketing-header-action" href="#demo">Demo em breve</a>
       </header>
 
       <section className="marketing-hero" id="top">
@@ -48,7 +42,7 @@ export default function HomePage() {
           <p>CONTROOLS transforma diferentes temas em histórias para jogar, investigar, experimentar e descobrir junto com uma turma que acompanha cada nova missão.</p>
           <div className="marketing-hero-actions">
             <a className="marketing-button primary" href="#projeto">Conheça o CONTROOLS <span>→</span></a>
-            <a className="marketing-button secondary" href="#acesso">Baixar para Android</a>
+            <a className="marketing-button secondary" href="#demo">Demo para pais em breve</a>
           </div>
           <div className="marketing-hero-facts" aria-label="Informações do CONTROOLS">
             <span><b>5</b> personagens fixos</span>
@@ -60,15 +54,16 @@ export default function HomePage() {
         <div className="marketing-cast-stage" aria-label="Turma do CONTROOLS">
           <div className="marketing-orbit orbit-one" />
           <div className="marketing-orbit orbit-two" />
-          {characters.map((character, index) => (
-            <img
-              key={character.id}
-              className={`marketing-hero-kid kid-${character.id}`}
-              src={`/game/assets/characters/${character.id}.png`}
-              alt={character.name}
-              style={{ zIndex: index === 2 ? 6 : 5 }}
-            />
-          ))}
+          <div className="marketing-hero-lineup-row">
+            {characters.map(character => (
+              <img
+                key={character.id}
+                className={`marketing-lineup-kid lineup-${character.id}`}
+                src={`/game/assets/characters/${character.id}.png`}
+                alt={character.name}
+              />
+            ))}
+          </div>
           <span className="marketing-stage-badge badge-one">DESCOBRIR</span>
           <span className="marketing-stage-badge badge-two">JOGAR</span>
           <span className="marketing-stage-badge badge-three">APRENDER</span>
@@ -79,13 +74,13 @@ export default function HomePage() {
         <div className="marketing-section-heading">
           <span className="marketing-kicker">O PROJETO</span>
           <h2>Uma turma. Muitos mundos para explorar.</h2>
-          <p>Segurança digital é a nossa primeira coleção — não o limite do CONTROOLS. Os mesmos personagens podem viver aventuras sobre tecnologia, ciência, cidadania, meio ambiente, finanças, cultura e muitos outros assuntos.</p>
+          <p>Segurança digital é um dos temas que estamos explorando — não o limite do CONTROOLS. Os mesmos personagens podem viver histórias sobre tecnologia, ciência, cidadania, meio ambiente, finanças, cultura e muitos outros assuntos.</p>
         </div>
         <div className="marketing-principles">
           <article><span>01</span><b>Histórias primeiro</b><p>Cada tema vira uma missão, não uma aula disfarçada.</p></article>
           <article><span>02</span><b>Aprender fazendo</b><p>A criança observa, escolhe, testa e vê as consequências.</p></article>
           <article><span>03</span><b>Um elenco reconhecível</b><p>Luna, Theo, Maya, Caio e Nina continuam os mesmos em todas as aventuras.</p></article>
-          <article><span>04</span><b>Universo expansível</b><p>Novos temas entram como coleções sem perder a identidade do CONTROOLS.</p></article>
+          <article><span>04</span><b>Universo expansível</b><p>Novos temas podem virar novos mundos sem perder a identidade do CONTROOLS.</p></article>
         </div>
       </section>
 
@@ -104,46 +99,54 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="marketing-section marketing-worlds">
+      <section className="marketing-section marketing-worlds" id="temas">
         <div className="marketing-section-heading">
           <span className="marketing-kicker">UM CONTROOLS, VÁRIOS TEMAS</span>
-          <h2>Cada coleção abre uma porta nova.</h2>
+          <h2>O assunto muda. A aventura continua.</h2>
+          <p>Os temas abaixo mostram a direção do universo, sem fechar agora quais serão as aventuras definitivas.</p>
         </div>
         <div className="marketing-world-grid">
-          <article className="world-card is-live"><span>🛡️</span><small>PRIMEIRA COLEÇÃO</small><h3>Segurança digital</h3><p>Golpes, senhas, links, privacidade e decisões seguras em aventuras visuais.</p><b>Já em desenvolvimento</b></article>
-          <article className="world-card"><span>🔬</span><small>NOVOS MUNDOS</small><h3>Conhecimento & descoberta</h3><p>Ciência, curiosidade, tecnologia e assuntos que convidam a investigar.</p><b>Universo expansível</b></article>
-          <article className="world-card"><span>🌎</span><small>NOVOS MUNDOS</small><h3>Vida & sociedade</h3><p>Cidadania, meio ambiente, finanças, cultura e outros temas da vida real.</p><b>Universo expansível</b></article>
+          <article className="world-card is-live"><span>🛡️</span><small>EM EXPLORAÇÃO</small><h3>Segurança digital</h3><p>Privacidade, golpes, senhas, links e decisões digitais podem virar histórias para investigar e jogar.</p><b>Tema em desenvolvimento</b></article>
+          <article className="world-card"><span>🔬</span><small>POSSIBILIDADES</small><h3>Conhecimento & descoberta</h3><p>Ciência, curiosidade, tecnologia e assuntos que convidam a observar, testar e descobrir.</p><b>Universo aberto a novos temas</b></article>
+          <article className="world-card"><span>🌎</span><small>POSSIBILIDADES</small><h3>Vida & sociedade</h3><p>Cidadania, meio ambiente, finanças, cultura e outros assuntos que fazem parte da vida real.</p><b>Universo aberto a novos temas</b></article>
         </div>
       </section>
 
-      <section className="marketing-section marketing-adventures" id="aventuras">
+      <section className="marketing-section marketing-demo" id="demo">
         <div className="marketing-section-heading split">
-          <div><span className="marketing-kicker">COLEÇÃO 01 · SEGURANÇA DIGITAL</span><h2>As primeiras aventuras já começaram.</h2></div>
-          <p>Essa coleção inaugura o formato do CONTROOLS. Depois, a mesma biblioteca poderá receber novos temas, histórias e desafios.</p>
+          <div><span className="marketing-kicker">DEMO PARA PAIS E RESPONSÁVEIS</span><h2>Em breve, vai dar para conhecer jogando.</h2></div>
+          <p>Antes de apresentar aventuras definitivas, vamos colocar uma demo jogável na página para as famílias entenderem, na prática, como funciona a experiência do CONTROOLS.</p>
         </div>
-        <div className="marketing-case-grid">
-          {cases.map(item => (
-            <article key={item.number} className="marketing-case-card">
-              <img src={item.image} alt="" />
-              <div className="marketing-case-shade" />
-              <div className="marketing-case-copy"><small>CASO {item.number}</small><h3>{item.title}</h3><p>{item.copy}</p></div>
-            </article>
-          ))}
+        <div className="marketing-demo-panel">
+          <div className="marketing-demo-copy">
+            <span className="marketing-demo-pill">PRÓXIMA NOVIDADE</span>
+            <h3>Uma primeira experiência para sentir o formato.</h3>
+            <p>A demo vai mostrar como narrativa, escolhas, investigação e os personagens funcionam juntos — sem transformar conceitos ainda em desenvolvimento em aventuras oficiais.</p>
+            <button type="button" disabled>Demo em breve</button>
+          </div>
+          <div className="marketing-demo-preview" aria-hidden="true">
+            <div className="marketing-demo-browserbar"><i /><i /><i /><span>controols.com / demo</span></div>
+            <div className="marketing-demo-screen">
+              <small>CONTROOLS · DEMO</small>
+              <strong>Jogar. Escolher. Descobrir.</strong>
+              <div className="marketing-demo-steps"><span>01</span><span>02</span><span>03</span></div>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="marketing-access" id="acesso">
         <div className="marketing-access-intro">
-          <span className="marketing-kicker">COMO VAMOS JOGAR</span>
-          <h2>Baixe o app. Entre na aventura.</h2>
-          <p>O aplicativo será a porta principal do CONTROOLS. Com o tempo, as sessões poderão ser liberadas por convite usando um código curto ou QR Code.</p>
+          <span className="marketing-kicker">PRÓXIMOS PASSOS</span>
+          <h2>A demo vem primeiro. O app vem depois.</h2>
+          <p>A página será a primeira porta para pais e responsáveis experimentarem o CONTROOLS. Mais adiante, o aplicativo e os convites por código ou QR Code poderão ampliar as formas de acesso.</p>
         </div>
         <div className="marketing-access-grid">
           <article className="marketing-access-card download-card">
-            <div className="access-icon">↓</div><small>ANDROID</small><h3>Baixar APK</h3><p>A versão Android está sendo preparada. Este será o botão oficial de download quando o primeiro APK estiver publicado.</p><button type="button" disabled>APK em breve</button>
+            <div className="access-icon">↓</div><small>ANDROID</small><h3>Aplicativo</h3><p>A versão Android faz parte dos próximos passos. O download oficial aparecerá aqui quando estiver pronto para distribuição.</p><button type="button" disabled>Android mais adiante</button>
           </article>
           <article className="marketing-access-card code-card">
-            <div className="access-icon">#</div><small>ACESSO POR CONVITE</small><h3>Código ou QR Code</h3><p>No futuro, escolas, famílias, eventos e parceiros poderão liberar uma sessão com um convite válido.</p><div className="marketing-code-demo"><span>K7F4</span><i>—</i><span>P9</span></div><button type="button" disabled>Entrada por convite em breve</button>
+            <div className="access-icon">#</div><small>ACESSO POR CONVITE</small><h3>Código ou QR Code</h3><p>Também planejamos formas de liberar experiências para famílias, escolas, eventos e parceiros por meio de convites válidos.</p><div className="marketing-code-demo"><span>K7F4</span><i>—</i><span>P9</span></div><button type="button" disabled>Convites mais adiante</button>
           </article>
         </div>
       </section>
