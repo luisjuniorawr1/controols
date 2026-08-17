@@ -1,0 +1,53 @@
+name: Public Homepage QA
+
+on:
+  push:
+    branches: [agent/public-homepage]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture homepage
+        run: |
+          npx serve out -l 4173 > /tmp/controols-serve.log 2>&1 &
+          sleep 2
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            const title = await page.title();
+            if (!title.includes('CONTROOLS')) throw new Error(`Unexpected title: ${title}`);
+            const overflow = await page.evaluate(() => ({ h: document.documentElement.scrollHeight, v: innerHeight }));
+            if (overflow.h <= overflow.v) throw new Error(`Homepage should scroll: ${JSON.stringify(overflow)}`);
+            await page.screenshot({ path: 'homepage-desktop.png', fullPage: true });
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.screenshot({ path: 'homepage-mobile.png', fullPage: true });
+            await browser.close();
+          })();
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-homepage-qa
+          path: |
+            homepage-desktop.png
+            homepage-mobile.png
