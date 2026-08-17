@@ -16,14 +16,17 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
+export type KidsGameId = 'case-001' | 'case-002';
+
 export const firstKidsStory = {
-  id: 'mysterious-message',
+  id: 'case-001' as KidsGameId,
   number: '001',
   title: 'A Mensagem Misteriosa',
-  subtitle: 'Uma aventura para pensar antes de clicar.',
+  subtitle: 'Pense antes de clicar.',
   age: '7–10 anos',
+  accent: '#ffd24f',
+  cover: '/game/assets/v2-real/01_capa_hub.png',
   scenes: {
-    title: '/game/assets/v2-real/01_capa_hub.png',
     message: '/game/assets/v2-real/02_luna_mensagem_suspeita.png',
     clues: '/game/assets/v2-real/03_maya_pistas.png',
     https: '/game/assets/v2-real/04_theo_cadeado.png',
@@ -33,6 +36,30 @@ export const firstKidsStory = {
     ending: '/game/assets/v2-real/08_final_turma_comemorando.png',
   },
 } as const;
+
+export const secondKidsStory = {
+  id: 'case-002' as KidsGameId,
+  number: '002',
+  title: 'O Cofre das Senhas',
+  subtitle: 'Proteja seus segredos digitais.',
+  age: '7–10 anos',
+  accent: '#68d5ff',
+  cover: '/game/assets/case-002/00_capa_cofre_das_senhas.png',
+  scenes: {
+    warning: '/game/assets/case-002/01_tentativa_senha_fraca.png',
+    weak: '/game/assets/case-002/02_maya_senhas_fracas.png',
+    strong: '/game/assets/case-002/03_theo_senha_forte.png',
+    reuse: '/game/assets/case-002/04_nina_reutilizar_senha.png',
+    code: '/game/assets/case-002/05_caio_codigo_secreto.png',
+    key: '/game/assets/case-002/06_luna_chave_mestra.png',
+    ending: '/game/assets/case-002/07_final_cofre_protegido.png',
+  },
+} as const;
+
+export const kidsGames = [firstKidsStory, secondKidsStory] as const;
+
+export const case001Assets = [firstKidsStory.cover, ...Object.values(firstKidsStory.scenes)];
+export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
 
 export const redFlags = [
   { id: 'link', label: 'Link estranho', icon: '🔗', correct: true },
@@ -45,4 +72,12 @@ export const safeSteps = [
   { id: 'stop', label: 'Parar antes de clicar', icon: '✋' },
   { id: 'official', label: 'Abrir o app ou site oficial', icon: '📱' },
   { id: 'help', label: 'Pedir ajuda a um adulto de confiança', icon: '🤝' },
+] as const;
+
+export const passwordHabits = [
+  { id: 'long', label: 'Usar uma senha longa', icon: '📏', correct: true },
+  { id: 'unique', label: 'Uma senha diferente em cada conta', icon: '🗝️', correct: true },
+  { id: 'secret', label: 'Manter códigos de verificação em segredo', icon: '🤫', correct: true },
+  { id: 'birthday', label: 'Usar aniversário ou nome', icon: '🎂', correct: false },
+  { id: 'reuse', label: 'Repetir a mesma senha em tudo', icon: '🔁', correct: false },
 ] as const;
