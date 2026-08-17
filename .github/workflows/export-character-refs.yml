@@ -20,4 +20,5 @@ jobs:
             public/game/assets/characters/*.png
             public/game/assets/reference/character-lineup.png
             public/game/assets/v2-real/*.png
+            public/game/assets/case-002/*.png
           if-no-files-found: error
