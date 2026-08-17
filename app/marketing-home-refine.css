@@ -197,13 +197,13 @@
   }
   .marketing-lineup-kid{
     bottom:24px;
-    height:215px;
+    height:clamp(160px,42vw,215px);
   }
-  .lineup-luna{left:14%;}
-  .lineup-theo{left:32%;}
-  .lineup-maya{left:50%;height:228px;}
-  .lineup-caio{left:68%;}
-  .lineup-nina{left:86%;height:205px;}
+  .lineup-luna{left:18%;}
+  .lineup-theo{left:34%;}
+  .lineup-maya{left:50%;height:clamp(170px,44.5vw,228px);}
+  .lineup-caio{left:66%;}
+  .lineup-nina{left:82%;height:clamp(155px,40vw,205px);}
   .marketing-demo{
     padding-top:56px;
   }
@@ -232,13 +232,7 @@
   }
   .marketing-lineup-kid{
     bottom:26px;
-    height:190px;
   }
-  .lineup-luna{left:14%;}
-  .lineup-theo{left:32%;}
-  .lineup-maya{left:50%;height:202px;}
-  .lineup-caio{left:68%;}
-  .lineup-nina{left:86%;height:182px;}
   .marketing-demo-copy h3{
     font-size:32px;
   }
