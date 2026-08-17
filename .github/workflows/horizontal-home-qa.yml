@@ -69,15 +69,40 @@ jobs:
             if (afterWheel.scrollY !== 0) throw new Error(`Wheel created vertical scroll at ${width}x${height}: ${JSON.stringify(afterWheel)}`);
             if (afterWheel.left < 100) throw new Error(`Wheel did not move horizontally at ${width}x${height}: ${JSON.stringify(afterWheel)}`);
 
-            await page.evaluate(() => document.querySelector('.marketing-horizontal-track')?.scrollTo({ left: 0, behavior: 'instant' }));
-            await page.waitForTimeout(100);
-            await page.mouse.move(Math.round(width * .72), Math.round(height * .55));
+            await page.evaluate(() => {
+              const track = document.querySelector('.marketing-horizontal-track');
+              track?.scrollTo({ left: 0, behavior: 'instant' });
+              window.__dragQa = [];
+              const capture = event => window.__dragQa.push({
+                type: event.type,
+                x: event.clientX,
+                y: event.clientY,
+                target: event.target?.tagName,
+                cls: event.target?.className || '',
+                left: track?.scrollLeft ?? -1,
+                dragging: track?.dataset.dragging || '',
+              });
+              document.addEventListener('mousedown', capture, true);
+              document.addEventListener('mousemove', capture, true);
+              document.addEventListener('mouseup', capture, true);
+            });
+            await page.waitForTimeout(150);
+            const startX = Math.round(width * .72);
+            const startY = Math.round(height * .55);
+            const startTarget = await page.evaluate(([x,y]) => {
+              const el = document.elementFromPoint(x,y);
+              return { tag: el?.tagName, cls: el?.className || '', closestInteractive: !!el?.closest('a,button,input,textarea,select') };
+            }, [startX,startY]);
+            await page.mouse.move(startX, startY);
             await page.mouse.down();
-            await page.mouse.move(Math.round(width * .25), Math.round(height * .55), { steps: 8 });
+            await page.mouse.move(Math.round(width * .25), startY, { steps: 8 });
             await page.mouse.up();
-            await page.waitForTimeout(300);
-            const afterDrag = await page.evaluate(() => document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0);
-            if (afterDrag < 100) throw new Error(`Mouse drag did not move horizontally at ${width}x${height}: ${afterDrag}`);
+            await page.waitForTimeout(650);
+            const dragResult = await page.evaluate(() => ({
+              left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0,
+              events: window.__dragQa,
+            }));
+            if (dragResult.left < 100) throw new Error(`Mouse drag did not move horizontally at ${width}x${height}: ${JSON.stringify({ startTarget, dragResult })}`);
 
             await page.screenshot({ path: `horizontal-home-${width}x${height}.png` });
             await page.close();
