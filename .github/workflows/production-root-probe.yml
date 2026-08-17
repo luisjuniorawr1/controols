@@ -19,46 +19,111 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npx playwright install --with-deps chromium
-      - name: Verify production parent-demo homepage
+      - name: Verify production horizontal homepage
         run: |
           node - <<'NODE'
           const { chromium } = require('playwright');
+
+          async function assertHorizontalLayout(page, width, height) {
+            const state = await page.evaluate(() => {
+              const track = document.querySelector('.marketing-horizontal-track');
+              const panels = [...document.querySelectorAll('.marketing-horizontal-panel')];
+              return {
+                url: location.href,
+                scrollY,
+                bodyHeight: document.documentElement.scrollHeight,
+                innerHeight,
+                trackWidth: track?.clientWidth ?? 0,
+                trackScrollWidth: track?.scrollWidth ?? 0,
+                panelCount: panels.length,
+                panels: panels.map(panel => ({
+                  id: panel.id,
+                  clientHeight: panel.clientHeight,
+                  scrollHeight: panel.scrollHeight,
+                  width: panel.getBoundingClientRect().width,
+                })),
+              };
+            });
+            if (state.url !== 'https://controols.com/') throw new Error(`Unexpected root URL: ${state.url}`);
+            if (state.panelCount !== 6) throw new Error(`Expected 6 live horizontal panels: ${JSON.stringify(state)}`);
+            if (state.bodyHeight > height + 2) throw new Error(`Production document has vertical overflow: ${JSON.stringify(state)}`);
+            if (state.trackScrollWidth < state.trackWidth * 5.9) throw new Error(`Production horizontal track is too short: ${JSON.stringify(state)}`);
+            for (const panel of state.panels) {
+              if (panel.scrollHeight > panel.clientHeight + 2) throw new Error(`Live panel ${panel.id} overflows vertically: ${JSON.stringify(panel)}`);
+              if (Math.abs(panel.width - width) > 2) throw new Error(`Live panel ${panel.id} is not one viewport wide: ${JSON.stringify(panel)}`);
+            }
+            return state;
+          }
+
           (async () => {
             const browser = await chromium.launch({ headless: true });
-            const viewportWidth = 390;
-            const page = await browser.newPage({ viewport: { width: viewportWidth, height: 844 } });
 
-            await page.goto('https://controols.com/', { waitUntil: 'networkidle' });
-            const bodyText = await page.locator('body').innerText();
-            if (!bodyText.includes('Demo para pais em breve')) throw new Error('New parent demo CTA is not live');
-            if (!bodyText.includes('Em breve, vai dar para conhecer jogando.')) throw new Error('New demo section is not live');
-            if (bodyText.includes('As primeiras aventuras')) throw new Error('Old adventures section is still live');
+            const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+            await desktop.goto('https://controols.com/', { waitUntil: 'networkidle' });
+            const bodyText = await desktop.locator('body').innerText();
+            if (!bodyText.includes('Demo para pais em breve')) throw new Error('Parent demo CTA is not live');
+            if (!bodyText.includes('Em breve, vai dar para conhecer jogando.')) throw new Error('Demo panel is not live');
+            if (bodyText.includes('As primeiras aventuras')) throw new Error('Old adventures copy is still live');
             if (bodyText.includes('PRIMEIRA COLEÇÃO')) throw new Error('Old first-collection claim is still live');
+            const desktopState = await assertHorizontalLayout(desktop, 1440, 900);
 
-            const kids = await page.locator('.marketing-lineup-kid').evaluateAll(imgs => imgs.map(img => ({
+            await desktop.mouse.wheel(0, 650);
+            await desktop.waitForTimeout(500);
+            const wheelState = await desktop.evaluate(() => ({
+              scrollY,
+              left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0,
+            }));
+            if (wheelState.scrollY !== 0 || wheelState.left < 100) throw new Error(`Production wheel navigation failed: ${JSON.stringify(wheelState)}`);
+
+            await desktop.evaluate(() => {
+              const track = document.querySelector('.marketing-horizontal-track');
+              if (track) {
+                track.style.scrollBehavior = 'auto';
+                track.scrollLeft = 0;
+                track.style.removeProperty('scroll-behavior');
+              }
+            });
+            await desktop.waitForTimeout(150);
+            await desktop.mouse.move(1030, 495);
+            await desktop.mouse.down();
+            await desktop.mouse.move(430, 495, { steps: 8 });
+            await desktop.mouse.up();
+            await desktop.waitForTimeout(300);
+            const dragState = await desktop.evaluate(() => ({
+              scrollY,
+              left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0,
+            }));
+            if (dragState.scrollY !== 0 || dragState.left < 100) throw new Error(`Production mouse drag failed: ${JSON.stringify(dragState)}`);
+            await desktop.close();
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+            await mobile.goto('https://controols.com/', { waitUntil: 'networkidle' });
+            const mobileState = await assertHorizontalLayout(mobile, 390, 844);
+            const kids = await mobile.locator('.marketing-lineup-kid').evaluateAll(imgs => imgs.map(img => ({
               complete: img.complete,
               naturalWidth: img.naturalWidth,
               naturalHeight: img.naturalHeight,
               rect: img.getBoundingClientRect().toJSON(),
             })));
-            if (kids.length !== 5) throw new Error(`Expected 5 live hero characters, got ${kids.length}`);
+            if (kids.length !== 5) throw new Error(`Expected 5 hero characters, got ${kids.length}`);
             for (const kid of kids) {
-              if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Live hero asset failed: ${JSON.stringify(kid)}`);
-              if (kid.rect.x < -1 || kid.rect.x + kid.rect.width > viewportWidth + 1) throw new Error(`Hero character is clipped on mobile: ${JSON.stringify(kid.rect)}`);
+              if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Hero asset failed: ${JSON.stringify(kid)}`);
+              if (kid.rect.x < -1 || kid.rect.x + kid.rect.width > 391) throw new Error(`Hero character is clipped on live mobile homepage: ${JSON.stringify(kid.rect)}`);
             }
+            await mobile.close();
 
-            await page.mouse.wheel(0, 900);
-            await page.waitForTimeout(200);
-            const publicY = await page.evaluate(() => window.scrollY);
-            if (publicY < 100) throw new Error(`Production homepage did not physically scroll: ${publicY}`);
+            const game = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            await game.goto('https://controols.com/pt/', { waitUntil: 'networkidle' });
+            await game.mouse.wheel(0, 500);
+            await game.waitForTimeout(180);
+            const gameState = await game.evaluate(() => ({
+              scrollY,
+              horizontalTrack: !!document.querySelector('.marketing-horizontal-track'),
+            }));
+            if (gameState.scrollY !== 0 || gameState.horizontalTrack) throw new Error(`Game route inherited homepage behavior: ${JSON.stringify(gameState)}`);
+            await game.close();
 
-            await page.goto('https://controols.com/pt/', { waitUntil: 'networkidle' });
-            await page.mouse.wheel(0, 500);
-            await page.waitForTimeout(200);
-            const gameY = await page.evaluate(() => window.scrollY);
-            if (gameY !== 0) throw new Error(`Game route unexpectedly scrolls: ${gameY}`);
-
-            console.log(JSON.stringify({ kids, publicY, gameY }, null, 2));
+            console.log(JSON.stringify({ desktopState, wheelState, dragState, mobileState, kids, gameState }, null, 2));
             await browser.close();
           })();
           NODE
