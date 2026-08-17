@@ -39,8 +39,21 @@ jobs:
             if (bodyText.includes('PRIMEIRA COLEÇÃO')) throw new Error('Homepage still claims a first collection');
             if (!bodyText.includes('Demo para pais em breve')) throw new Error('Parent demo CTA is missing');
             if (!bodyText.includes('Em breve, vai dar para conhecer jogando.')) throw new Error('Demo section is missing');
-            const lineup = await desktop.locator('.marketing-hero-lineup').evaluate(img => ({ complete: img.complete, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight, rect: img.getBoundingClientRect().toJSON() }));
-            if (!lineup.complete || lineup.naturalWidth < 100 || lineup.naturalHeight < 100) throw new Error(`Lineup image did not load: ${JSON.stringify(lineup)}`);
+
+            const kids = await desktop.locator('.marketing-lineup-kid').evaluateAll(imgs => imgs.map(img => ({
+              complete: img.complete,
+              naturalWidth: img.naturalWidth,
+              naturalHeight: img.naturalHeight,
+              rect: img.getBoundingClientRect().toJSON(),
+            })));
+            if (kids.length !== 5) throw new Error(`Expected 5 hero characters, got ${kids.length}`);
+            for (const kid of kids) {
+              if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Hero character did not load: ${JSON.stringify(kid)}`);
+            }
+            for (let i = 0; i < kids.length - 1; i++) {
+              const right = kids[i].rect.x + kids[i].rect.width;
+              if (right > kids[i + 1].rect.x + 1) throw new Error(`Hero character boxes overlap: ${JSON.stringify(kids)}`);
+            }
             await desktop.screenshot({ path: 'homepage-refine-desktop.png', fullPage: true });
 
             const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -51,7 +64,7 @@ jobs:
             if (y < 100) throw new Error(`Mobile homepage did not scroll: ${y}`);
             await mobile.evaluate(() => scrollTo(0, 0));
             await mobile.screenshot({ path: 'homepage-refine-mobile.png', fullPage: true });
-            console.log({ lineup, mobileScrollY: y });
+            console.log({ kids, mobileScrollY: y });
             await browser.close();
           })();
           NODE
