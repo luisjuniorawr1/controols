@@ -23,14 +23,14 @@ export const firstKidsStory = {
   subtitle: 'Uma aventura para pensar antes de clicar.',
   age: '7–10 anos',
   scenes: {
-    title: '/game/assets/v2/01-hub.svg',
-    message: '/game/assets/v2/02-message.svg',
-    clues: '/game/assets/v2/03-clues.svg',
-    https: '/game/assets/v2/04-lock.svg',
-    action: '/game/assets/v2/05-action.svg',
-    team: '/game/assets/v2/06-team.svg',
-    shield: '/game/assets/v2/07-shield.svg',
-    ending: '/game/assets/v2/08-finale.svg',
+    title: '/game/assets/v2-real/01_capa_hub.png',
+    message: '/game/assets/v2-real/02_luna_mensagem_suspeita.png',
+    clues: '/game/assets/v2-real/03_maya_pistas.png',
+    https: '/game/assets/v2-real/04_theo_cadeado.png',
+    action: '/game/assets/v2-real/05_nina_escolhas_seguras.png',
+    team: '/game/assets/v2-real/06_maya_caio_duas_respostas.png',
+    shield: '/game/assets/v2-real/07_luna_escudo_digital.png',
+    ending: '/game/assets/v2-real/08_final_turma_comemorando.png',
   },
 } as const;
 
