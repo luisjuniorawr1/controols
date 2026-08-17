@@ -1,0 +1,63 @@
+name: Homepage Demo Refine QA
+
+on:
+  push:
+    branches: [agent/home-demo-refine]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify homepage copy, lineup and scrolling
+        run: |
+          python3 -m http.server 4173 --directory out >/tmp/controols-http.log 2>&1 &
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && break
+            sleep 0.5
+          done
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+            await desktop.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            const bodyText = await desktop.locator('body').innerText();
+            if (bodyText.includes('As primeiras aventuras')) throw new Error('Old adventures copy is still present');
+            if (bodyText.includes('PRIMEIRA COLEÇÃO')) throw new Error('Homepage still claims a first collection');
+            if (!bodyText.includes('Demo para pais em breve')) throw new Error('Parent demo CTA is missing');
+            if (!bodyText.includes('Em breve, vai dar para conhecer jogando.')) throw new Error('Demo section is missing');
+            const lineup = await desktop.locator('.marketing-hero-lineup').evaluate(img => ({ complete: img.complete, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight, rect: img.getBoundingClientRect().toJSON() }));
+            if (!lineup.complete || lineup.naturalWidth < 100 || lineup.naturalHeight < 100) throw new Error(`Lineup image did not load: ${JSON.stringify(lineup)}`);
+            await desktop.screenshot({ path: 'homepage-refine-desktop.png', fullPage: true });
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+            await mobile.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await mobile.mouse.wheel(0, 900);
+            await mobile.waitForTimeout(150);
+            const y = await mobile.evaluate(() => scrollY);
+            if (y < 100) throw new Error(`Mobile homepage did not scroll: ${y}`);
+            await mobile.evaluate(() => scrollTo(0, 0));
+            await mobile.screenshot({ path: 'homepage-refine-mobile.png', fullPage: true });
+            console.log({ lineup, mobileScrollY: y });
+            await browser.close();
+          })();
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: homepage-demo-refine-qa
+          path: |
+            homepage-refine-desktop.png
+            homepage-refine-mobile.png
