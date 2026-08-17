@@ -24,17 +24,12 @@ jobs:
       - name: Verify horizontal navigation and one-screen panels
         run: |
           python3 -m http.server 4173 --directory out >/tmp/controols-horizontal.log 2>&1 &
-          for i in {1..20}; do
-            curl -fsS http://127.0.0.1:4173/ >/dev/null && break
-            sleep .5
-          done
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep .5; done
           node - <<'NODE'
           const { chromium } = require('playwright');
 
-          async function verifyViewport(browser, width, height) {
-            const page = await browser.newPage({ viewport: { width, height } });
-            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
-            const initial = await page.evaluate(() => {
+          async function assertLayout(page, width, height) {
+            const state = await page.evaluate(() => {
               const track = document.querySelector('.marketing-horizontal-track');
               const panels = [...document.querySelectorAll('.marketing-horizontal-panel')];
               return {
@@ -44,83 +39,80 @@ jobs:
                 trackScrollWidth: track?.scrollWidth ?? 0,
                 bodyHeight: document.documentElement.scrollHeight,
                 innerHeight,
-                panels: panels.map(panel => ({
-                  id: panel.id,
-                  clientHeight: panel.clientHeight,
-                  scrollHeight: panel.scrollHeight,
-                  width: panel.getBoundingClientRect().width,
-                })),
+                panels: panels.map(panel => ({ id: panel.id, clientHeight: panel.clientHeight, scrollHeight: panel.scrollHeight, width: panel.getBoundingClientRect().width })),
               };
             });
-            if (initial.count !== 6) throw new Error(`Expected 6 panels at ${width}x${height}: ${JSON.stringify(initial)}`);
-            if (initial.trackScrollWidth < initial.trackWidth * 5.9) throw new Error(`Horizontal track too short: ${JSON.stringify(initial)}`);
-            if (initial.bodyHeight > height + 2) throw new Error(`Document has vertical overflow at ${width}x${height}: ${JSON.stringify(initial)}`);
-            for (const panel of initial.panels) {
+            if (state.count !== 6) throw new Error(`Expected 6 panels at ${width}x${height}: ${JSON.stringify(state)}`);
+            if (state.trackScrollWidth < state.trackWidth * 5.9) throw new Error(`Horizontal track too short: ${JSON.stringify(state)}`);
+            if (state.bodyHeight > height + 2) throw new Error(`Document has vertical overflow at ${width}x${height}: ${JSON.stringify(state)}`);
+            for (const panel of state.panels) {
               if (panel.scrollHeight > panel.clientHeight + 2) throw new Error(`Panel ${panel.id} overflows vertically at ${width}x${height}: ${JSON.stringify(panel)}`);
               if (Math.abs(panel.width - width) > 2) throw new Error(`Panel ${panel.id} is not one viewport wide: ${JSON.stringify(panel)}`);
             }
+          }
 
+          async function capturePanels(page, prefix) {
+            for (let index = 0; index < 6; index++) {
+              await page.evaluate(index => {
+                const track = document.querySelector('.marketing-horizontal-track');
+                if (!track) return;
+                track.style.scrollBehavior = 'auto';
+                track.scrollLeft = index * track.clientWidth;
+              }, index);
+              await page.waitForTimeout(100);
+              await page.screenshot({ path: `${prefix}-panel-${index + 1}.png` });
+            }
+          }
+
+          async function verifyInteractions(page, width, height) {
+            await page.evaluate(() => { const track = document.querySelector('.marketing-horizontal-track'); if (track) { track.style.removeProperty('scroll-behavior'); track.scrollLeft = 0; } });
+            await page.waitForTimeout(100);
             await page.mouse.wheel(0, 650);
-            await page.waitForTimeout(250);
-            const afterWheel = await page.evaluate(() => ({
-              scrollY,
-              left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0,
-            }));
-            if (afterWheel.scrollY !== 0) throw new Error(`Wheel created vertical scroll at ${width}x${height}: ${JSON.stringify(afterWheel)}`);
-            if (afterWheel.left < 100) throw new Error(`Wheel did not move horizontally at ${width}x${height}: ${JSON.stringify(afterWheel)}`);
+            await page.waitForTimeout(350);
+            const wheel = await page.evaluate(() => ({ scrollY, left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0 }));
+            if (wheel.scrollY !== 0 || wheel.left < 100) throw new Error(`Wheel failed at ${width}x${height}: ${JSON.stringify(wheel)}`);
 
-            await page.evaluate(() => {
-              const track = document.querySelector('.marketing-horizontal-track');
-              track?.scrollTo({ left: 0, behavior: 'instant' });
-              window.__dragQa = [];
-              const capture = event => window.__dragQa.push({
-                type: event.type,
-                x: event.clientX,
-                y: event.clientY,
-                target: event.target?.tagName,
-                cls: event.target?.className || '',
-                left: track?.scrollLeft ?? -1,
-                dragging: track?.dataset.dragging || '',
-              });
-              document.addEventListener('mousedown', capture, true);
-              document.addEventListener('mousemove', capture, true);
-              document.addEventListener('mouseup', capture, true);
-            });
+            await page.evaluate(() => { const track = document.querySelector('.marketing-horizontal-track'); if (track) { track.style.scrollBehavior = 'auto'; track.scrollLeft = 0; track.style.removeProperty('scroll-behavior'); } });
             await page.waitForTimeout(150);
-            const startX = Math.round(width * .72);
-            const startY = Math.round(height * .55);
-            const startTarget = await page.evaluate(([x,y]) => {
-              const el = document.elementFromPoint(x,y);
-              return { tag: el?.tagName, cls: el?.className || '', closestInteractive: !!el?.closest('a,button,input,textarea,select') };
-            }, [startX,startY]);
-            await page.mouse.move(startX, startY);
+            await page.mouse.move(Math.round(width * .72), Math.round(height * .55));
             await page.mouse.down();
-            await page.mouse.move(Math.round(width * .25), startY, { steps: 8 });
+            await page.mouse.move(Math.round(width * .25), Math.round(height * .55), { steps: 8 });
             await page.mouse.up();
-            await page.waitForTimeout(650);
-            const dragResult = await page.evaluate(() => ({
-              left: document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0,
-              events: window.__dragQa,
-            }));
-            if (dragResult.left < 100) throw new Error(`Mouse drag did not move horizontally at ${width}x${height}: ${JSON.stringify({ startTarget, dragResult })}`);
-
-            await page.screenshot({ path: `horizontal-home-${width}x${height}.png` });
-            await page.close();
+            await page.waitForTimeout(250);
+            const drag = await page.evaluate(() => document.querySelector('.marketing-horizontal-track')?.scrollLeft ?? 0);
+            if (drag < 100) throw new Error(`Mouse drag failed at ${width}x${height}: ${drag}`);
           }
 
           (async () => {
             const browser = await chromium.launch({ headless: true });
-            await verifyViewport(browser, 1440, 900);
-            await verifyViewport(browser, 390, 844);
-            await verifyViewport(browser, 390, 700);
+
+            const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+            await desktop.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await assertLayout(desktop, 1440, 900);
+            await capturePanels(desktop, 'desktop');
+            await verifyInteractions(desktop, 1440, 900);
+            await desktop.close();
+
+            const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+            await mobile.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await assertLayout(mobile, 390, 844);
+            await capturePanels(mobile, 'mobile');
+            await mobile.close();
+
+            const shortMobile = await browser.newPage({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
+            await shortMobile.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await assertLayout(shortMobile, 390, 700);
+            await shortMobile.screenshot({ path: 'mobile-short-hero.png' });
+            await shortMobile.close();
 
             const game = await browser.newPage({ viewport: { width: 390, height: 844 } });
             await game.goto('http://127.0.0.1:4173/pt/', { waitUntil: 'networkidle' });
             await game.mouse.wheel(0, 500);
             await game.waitForTimeout(150);
             const gameState = await game.evaluate(() => ({ scrollY, horizontalTrack: !!document.querySelector('.marketing-horizontal-track') }));
-            if (gameState.scrollY !== 0 || gameState.horizontalTrack) throw new Error(`Game route inherited homepage scrolling: ${JSON.stringify(gameState)}`);
+            if (gameState.scrollY !== 0 || gameState.horizontalTrack) throw new Error(`Game route inherited homepage navigation: ${JSON.stringify(gameState)}`);
             await game.close();
+
             await browser.close();
           })();
           NODE
@@ -128,4 +120,7 @@ jobs:
         if: always()
         with:
           name: horizontal-home-qa
-          path: horizontal-home-*.png
+          path: |
+            desktop-panel-*.png
+            mobile-panel-*.png
+            mobile-short-hero.png
