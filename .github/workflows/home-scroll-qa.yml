@@ -21,7 +21,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Verify public scrolling and game lock
+      - name: Verify physical public scrolling and game lock
         run: |
           python3 -m http.server 4173 --directory out >/tmp/controols-http.log 2>&1 &
           for i in {1..20}; do
@@ -36,14 +36,16 @@ jobs:
             await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
             const publicState = await page.evaluate(() => ({ scrollHeight: document.documentElement.scrollHeight, innerHeight, htmlOverflowY: getComputedStyle(document.documentElement).overflowY, bodyOverflowY: getComputedStyle(document.body).overflowY }));
             if (publicState.scrollHeight <= publicState.innerHeight) throw new Error(`Homepage does not extend beyond viewport: ${JSON.stringify(publicState)}`);
-            await page.evaluate(() => window.scrollTo(0, 900));
-            await page.waitForTimeout(100);
+            if (publicState.htmlOverflowY === 'hidden' && publicState.bodyOverflowY === 'hidden') throw new Error(`Homepage is still physically scroll-locked: ${JSON.stringify(publicState)}`);
+            await page.mouse.wheel(0, 900);
+            await page.waitForTimeout(150);
             const y = await page.evaluate(() => window.scrollY);
-            if (y < 100) throw new Error(`Homepage did not scroll: scrollY=${y}, state=${JSON.stringify(publicState)}`);
+            if (y < 100) throw new Error(`Mouse/touch-style scrolling did not move the homepage: scrollY=${y}, state=${JSON.stringify(publicState)}`);
+
             await page.goto('http://127.0.0.1:4173/pt/', { waitUntil: 'networkidle' });
             const gameState = await page.evaluate(() => ({ scrollHeight: document.documentElement.scrollHeight, innerHeight, htmlOverflowY: getComputedStyle(document.documentElement).overflowY, bodyOverflowY: getComputedStyle(document.body).overflowY }));
-            await page.evaluate(() => window.scrollTo(0, 500));
-            await page.waitForTimeout(100);
+            await page.mouse.wheel(0, 500);
+            await page.waitForTimeout(150);
             const gameY = await page.evaluate(() => window.scrollY);
             if (gameY !== 0) throw new Error(`Game route unexpectedly scrolls: scrollY=${gameY}, state=${JSON.stringify(gameState)}`);
             console.log({ publicState, y, gameState, gameY });
