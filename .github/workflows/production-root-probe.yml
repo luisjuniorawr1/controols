@@ -19,7 +19,7 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npx playwright install --with-deps chromium
-      - name: Verify production homepage scrolling and game lock
+      - name: Verify production parent-demo homepage
         run: |
           node - <<'NODE'
           const { chromium } = require('playwright');
@@ -28,16 +28,24 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
             await page.goto('https://controols.com/', { waitUntil: 'networkidle' });
-            const publicState = await page.evaluate(() => ({
-              url: location.href,
-              scrollHeight: document.documentElement.scrollHeight,
-              innerHeight,
-              htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
-              bodyOverflowY: getComputedStyle(document.body).overflowY,
-            }));
-            if (publicState.url !== 'https://controols.com/') throw new Error(`Unexpected root URL: ${publicState.url}`);
-            if (publicState.scrollHeight <= publicState.innerHeight) throw new Error(`Homepage does not extend beyond viewport: ${JSON.stringify(publicState)}`);
-            if (publicState.htmlOverflowY === 'hidden' && publicState.bodyOverflowY === 'hidden') throw new Error(`Homepage remains scroll-locked: ${JSON.stringify(publicState)}`);
+            const bodyText = await page.locator('body').innerText();
+            if (!bodyText.includes('Demo para pais em breve')) throw new Error('New parent demo CTA is not live');
+            if (!bodyText.includes('Em breve, vai dar para conhecer jogando.')) throw new Error('New demo section is not live');
+            if (bodyText.includes('As primeiras aventuras')) throw new Error('Old adventures section is still live');
+            if (bodyText.includes('PRIMEIRA COLEÇÃO')) throw new Error('Old first-collection claim is still live');
+
+            const kids = await page.locator('.marketing-lineup-kid').evaluateAll(imgs => imgs.map(img => ({
+              complete: img.complete,
+              naturalWidth: img.naturalWidth,
+              naturalHeight: img.naturalHeight,
+              rect: img.getBoundingClientRect().toJSON(),
+            })));
+            if (kids.length !== 5) throw new Error(`Expected 5 live hero characters, got ${kids.length}`);
+            for (const kid of kids) {
+              if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Live hero asset failed: ${JSON.stringify(kid)}`);
+              if (kid.rect.x < -1 || kid.rect.x + kid.rect.width > innerWidth + 1) throw new Error(`Hero character is clipped on mobile: ${JSON.stringify(kid.rect)}`);
+            }
+
             await page.mouse.wheel(0, 900);
             await page.waitForTimeout(200);
             const publicY = await page.evaluate(() => window.scrollY);
@@ -46,14 +54,10 @@ jobs:
             await page.goto('https://controols.com/pt/', { waitUntil: 'networkidle' });
             await page.mouse.wheel(0, 500);
             await page.waitForTimeout(200);
-            const gameState = await page.evaluate(() => ({
-              scrollY,
-              scrollHeight: document.documentElement.scrollHeight,
-              innerHeight,
-            }));
-            if (gameState.scrollY !== 0) throw new Error(`Game route unexpectedly scrolls: ${JSON.stringify(gameState)}`);
+            const gameY = await page.evaluate(() => window.scrollY);
+            if (gameY !== 0) throw new Error(`Game route unexpectedly scrolls: ${gameY}`);
 
-            console.log(JSON.stringify({ publicState, publicY, gameState }, null, 2));
+            console.log(JSON.stringify({ kids, publicY, gameY }, null, 2));
             await browser.close();
           })();
           NODE
