@@ -72,3 +72,4 @@ jobs:
             git commit -m "Add Case 003 Link Fantasma artwork"
             git push origin HEAD:feature/case003-link-fantasma
           fi
+# Drive access granted to the Firebase service account; retry import.
