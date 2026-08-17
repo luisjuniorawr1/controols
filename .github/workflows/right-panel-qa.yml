@@ -1,0 +1,31 @@
+name: Right Panel QA
+
+on:
+  push:
+    branches: [fix/kids3-right-panel]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium for smoke QA
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test critical game flow and right interaction rail
+        run: npm run qa:smoke
