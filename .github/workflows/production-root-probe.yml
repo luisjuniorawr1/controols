@@ -12,7 +12,7 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe production root
+      - name: Probe production root after cache fix
         run: |
           set -x
           curl -sS -D /tmp/root.headers -o /tmp/root.body https://controols.com/
