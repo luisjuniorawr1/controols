@@ -1,0 +1,136 @@
+name: Case 002 Branch QA
+
+on:
+  push:
+    branches: [feature/case002-password-vault]
+  workflow_dispatch:
+
+concurrency:
+  group: case002-branch-qa
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      DRIVE_FILE_ID: 1vwREqVihzE1QUzrg3comfH1IxHYlKL97
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/case002-password-vault
+          fetch-depth: 0
+
+      - name: Install Case 002 artwork if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/game/assets/case-002
+          existing=$(find public/game/assets/case-002 -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)
+          if [ "$existing" -eq 8 ]; then
+            echo "Case 002 artwork already committed."
+            exit 0
+          fi
+
+          node - <<'NODE' > /tmp/drive-token
+          const crypto = require('crypto');
+          const { execFileSync } = require('child_process');
+          const creds = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
+          if (!creds.client_email || !creds.private_key) throw new Error('service account credentials incomplete');
+          const now = Math.floor(Date.now() / 1000);
+          const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+          const unsigned = `${b64({alg:'RS256',typ:'JWT'})}.${b64({
+            iss:creds.client_email,
+            scope:'https://www.googleapis.com/auth/drive.readonly',
+            aud:'https://oauth2.googleapis.com/token',
+            iat:now,
+            exp:now+3600
+          })}`;
+          const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), creds.private_key).toString('base64url');
+          const response = execFileSync('curl', [
+            '--fail','--silent','--show-error',
+            '--data-urlencode','grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer',
+            '--data-urlencode',`assertion=${unsigned}.${signature}`,
+            'https://oauth2.googleapis.com/token'
+          ], {encoding:'utf8'});
+          const token = JSON.parse(response).access_token;
+          if (!token) throw new Error('access token missing');
+          process.stdout.write(token);
+          NODE
+
+          DRIVE_ACCESS_TOKEN=$(cat /tmp/drive-token)
+          echo "::add-mask::${DRIVE_ACCESS_TOKEN}"
+          rm -f /tmp/drive-token
+
+          mkdir -p /tmp/controols-case002
+          OUT=/tmp/controols-case002/assets.zip
+          status=$(curl --silent --show-error --location --retry 3 \
+            -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
+            -o "$OUT" -w '%{http_code}' \
+            "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" || true)
+          test "$status" = "200"
+          unzip -tq "$OUT" >/dev/null
+          rm -rf /tmp/controols-case002/unpacked public/game/assets/case-002
+          mkdir -p /tmp/controols-case002/unpacked public/game/assets/case-002
+          unzip -q "$OUT" -d /tmp/controols-case002/unpacked
+          cp /tmp/controols-case002/unpacked/controols-case002-assets/scenes/*.png public/game/assets/case-002/
+
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths = sorted(Path('public/game/assets/case-002').glob('*.png'))
+          assert len(paths) == 8, f'Expected 8 PNGs, got {len(paths)}'
+          for path in paths:
+              raw = path.read_bytes()[:24]
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
+              width, height = struct.unpack('>II', raw[16:24])
+              print(path.name, width, height)
+              assert width >= 1600 and height >= 900, (path, width, height)
+          PY
+
+          git add public/game/assets/case-002
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Add Case 002 full-resolution artwork"
+            git push origin HEAD:feature/case002-password-vault
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Validate game artwork
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          groups = {
+            'case001': Path('public/game/assets/v2-real'),
+            'case002': Path('public/game/assets/case-002'),
+          }
+          for name, folder in groups.items():
+              paths = sorted(folder.glob('*.png'))
+              assert len(paths) == 8, (name, len(paths))
+              for path in paths:
+                  raw = path.read_bytes()[:24]
+                  assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
+                  width, height = struct.unpack('>II', raw[16:24])
+                  assert width >= 1600 and height >= 900, (path, width, height)
+          PY
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium for smoke QA
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test both kids games
+        run: npm run qa:smoke
