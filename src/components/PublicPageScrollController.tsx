@@ -12,12 +12,14 @@ export default function PublicPageScrollController() {
 
     const previous = {
       htmlHeight: html.style.height,
-      htmlOverflow: html.style.overflow,
+      htmlOverflowX: html.style.overflowX,
+      htmlOverflowY: html.style.overflowY,
       htmlOverscroll: html.style.overscrollBehavior,
       bodyHeight: body.style.height,
       bodyMinHeight: body.style.minHeight,
       bodyMaxHeight: body.style.maxHeight,
-      bodyOverflow: body.style.overflow,
+      bodyOverflowX: body.style.overflowX,
+      bodyOverflowY: body.style.overflowY,
       bodyOverscroll: body.style.overscrollBehavior,
     };
 
@@ -34,12 +36,14 @@ export default function PublicPageScrollController() {
 
     return () => {
       html.style.height = previous.htmlHeight;
-      html.style.overflow = previous.htmlOverflow;
+      html.style.overflowX = previous.htmlOverflowX;
+      html.style.overflowY = previous.htmlOverflowY;
       html.style.overscrollBehavior = previous.htmlOverscroll;
       body.style.height = previous.bodyHeight;
       body.style.minHeight = previous.bodyMinHeight;
       body.style.maxHeight = previous.bodyMaxHeight;
-      body.style.overflow = previous.bodyOverflow;
+      body.style.overflowX = previous.bodyOverflowX;
+      body.style.overflowY = previous.bodyOverflowY;
       body.style.overscrollBehavior = previous.bodyOverscroll;
     };
   }, []);
