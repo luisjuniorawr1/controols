@@ -16,7 +16,7 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
-export type KidsGameId = 'case-001' | 'case-002';
+export type KidsGameId = 'case-001' | 'case-002' | 'case-003';
 
 export const firstKidsStory = {
   id: 'case-001' as KidsGameId,
@@ -56,10 +56,30 @@ export const secondKidsStory = {
   },
 } as const;
 
-export const kidsGames = [firstKidsStory, secondKidsStory] as const;
+export const thirdKidsStory = {
+  id: 'case-003' as KidsGameId,
+  number: '003',
+  title: 'O Link Fantasma',
+  subtitle: 'Nem todo link é o que parece.',
+  age: '7–10 anos',
+  accent: '#b98cff',
+  cover: '/game/assets/case-003/00_capa_link_fantasma.png',
+  scenes: {
+    warning: '/game/assets/case-003/01_luna_link_suspeito.png',
+    clues: '/game/assets/case-003/02_maya_pistas_link.png',
+    address: '/game/assets/case-003/03_endereco_suspeito.png',
+    path: '/game/assets/case-003/04_nina_caminho_oficial.png',
+    clone: '/game/assets/case-003/05_caio_pagina_pede_codigo.png',
+    map: '/game/assets/case-003/06_luna_mapa_link_seguro.png',
+    ending: '/game/assets/case-003/07_final_link_desmascarado.png',
+  },
+} as const;
+
+export const kidsGames = [firstKidsStory, secondKidsStory, thirdKidsStory] as const;
 
 export const case001Assets = [firstKidsStory.cover, ...Object.values(firstKidsStory.scenes)];
 export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
+export const case003Assets = [thirdKidsStory.cover, ...Object.values(thirdKidsStory.scenes)];
 
 export const redFlags = [
   { id: 'link', label: 'Link estranho', icon: '🔗', correct: true },
@@ -80,4 +100,12 @@ export const passwordHabits = [
   { id: 'secret', label: 'Manter códigos de verificação em segredo', icon: '🤫', correct: true },
   { id: 'birthday', label: 'Usar aniversário ou nome', icon: '🎂', correct: false },
   { id: 'reuse', label: 'Repetir a mesma senha em tudo', icon: '🔁', correct: false },
+] as const;
+
+export const linkHabits = [
+  { id: 'read', label: 'Ler o endereço inteiro', icon: '🔎', correct: true },
+  { id: 'official', label: 'Abrir pelo app ou site oficial', icon: '📱', correct: true },
+  { id: 'help', label: 'Pedir ajuda se tiver dúvida', icon: '🤝', correct: true },
+  { id: 'lock', label: 'Confiar só porque tem cadeado', icon: '🔒', correct: false },
+  { id: 'looks', label: 'Confiar só porque parece bonito', icon: '🎨', correct: false },
 ] as const;

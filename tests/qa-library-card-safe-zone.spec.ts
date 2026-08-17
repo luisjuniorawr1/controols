@@ -5,7 +5,7 @@ test('library cards keep title and play action inside the artwork right safe zon
   await page.goto('/pt/');
 
   const cards = page.locator('.kids3-game-card');
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(3);
 
   const metrics = await cards.evaluateAll((nodes) => nodes.map((node) => {
     const card = node as HTMLElement;

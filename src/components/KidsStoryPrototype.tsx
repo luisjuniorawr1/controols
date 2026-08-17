@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   case001Assets,
   case002Assets,
+  case003Assets,
   firstKidsStory,
   kidsGames,
+  linkHabits,
   passwordHabits,
   redFlags,
   safeSteps,
   secondKidsStory,
+  thirdKidsStory,
   type KidsGameId,
 } from '@/src/game/kidsStory';
 
@@ -24,6 +27,7 @@ const observationTips = [
 type AppMode = 'library' | 'loading' | 'playing';
 type Case001Screen = 'intro' | 'clues' | 'https' | 'action' | 'team' | 'shield' | 'ending';
 type Case002Screen = 'warning' | 'weak' | 'strong' | 'reuse' | 'code' | 'key' | 'ending';
+type Case003Screen = 'warning' | 'clues' | 'address' | 'path' | 'clone' | 'map' | 'ending';
 type GameDefinition = (typeof kidsGames)[number];
 
 type ChoiceProps = {
@@ -160,7 +164,7 @@ function GameLibrary({ onChoose }: { onChoose: (id: KidsGameId) => void }) {
             <img src={game.cover} alt="" />
             <span className="kids3-game-card-shade" />
             <div>
-              <small>{index === 1 ? 'NOVO · ' : ''}CASO {game.number}</small>
+              <small>{index === kidsGames.length - 1 ? 'NOVO · ' : ''}CASO {game.number}</small>
               <h2>{game.title}</h2>
               <p>{game.subtitle}</p>
               <b>JOGAR ▶</b>
@@ -446,12 +450,130 @@ function Case002Game({ onExit }: { onExit: () => void }) {
   );
 }
 
+
+function Case003Game({ onExit }: { onExit: () => void }) {
+  const [screen, setScreen] = useState<Case003Screen>('warning');
+  const [clueAnswer, setClueAnswer] = useState<'sender' | 'colors' | 'lock' | null>(null);
+  const [addressAnswer, setAddressAnswer] = useState<'official' | 'prize' | 'zero' | null>(null);
+  const [pathAnswer, setPathAnswer] = useState<'official' | 'message' | null>(null);
+  const [cloneAnswer, setCloneAnswer] = useState<'official' | 'type' | 'send' | null>(null);
+  const [mapHabits, setMapHabits] = useState<string[]>([]);
+  const [mapChecked, setMapChecked] = useState(false);
+
+  const mapSuccess = mapHabits.length === 3 && mapHabits.every(id => linkHabits.find(item => item.id === id)?.correct);
+
+  function toggleMapHabit(id: string) {
+    if (mapChecked) return;
+    setMapHabits(current => current.includes(id) ? current.filter(item => item !== id) : current.length < 3 ? [...current, id] : current);
+  }
+
+  function reset() {
+    setScreen('warning');
+    setClueAnswer(null);
+    setAddressAnswer(null);
+    setPathAnswer(null);
+    setCloneAnswer(null);
+    setMapHabits([]);
+    setMapChecked(false);
+  }
+
+  if (screen === 'warning') return (
+    <Scene src={thirdKidsStory.scenes.warning} alt="Luna encontra um link suspeito enviado por mensagem" screen="case003-warning" caseNumber="003" caseTitle={thirdKidsStory.title} progress={14}>
+      <span className="kids3-tag blue">NOVA MISSÃO</span>
+      <h1>Um link apareceu!</h1>
+      <p>Parece do Clube Aurora, mas o endereço está estranho.</p>
+      <div className="kids3-story-chip">👻 <b>Um link pode imitar um site conhecido.</b></div>
+      <button className="kids3-primary cyan" type="button" onClick={() => setScreen('clues')}>Seguir as pistas →</button>
+    </Scene>
+  );
+
+  if (screen === 'clues') return (
+    <Scene src={thirdKidsStory.scenes.clues} alt="Maya investiga quem enviou a mensagem e outras pistas" screen="case003-clues" caseNumber="003" caseTitle={thirdKidsStory.title} progress={28} compact>
+      <span className="kids3-tag blue">PISTA 1</span>
+      <h1>Qual pista pede uma pausa?</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="❓" label="Quem enviou?" selected={clueAnswer === 'sender'} onClick={() => setClueAnswer('sender')} />
+        <Choice icon="🎨" label="A cor da mensagem" selected={clueAnswer === 'colors'} wrong={clueAnswer === 'colors'} onClick={() => setClueAnswer('colors')} />
+        <Choice icon="🔒" label="Só o cadeado" selected={clueAnswer === 'lock'} wrong={clueAnswer === 'lock'} onClick={() => setClueAnswer('lock')} />
+      </div>
+      {clueAnswer && <div className={`kids3-feedback ${clueAnswer === 'sender' ? 'good' : 'hint'}`}><b>{clueAnswer === 'sender' ? 'Boa pista! 🔎' : 'Olhe de novo.'}</b><p>{clueAnswer === 'sender' ? 'Antes de confiar no link, confira quem enviou e leia o endereço.' : 'Cor e cadeado sozinhos não dizem quem criou o link.'}</p></div>}
+      {clueAnswer === 'sender' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('address')}>Comparar endereços →</button>}
+    </Scene>
+  );
+
+  if (screen === 'address') return (
+    <Scene src={thirdKidsStory.scenes.address} alt="Caio investiga um endereço de site que parece com o oficial" screen="case003-address" caseNumber="003" caseTitle={thirdKidsStory.title} progress={42} compact>
+      <span className="kids3-tag blue">PISTA 2</span>
+      <h1>Qual parece oficial?</h1>
+      <div className="kids3-choice-grid one tiny password-options">
+        <Choice label="clubeaurora.com.br" selected={addressAnswer === 'official'} onClick={() => setAddressAnswer('official')} />
+        <Choice label="clube-aurora-premio.net" selected={addressAnswer === 'prize'} wrong={addressAnswer === 'prize'} onClick={() => setAddressAnswer('prize')} />
+        <Choice label="clubeaur0ra.com.br" selected={addressAnswer === 'zero'} wrong={addressAnswer === 'zero'} onClick={() => setAddressAnswer('zero')} />
+      </div>
+      {addressAnswer && <div className={`kids3-feedback ${addressAnswer === 'official' ? 'good' : 'hint'}`}><b>{addressAnswer === 'official' ? 'Isso! ⭐' : 'Tem um disfarce aí!'}</b><p>{addressAnswer === 'official' ? 'Leia o endereço inteiro, devagar, antes de entrar.' : 'Palavras extras e letras trocadas podem esconder um site falso.'}</p></div>}
+      {addressAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('path')}>Escolher caminho →</button>}
+    </Scene>
+  );
+
+  if (screen === 'path') return (
+    <Scene src={thirdKidsStory.scenes.path} alt="Nina escolhe entre um caminho seguro e um caminho de alerta" screen="case003-path" caseNumber="003" caseTitle={thirdKidsStory.title} progress={56}>
+      <span className="kids3-tag blue">CAMINHO SEGURO</span>
+      <h1>Como entrar com segurança?</h1>
+      <div className="kids3-choice-grid two">
+        <Choice icon="📱" label="Abrir o app/site oficial" selected={pathAnswer === 'official'} onClick={() => setPathAnswer('official')} />
+        <Choice icon="🔗" label="Seguir o link da mensagem" selected={pathAnswer === 'message'} wrong={pathAnswer === 'message'} onClick={() => setPathAnswer('message')} />
+      </div>
+      {pathAnswer && <div className={`kids3-feedback ${pathAnswer === 'official' ? 'good' : 'hint'}`}><b>{pathAnswer === 'official' ? 'Caminho certo! 🛡️' : 'Esse atalho pode enganar.'}</b><p>Quando tiver dúvida, abra você mesmo o app ou digite o endereço oficial.</p></div>}
+      {pathAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('clone')}>Ver a página →</button>}
+    </Scene>
+  );
+
+  if (screen === 'clone') return (
+    <Scene src={thirdKidsStory.scenes.clone} alt="Caio percebe que uma página aberta por link pede um código secreto" screen="case003-clone" caseNumber="003" caseTitle={thirdKidsStory.title} progress={70} compact>
+      <span className="kids3-tag blue">PÁGINA CLONADA</span>
+      <h1>A página pediu um código!</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="🛡️" label="Fechar e abrir o site oficial" selected={cloneAnswer === 'official'} onClick={() => setCloneAnswer('official')} />
+        <Choice icon="⌨️" label="Digitar para continuar" selected={cloneAnswer === 'type'} wrong={cloneAnswer === 'type'} onClick={() => setCloneAnswer('type')} />
+        <Choice icon="📤" label="Enviar para quem pediu" selected={cloneAnswer === 'send'} wrong={cloneAnswer === 'send'} onClick={() => setCloneAnswer('send')} />
+      </div>
+      {cloneAnswer && <div className={`kids3-feedback ${cloneAnswer === 'official' ? 'good' : 'hint'}`}><b>{cloneAnswer === 'official' ? 'Boa! 👻➡️🛡️' : 'Pare por aí!'}</b><p>Uma página falsa pode copiar cores e desenhos. O endereço e o caminho importam mais.</p></div>}
+      {cloneAnswer === 'official' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('map')}>Montar o mapa →</button>}
+    </Scene>
+  );
+
+  if (screen === 'map') return (
+    <Scene src={thirdKidsStory.scenes.map} alt="Luna monta um mapa de hábitos para navegar por links com segurança" screen="case003-map" caseNumber="003" caseTitle={thirdKidsStory.title} progress={84} compact>
+      <span className="kids3-tag blue">MAPA DO LINK</span>
+      <h1>Escolha 3 hábitos!</h1>
+      <div className="kids3-choice-grid one tiny">
+        {linkHabits.map(item => <Choice key={item.id} icon={item.icon} label={item.label} selected={mapHabits.includes(item.id)} onClick={() => toggleMapHabit(item.id)} />)}
+      </div>
+      <div className="kids3-counter"><b>{mapHabits.length}</b><span>/3 hábitos</span></div>
+      {!mapChecked && <button className="kids3-primary cyan" type="button" disabled={mapHabits.length !== 3} onClick={() => setMapChecked(true)}>Testar o mapa 🗺️</button>}
+      {mapChecked && !mapSuccess && <div className="kids3-feedback hint"><b>O fantasma ainda está escondido.</b><p>Não confie só no visual ou no cadeado.</p><button type="button" onClick={() => { setMapHabits([]); setMapChecked(false); }}>Tentar outra vez</button></div>}
+      {mapChecked && mapSuccess && <><div className="kids3-feedback good"><b>Mapa completo! ✨</b></div><button className="kids3-primary cyan" type="button" onClick={() => setScreen('ending')}>Ver resultado →</button></>}
+    </Scene>
+  );
+
+  return (
+    <Scene src={thirdKidsStory.scenes.ending} alt="A turma comemora depois de desmascarar o link fantasma" screen="case003-ending" caseNumber="003" caseTitle={thirdKidsStory.title} progress={100} compact>
+      <span className="kids3-tag blue">LINK DESMASCARADO</span>
+      <h1>Fantasma revelado!</h1>
+      <p><b>Leia. Confira. Entre pelo caminho oficial.</b></p>
+      <div className="kids3-badges"><span>🔎<b>Olho no endereço</b></span><span>📱<b>Caminho oficial</b></span><span>⭐<b>Guardião de links</b></span></div>
+      <button className="kids3-primary cyan" type="button" onClick={reset}>Jogar de novo ↻</button>
+      <button className="kids3-secondary" type="button" onClick={onExit}>Outros casos</button>
+    </Scene>
+  );
+}
+
 export default function KidsStoryPrototype() {
   const [mode, setMode] = useState<AppMode>('library');
   const [gameId, setGameId] = useState<KidsGameId>('case-001');
 
-  const game = gameId === 'case-001' ? firstKidsStory : secondKidsStory;
-  const assets = gameId === 'case-001' ? case001Assets : case002Assets;
+  const game = gameId === 'case-001' ? firstKidsStory : gameId === 'case-002' ? secondKidsStory : thirdKidsStory;
+  const assets = gameId === 'case-001' ? case001Assets : gameId === 'case-002' ? case002Assets : case003Assets;
 
   const chooseGame = useCallback((id: KidsGameId) => {
     setGameId(id);
@@ -467,6 +589,7 @@ export default function KidsStoryPrototype() {
       {mode === 'loading' && <LoadingCover game={game} assets={assets} onReady={startGame} />}
       {mode === 'playing' && gameId === 'case-001' && <Case001Game onExit={exitGame} />}
       {mode === 'playing' && gameId === 'case-002' && <Case002Game onExit={exitGame} />}
+      {mode === 'playing' && gameId === 'case-003' && <Case003Game onExit={exitGame} />}
     </main>
   );
 }
