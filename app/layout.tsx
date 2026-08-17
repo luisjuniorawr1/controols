@@ -12,12 +12,13 @@ import './kids-scenes-v2-fixes.css';
 import './kids-game-v3.css';
 import './kids-right-panel-readable.css';
 import './library-card-right-safe-zone.css';
+import './marketing-home.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
   applicationName: 'CONTROOLS',
   title: { default: 'CONTROOLS', template: '%s | CONTROOLS' },
-  description: 'Aventuras de segurança digital para crianças de 7 a 10 anos.',
+  description: 'Um universo de jogos e aventuras para crianças explorarem diferentes temas por meio de histórias, desafios e descobertas.',
   creator: 'CONTROOLS',
   publisher: 'CONTROOLS',
   robots: { index: true, follow: true },
