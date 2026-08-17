@@ -14,70 +14,88 @@ jobs:
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       DRIVE_FILE_ID: 1isC9B9RXhwMF5YNb7KOTNEuptI5RcPaj
+      GOOGLE_PROJECT_NUMBER: '1029247868377'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Mint Drive access token with service-account key
+      - name: Mint Google tokens with the service-account key
         shell: bash
         run: |
           set -euo pipefail
-          node - <<'NODE'
+          cat > /tmp/mint-token.js <<'NODE'
           const fs = require('fs');
           const crypto = require('crypto');
+          const { execFileSync } = require('child_process');
           const creds = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
           if (!creds.client_email || !creds.private_key) throw new Error('service account credentials incomplete');
+          const scope = process.argv[2];
           const now = Math.floor(Date.now() / 1000);
           const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
-          const unsigned = `${b64({alg:'RS256',typ:'JWT'})}.${b64({
-            iss: creds.client_email,
-            scope: 'https://www.googleapis.com/auth/drive.readonly',
-            aud: 'https://oauth2.googleapis.com/token',
-            iat: now,
-            exp: now + 3600,
-          })}`;
+          const unsigned = `${b64({alg:'RS256',typ:'JWT'})}.${b64({iss:creds.client_email,scope,aud:'https://oauth2.googleapis.com/token',iat:now,exp:now+3600})}`;
           const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), creds.private_key).toString('base64url');
-          fs.writeFileSync('/tmp/google-assertion.jwt', `${unsigned}.${signature}`);
+          const assertion = `${unsigned}.${signature}`;
+          const response = execFileSync('curl', [
+            '--fail','--silent','--show-error',
+            '--data-urlencode','grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer',
+            '--data-urlencode',`assertion=${assertion}`,
+            'https://oauth2.googleapis.com/token'
+          ], {encoding:'utf8'});
+          const token = JSON.parse(response).access_token;
+          if (!token) throw new Error('access token missing');
+          process.stdout.write(token);
           NODE
-          curl --fail --silent --show-error \
-            --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer' \
-            --data-urlencode "assertion=$(cat /tmp/google-assertion.jwt)" \
-            https://oauth2.googleapis.com/token > /tmp/google-token.json
-          node - <<'NODE'
-          const fs = require('fs');
-          const token = JSON.parse(fs.readFileSync('/tmp/google-token.json', 'utf8'));
-          if (!token.access_token) throw new Error('access token missing');
-          console.log(`::add-mask::${token.access_token}`);
-          fs.appendFileSync(process.env.GITHUB_ENV, `DRIVE_ACCESS_TOKEN=${token.access_token}\n`);
-          NODE
-          rm -f /tmp/google-assertion.jwt /tmp/google-token.json
+          CLOUD_ACCESS_TOKEN=$(node /tmp/mint-token.js 'https://www.googleapis.com/auth/cloud-platform')
+          DRIVE_ACCESS_TOKEN=$(node /tmp/mint-token.js 'https://www.googleapis.com/auth/drive.readonly')
+          echo "::add-mask::${CLOUD_ACCESS_TOKEN}"
+          echo "::add-mask::${DRIVE_ACCESS_TOKEN}"
+          echo "CLOUD_ACCESS_TOKEN=${CLOUD_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+          echo "DRIVE_ACCESS_TOKEN=${DRIVE_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+          rm -f /tmp/mint-token.js
 
-      - name: Download master asset pack from Drive
+      - name: Temporarily enable Drive API if permitted
+        shell: bash
+        run: |
+          set -euo pipefail
+          SERVICE_URL="https://serviceusage.googleapis.com/v1/projects/${GOOGLE_PROJECT_NUMBER}/services/drive.googleapis.com"
+          state_status=$(curl --silent --show-error -o /tmp/drive-service.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${CLOUD_ACCESS_TOKEN}" "$SERVICE_URL" || true)
+          state=$(node -e "try{console.log(JSON.parse(require('fs').readFileSync('/tmp/drive-service.json','utf8')).state||'')}catch(e){console.log('')}" )
+          echo "Drive API state check: HTTP ${state_status}, state ${state:-unknown}."
+          if [ "$state" = "ENABLED" ]; then
+            echo "DRIVE_API_ENABLED_BY_BRIDGE=0" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          enable_status=$(curl --silent --show-error -o /tmp/drive-enable.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer ${CLOUD_ACCESS_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d '{}' "${SERVICE_URL}:enable" || true)
+          echo "Drive API enable request: HTTP ${enable_status}."
+          test "$enable_status" = "200"
+          echo "DRIVE_API_ENABLED_BY_BRIDGE=1" >> "$GITHUB_ENV"
+          for attempt in $(seq 1 18); do
+            sleep 5
+            curl --silent --show-error -H "Authorization: Bearer ${CLOUD_ACCESS_TOKEN}" "$SERVICE_URL" -o /tmp/drive-service.json || true
+            state=$(node -e "try{console.log(JSON.parse(require('fs').readFileSync('/tmp/drive-service.json','utf8')).state||'')}catch(e){console.log('')}" )
+            echo "Drive API propagation check ${attempt}: ${state:-unknown}."
+            [ "$state" = "ENABLED" ] && exit 0
+          done
+          exit 1
+
+      - name: Download master asset pack through Drive API
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/controols-assets
           OUT=/tmp/controols-assets/controols-assets-v2.zip
-          URLS=(
-            "https://drive.usercontent.google.com/download?id=${DRIVE_FILE_ID}&export=download&confirm=t"
-            "https://drive.google.com/uc?export=download&id=${DRIVE_FILE_ID}&confirm=t"
-            "https://drive.usercontent.google.com/download?id=${DRIVE_FILE_ID}&export=download&authuser=0&confirm=t"
-          )
-          ok=0
-          for url in "${URLS[@]}"; do
-            rm -f "$OUT"
-            status=$(curl --silent --show-error --location --retry 2 \
-              -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
-              -o "$OUT" -w '%{http_code}' "$url" || true)
-            echo "Drive download endpoint returned HTTP ${status}."
-            if [ "$status" = "200" ] && unzip -tq "$OUT" >/dev/null 2>&1; then
-              ok=1
-              break
-            fi
-          done
-          test "$ok" -eq 1
-          test -s "$OUT"
+          status=$(curl --silent --show-error --location --retry 3 \
+            -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
+            -o "$OUT" -w '%{http_code}' \
+            "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" || true)
+          echo "Drive API download: HTTP ${status}."
+          test "$status" = "200"
+          unzip -tq "$OUT" >/dev/null
 
       - name: Install real Case 001 PNG masters
         shell: bash
@@ -118,3 +136,15 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "[asset-bridge] Add real Case 001 PNG assets"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Restore Drive API disabled state
+        if: ${{ always() && env.DRIVE_API_ENABLED_BY_BRIDGE == '1' }}
+        shell: bash
+        run: |
+          set +e
+          SERVICE_URL="https://serviceusage.googleapis.com/v1/projects/${GOOGLE_PROJECT_NUMBER}/services/drive.googleapis.com"
+          status=$(curl --silent --show-error -o /tmp/drive-disable.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer ${CLOUD_ACCESS_TOKEN}" \
+            -H 'Content-Type: application/json' \
+            -d '{}' "${SERVICE_URL}:disable" || true)
+          echo "Drive API restore request: HTTP ${status}."
