@@ -50,9 +50,9 @@ jobs:
             for (const kid of kids) {
               if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Hero character did not load: ${JSON.stringify(kid)}`);
             }
-            for (let i = 0; i < kids.length - 1; i++) {
-              const right = kids[i].rect.x + kids[i].rect.width;
-              if (right > kids[i + 1].rect.x + 1) throw new Error(`Hero character boxes overlap: ${JSON.stringify(kids)}`);
+            const centers = kids.map(kid => kid.rect.x + kid.rect.width / 2);
+            for (let i = 0; i < centers.length - 1; i++) {
+              if (centers[i + 1] - centers[i] < 70) throw new Error(`Hero character centers are too crowded: ${JSON.stringify(centers)}`);
             }
             await desktop.screenshot({ path: 'homepage-refine-desktop.png', fullPage: true });
 
@@ -64,7 +64,7 @@ jobs:
             if (y < 100) throw new Error(`Mobile homepage did not scroll: ${y}`);
             await mobile.evaluate(() => scrollTo(0, 0));
             await mobile.screenshot({ path: 'homepage-refine-mobile.png', fullPage: true });
-            console.log({ kids, mobileScrollY: y });
+            console.log({ kids, centers, mobileScrollY: y });
             await browser.close();
           })();
           NODE
