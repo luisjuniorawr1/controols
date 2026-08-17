@@ -31,6 +31,7 @@ jobs:
           groups = {
               'Case 001': Path('public/game/assets/v2-real'),
               'Case 002': Path('public/game/assets/case-002'),
+              'Case 003': Path('public/game/assets/case-003'),
           }
           for name, folder in groups.items():
               paths = sorted(folder.glob('*.png'))
