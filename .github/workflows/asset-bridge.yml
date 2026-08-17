@@ -1,0 +1,33 @@
+name: Temporary Asset Bridge
+
+on:
+  push:
+    branches: [fix/use-real-v2-png-assets]
+
+permissions:
+  contents: write
+
+jobs:
+  service-account-id:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export service account email only
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+          if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT is unavailable');
+          const parsed = JSON.parse(raw);
+          if (!parsed.client_email) throw new Error('client_email missing');
+          fs.writeFileSync('service-account-email.txt', parsed.client_email + '\n');
+          NODE
+      - name: Upload service account identifier
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-bridge-service-account
+          path: service-account-email.txt
+          retention-days: 1
