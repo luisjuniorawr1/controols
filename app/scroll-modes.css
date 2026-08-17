@@ -1,0 +1,27 @@
+/*
+ * Route-safe scrolling contract.
+ * Public pages use the browser's normal document scrolling.
+ * The game is fixed to one physical viewport and therefore never creates
+ * document-level scrolling, even though its CSS is loaded globally.
+ */
+html,
+body {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: auto;
+}
+
+.kids-game {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
