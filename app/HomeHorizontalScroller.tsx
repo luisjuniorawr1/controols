@@ -6,7 +6,6 @@ const panelLabels = ['Início', 'Projeto', 'Turma', 'Temas', 'Demo', 'Próximos 
 
 export default function HomeHorizontalScroller({ children }: PropsWithChildren) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({ active: false, startX: 0, startScroll: 0 });
   const wheelLockRef = useRef(false);
   const wheelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activePanel, setActivePanel] = useState(0);
@@ -23,6 +22,16 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
     const track = trackRef.current;
     if (!track) return;
 
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+
+    const snapToPanel = (index: number) => {
+      const width = track.clientWidth || 1;
+      const safeIndex = Math.max(0, Math.min(panelCount - 1, index));
+      track.scrollTo({ left: safeIndex * width, behavior: 'smooth' });
+    };
+
     const onScroll = () => {
       const width = track.clientWidth || 1;
       setActivePanel(Math.max(0, Math.min(panelCount - 1, Math.round(track.scrollLeft / width))));
@@ -36,8 +45,7 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
       const width = track.clientWidth || 1;
       const current = Math.round(track.scrollLeft / width);
       const direction = event.deltaY > 0 ? 1 : -1;
-      const next = Math.max(0, Math.min(panelCount - 1, current + direction));
-      track.scrollTo({ left: next * width, behavior: 'smooth' });
+      snapToPanel(current + direction);
 
       wheelLockRef.current = true;
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
@@ -46,53 +54,57 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
       }, 420);
     };
 
+    const onMouseDown = (event: MouseEvent) => {
+      if (event.button !== 0) return;
+      const target = event.target as HTMLElement;
+      if (target.closest('a,button,input,textarea,select')) return;
+      event.preventDefault();
+      dragging = true;
+      dragStartX = event.clientX;
+      dragStartScroll = track.scrollLeft;
+      track.dataset.dragging = 'true';
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!dragging) return;
+      event.preventDefault();
+      track.scrollLeft = dragStartScroll - (event.clientX - dragStartX);
+    };
+
+    const finishMouseDrag = () => {
+      if (!dragging) return;
+      const width = track.clientWidth || 1;
+      const delta = track.scrollLeft - dragStartScroll;
+      const startPanel = Math.round(dragStartScroll / width);
+      const threshold = Math.min(120, width * 0.12);
+
+      dragging = false;
+      delete track.dataset.dragging;
+
+      if (Math.abs(delta) >= threshold) {
+        snapToPanel(startPanel + (delta > 0 ? 1 : -1));
+      } else {
+        snapToPanel(startPanel);
+      }
+    };
+
     track.addEventListener('scroll', onScroll, { passive: true });
+    track.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove, { passive: false });
+    window.addEventListener('mouseup', finishMouseDrag);
+    window.addEventListener('blur', finishMouseDrag);
     window.addEventListener('wheel', onWheel, { passive: false });
+
     return () => {
       track.removeEventListener('scroll', onScroll);
+      track.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', finishMouseDrag);
+      window.removeEventListener('blur', finishMouseDrag);
       window.removeEventListener('wheel', onWheel);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
   }, [panelCount]);
-
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse') return;
-    if ((event.target as HTMLElement).closest('a,button,input,textarea,select')) return;
-    const track = trackRef.current;
-    if (!track) return;
-    event.preventDefault();
-    dragRef.current = { active: true, startX: event.clientX, startScroll: track.scrollLeft };
-    track.setPointerCapture(event.pointerId);
-    track.dataset.dragging = 'true';
-  };
-
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const track = trackRef.current;
-    if (!track || !dragRef.current.active) return;
-    event.preventDefault();
-    track.scrollLeft = dragRef.current.startScroll - (event.clientX - dragRef.current.startX);
-  };
-
-  const finishDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const track = trackRef.current;
-    if (!track || !dragRef.current.active) return;
-
-    const width = track.clientWidth || 1;
-    const startScroll = dragRef.current.startScroll;
-    const startPanel = Math.round(startScroll / width);
-    const delta = track.scrollLeft - startScroll;
-    const threshold = Math.min(120, width * 0.12);
-
-    dragRef.current.active = false;
-    delete track.dataset.dragging;
-    if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
-
-    if (Math.abs(delta) >= threshold) {
-      goToPanel(startPanel + (delta > 0 ? 1 : -1));
-      return;
-    }
-    goToPanel(startPanel);
-  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'ArrowRight' || event.key === 'PageDown') {
@@ -121,10 +133,6 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
         tabIndex={0}
         aria-label="Página inicial do CONTROOLS. Navegue horizontalmente entre as seções."
         onDragStart={event => event.preventDefault()}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={finishDrag}
-        onPointerCancel={finishDrag}
         onKeyDown={handleKeyDown}
       >
         {children}
