@@ -1,0 +1,218 @@
+/* Homepage refinements: cleaner cast presentation and parent-demo messaging. */
+.marketing-hero-lineup{
+  position:absolute;
+  z-index:5;
+  left:50%;
+  bottom:8px;
+  width:min(108%,760px);
+  max-height:520px;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:translateX(-50%);
+  filter:drop-shadow(0 22px 18px #2e365425);
+}
+
+.marketing-demo{
+  padding-top:74px;
+}
+
+.marketing-demo-panel{
+  display:grid;
+  grid-template-columns:.82fr 1.18fr;
+  gap:18px;
+  padding:18px;
+  border:1px solid #dfe4ef;
+  border-radius:32px;
+  background:linear-gradient(135deg,#eef3ff 0%,#f7f3ff 55%,#fff8e8 100%);
+  box-shadow:0 22px 60px #27365c0c;
+}
+
+.marketing-demo-copy{
+  min-height:410px;
+  padding:38px 34px;
+  border-radius:24px;
+  background:#172033;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+.marketing-demo-pill{
+  display:inline-flex;
+  border:1px solid #ffffff24;
+  background:#ffffff0d;
+  color:#9eb0ff;
+  border-radius:999px;
+  padding:8px 11px;
+  font-size:9px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.13em;
+}
+
+.marketing-demo-copy h3{
+  max-width:440px;
+  margin:24px 0 14px;
+  font-size:clamp(30px,3vw,44px);
+  line-height:1.02;
+  letter-spacing:-.05em;
+}
+
+.marketing-demo-copy p{
+  max-width:500px;
+  margin:0;
+  color:#bdc6d6;
+  font-size:14px;
+  line-height:1.65;
+}
+
+.marketing-demo-copy button{
+  min-height:48px;
+  margin-top:auto;
+  padding:0 18px;
+  border:0;
+  border-radius:14px;
+  background:#fff;
+  color:#172033;
+  font-size:12px;
+  font-weight:900;
+  opacity:.74;
+}
+
+.marketing-demo-preview{
+  min-height:410px;
+  overflow:hidden;
+  border:1px solid #dfe4ef;
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 20px 50px #27365c12;
+}
+
+.marketing-demo-browserbar{
+  height:52px;
+  padding:0 17px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border-bottom:1px solid #e6e9f0;
+  background:#f8f9fc;
+}
+
+.marketing-demo-browserbar i{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#cbd1dd;
+}
+
+.marketing-demo-browserbar span{
+  margin-left:8px;
+  color:#8b93a4;
+  font-size:10px;
+  font-weight:750;
+}
+
+.marketing-demo-screen{
+  min-height:358px;
+  padding:38px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 78% 30%,#e0e8ff 0 13%,transparent 13.4%),
+    radial-gradient(circle at 72% 40%,#edf1ff 0 25%,transparent 25.4%),
+    linear-gradient(145deg,#fff 0%,#f7f9ff 100%);
+}
+
+.marketing-demo-screen small{
+  color:#3158d4;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.14em;
+}
+
+.marketing-demo-screen strong{
+  max-width:480px;
+  margin-top:13px;
+  font-size:clamp(34px,4vw,58px);
+  line-height:.98;
+  letter-spacing:-.055em;
+  color:#172033;
+}
+
+.marketing-demo-steps{
+  display:flex;
+  gap:9px;
+  margin-top:36px;
+}
+
+.marketing-demo-steps span{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  border:1px solid #dfe4ef;
+  background:#fff;
+  color:#3158d4;
+  font-size:11px;
+  font-weight:950;
+  box-shadow:0 8px 20px #27365c0b;
+}
+
+@media(max-width:1100px){
+  .marketing-hero-lineup{
+    width:min(88%,760px);
+    max-height:470px;
+  }
+  .marketing-demo-panel{
+    grid-template-columns:1fr;
+  }
+  .marketing-demo-copy,
+  .marketing-demo-preview{
+    min-height:350px;
+  }
+}
+
+@media(max-width:760px){
+  .marketing-hero-lineup{
+    width:104%;
+    max-height:315px;
+    bottom:18px;
+  }
+  .marketing-demo{
+    padding-top:56px;
+  }
+  .marketing-demo-panel{
+    padding:10px;
+    border-radius:25px;
+  }
+  .marketing-demo-copy{
+    min-height:350px;
+    padding:28px 24px;
+    border-radius:19px;
+  }
+  .marketing-demo-preview{
+    min-height:320px;
+    border-radius:19px;
+  }
+  .marketing-demo-screen{
+    min-height:268px;
+    padding:28px 24px;
+  }
+}
+
+@media(max-width:430px){
+  .marketing-hero-lineup{
+    width:110%;
+    max-height:270px;
+    bottom:16px;
+  }
+  .marketing-demo-copy h3{
+    font-size:32px;
+  }
+  .marketing-demo-screen strong{
+    font-size:38px;
+  }
+}
