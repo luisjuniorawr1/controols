@@ -76,11 +76,22 @@ export default function HomeHorizontalScroller({ children }: PropsWithChildren) 
   const finishDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     const track = trackRef.current;
     if (!track || !dragRef.current.active) return;
+
+    const width = track.clientWidth || 1;
+    const startScroll = dragRef.current.startScroll;
+    const startPanel = Math.round(startScroll / width);
+    const delta = track.scrollLeft - startScroll;
+    const threshold = Math.min(120, width * 0.12);
+
     dragRef.current.active = false;
     delete track.dataset.dragging;
     if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
-    const width = track.clientWidth || 1;
-    goToPanel(Math.round(track.scrollLeft / width));
+
+    if (Math.abs(delta) >= threshold) {
+      goToPanel(startPanel + (delta > 0 ? 1 : -1));
+      return;
+    }
+    goToPanel(startPanel);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
