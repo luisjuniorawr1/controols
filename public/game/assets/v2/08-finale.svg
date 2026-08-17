@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#123b75"/><stop offset=".55" stop-color="#185f86"/><stop offset="1" stop-color="#4b317a"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g filter="url(#g)"><path d="M800 95c120 75 220 85 285 90v185c0 145-95 230-285 300-190-70-285-155-285-300V185c65-5 165-15 285-90z" fill="#2f8ed2" stroke="#b5f0ff" stroke-width="10"/><path d="M735 360l45 50 90-110" fill="none" stroke="white" stroke-width="30" stroke-linecap="round"/></g>
+  <g fill="#ffd55b"><path d="M255 145l19 38 42 6-31 30 7 42-37-20-37 20 7-42-31-30 42-6z"/><path d="M1325 150l15 30 33 5-24 23 6 33-30-16-30 16 6-33-24-23 33-5z"/></g>
+  <g opacity=".9"><rect x="110" y="300" width="16" height="65" rx="8" fill="#ff6a5b" transform="rotate(-20 118 332)"/><rect x="220" y="390" width="16" height="65" rx="8" fill="#60d7c7" transform="rotate(25 228 422)"/><rect x="1400" y="350" width="16" height="65" rx="8" fill="#f1b94f" transform="rotate(16 1408 382)"/><rect x="1280" y="435" width="16" height="65" rx="8" fill="#b58cf0" transform="rotate(-22 1288 467)"/></g>
+  <ellipse cx="800" cy="790" rx="650" ry="100" fill="#302b68" opacity=".75"/>
+</svg>
