@@ -111,16 +111,16 @@
     font-size: clamp(17px, 2.35vh, 20px);
   }
 
-  .kids3-primary,
-  .kids3-secondary {
+  .kids3-root .kids3-primary,
+  .kids3-root .kids3-secondary {
     width: 100%;
     min-height: clamp(62px, 8.4vh, 74px);
     padding: 11px 20px;
     border-radius: 19px;
-    font-size: clamp(20px, 2.85vh, 24px);
+    font-size: clamp(20px, 2.85vh, 24px) !important;
     line-height: 1.06;
   }
-  .kids3-secondary {
+  .kids3-root .kids3-secondary {
     min-height: clamp(52px, 7vh, 62px);
   }
 
@@ -186,9 +186,9 @@
   .password-options .kids3-choice > b { font-size: 20px; }
   .kids3-choice-grid.tiny .kids3-choice { min-height: 44px; padding: 5px 10px; }
   .kids3-choice-grid.tiny .kids3-choice > b { font-size: 17px; }
-  .kids3-primary,
-  .kids3-secondary { min-height: 49px; font-size: 18px; padding: 7px 13px; }
-  .kids3-secondary { min-height: 41px; }
+  .kids3-root .kids3-primary,
+  .kids3-root .kids3-secondary { min-height: 49px; font-size: 18px !important; padding: 7px 13px; }
+  .kids3-root .kids3-secondary { min-height: 41px; }
   .kids3-feedback { padding: 7px 11px; }
   .kids3-feedback b { font-size: 18px; }
   .kids3-feedback p { font-size: 16px !important; }
