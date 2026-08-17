@@ -20,16 +20,6 @@ type ChoiceCardProps = {
   onClick: () => void;
 };
 
-type GuideStageProps = {
-  kidId: KidId;
-  icon: string;
-  kicker: string;
-  line: string;
-  tone: 'blue' | 'green' | 'yellow';
-  alt: string;
-  testId: string;
-};
-
 function ChoiceCard({ icon, title, selected, onClick }: ChoiceCardProps) {
   return <button type="button" className={`kid-choice${selected ? ' is-selected' : ''}`} onClick={onClick}>
     <span className="kid-choice-icon" aria-hidden="true">{icon}</span>
@@ -45,32 +35,13 @@ function Progress({ screen }: { screen: Screen }) {
   </div>;
 }
 
-function GuideStage({ kidId, icon, kicker, line, tone, alt, testId }: GuideStageProps) {
-  const kid = kids.find(item => item.id === kidId)!;
-  return <aside className={`kids-visual-stage kids-tone-${tone}`} data-testid={`${testId}-stage`}>
-    <div className="kids-guide-copy">
-      <span>{kicker}</span>
-      <b>{line}</b>
-    </div>
-    <div className="kids-guide-icon" aria-hidden="true">{icon}</div>
-    <span className="kids-scene-spark is-one" aria-hidden="true">✦</span>
-    <span className="kids-scene-spark is-two" aria-hidden="true">●</span>
-    <img data-testid={testId} src={kid.asset} alt={alt} />
-  </aside>;
+function SceneArt({ src, alt }: { src: string; alt: string }) {
+  return <img className="kids-scene-v2-art" src={src} alt={alt} />;
 }
 
-function DuoGuideStage() {
-  const maya = kids.find(item => item.id === 'maya')!;
-  const caio = kids.find(item => item.id === 'caio')!;
-  return <aside className="kids-duo-stage" data-testid="team-guide-stage">
-    <div className="kids-duo-title"><span>DUAS PISTAS</span><b>Junte as peças!</b></div>
-    <div className="kids-duo-callout is-left">🌐 SITE CERTO</div>
-    <div className="kids-duo-callout is-right">🤝 PESSOA CERTA</div>
-    <div className="kids-duo-characters">
-      <img data-testid="maya-guide" src={maya.asset} alt="Maya ajuda a encontrar o site certo" />
-      <img data-testid="caio-guide" src={caio.asset} alt="Caio ajuda a escolher uma pessoa de confiança" />
-    </div>
-  </aside>;
+function Character({ id, className, alt, testId }: { id: KidId; className?: string; alt: string; testId?: string }) {
+  const kid = kids.find(item => item.id === id)!;
+  return <img data-testid={testId} className={`kids-scene-v2-character ${className || ''}`} src={kid.asset} alt={alt} />;
 }
 
 export default function KidsStoryPrototype() {
@@ -87,7 +58,6 @@ export default function KidsStoryPrototype() {
   const [observationUnlocked, setObservationUnlocked] = useState(false);
 
   const selectedKid = kids.find(kid => kid.id === player)!;
-  const maya = kids.find(kid => kid.id === 'maya')!;
   const correctFlags = flags.filter(id => redFlags.find(flag => flag.id === id)?.correct).length;
   const clueSuccess = correctFlags === 2 && !flags.includes('lock');
   const actionSafe = action === 'official' || action === 'adult';
@@ -117,10 +87,6 @@ export default function KidsStoryPrototype() {
     };
   }, [screen, observationUnlocked]);
 
-  function begin() {
-    setScreen('choose');
-  }
-
   function startStory() {
     setObservationSeconds(OBSERVATION_SECONDS);
     setObservationUnlocked(false);
@@ -147,15 +113,18 @@ export default function KidsStoryPrototype() {
   }
 
   if (screen === 'home') {
-    return <main className="kids-game kids-home">
-      <section className="kids-title-stage">
-        <img className="kids-title-art" src={firstKidsStory.scenes.title} alt="Luna, Theo, Maya, Caio e Nina reunidos diante da tela do CONTROOLS" />
-        <div className="kids-title-overlay">
+    return <main className="kids-game kids-home kids-home-v2">
+      <section className="kids-home-v2-stage">
+        <SceneArt src={firstKidsStory.scenes.title} alt="Sala de aventuras do CONTROOLS" />
+        <div className="kids-home-v2-cast" aria-hidden="true">
+          {kids.map(kid => <img key={kid.id} src={kid.asset} alt="" className={`cast-${kid.id}`} />)}
+        </div>
+        <div className="kids-home-v2-ui">
           <span className="kids-age">{firstKidsStory.age}</span>
-          <div className="kids-mode-buttons" style={{ gridTemplateColumns: 'minmax(260px, 520px)', justifyContent: 'center' }}>
-            <button type="button" onClick={begin}><span>▶️</span><b>Jogar</b></button>
-          </div>
-          <p>Ajude a turma e vire um Guardião Digital!</p>
+          <h1>CONTROOLS</h1>
+          <h2>A Mensagem Misteriosa</h2>
+          <p>Observe. Pense. Proteja.</p>
+          <button className="kids-primary" type="button" onClick={() => setScreen('choose')}>Jogar ▶</button>
         </div>
       </section>
     </main>;
@@ -181,7 +150,7 @@ export default function KidsStoryPrototype() {
     </main>;
   }
 
-  return <main className="kids-game kids-story">
+  return <main className="kids-game kids-story kids-story-v2">
     <header className="kids-topbar">
       <b>CONTROOLS</b>
       <span>Caso {firstKidsStory.number} · {firstKidsStory.title}</span>
@@ -189,44 +158,32 @@ export default function KidsStoryPrototype() {
     </header>
     <Progress screen={screen} />
 
-    {screen === 'intro' && <section className="kids-stage-grid" data-screen="intro">
-      <div className="kids-art-stage">
-        <img src={firstKidsStory.scenes.message} alt="A turma observa uma mensagem suspeita do Clube Aurora" />
-        <div className="kids-art-sticker">📩 MENSAGEM NOVA!</div>
-        <div className="kids-art-cue cue-link" aria-hidden="true">🔗</div>
-        <div className="kids-art-cue cue-clock" aria-hidden="true">⏰</div>
-      </div>
-      <div className="kids-game-card kids-observation-card">
+    {screen === 'intro' && <section className="kids-scene-v2 scene-intro" data-screen="intro">
+      <SceneArt src={firstKidsStory.scenes.message} alt="Mensagem suspeita do Clube Aurora pedindo atualização antes das 20h" />
+      <Character id="luna" className="character-luna" alt="Luna observa a mensagem suspeita" />
+      <div className="kids-scene-v2-ui ui-right kids-observation-ui">
         <span className="kids-step-tag">MISSÃO 1</span>
         <h1>Olhe com atenção!</h1>
         <p>Tem pistas escondidas nessa mensagem.</p>
-        <div className="kids-observation-zone">
-          <div className={`kids-observation-orb${observationUnlocked ? ' is-ready' : ''}`} aria-live="polite">
-            <span>{observationUnlocked ? 'PRONTO!' : 'OLHOS DE DETETIVE'}</span>
-            <strong>{observationUnlocked ? '✓' : observationSeconds}</strong>
-            <small>{observationUnlocked ? 'VAMOS INVESTIGAR' : 'SEGUNDOS'}</small>
-          </div>
-          <img className="kids-observation-kid" src={selectedKid.asset} alt={`${selectedKid.name} observa a mensagem com atenção`} />
+        <div className={`kids-v2-timer${observationUnlocked ? ' is-ready' : ''}`} aria-live="polite">
+          <small>{observationUnlocked ? 'PRONTO!' : 'TEMPO DE DETETIVE'}</small>
+          <strong>{observationUnlocked ? '✓' : observationSeconds}</strong>
+          <span>{observationUnlocked ? 'VAMOS INVESTIGAR' : 'SEGUNDOS'}</span>
         </div>
-        <div className="kids-observation-tip" aria-live="polite"><span>🔎</span><b>{observationTip}</b></div>
+        <div className="kids-v2-tip" aria-live="polite">🔎 <b>{observationTip}</b></div>
         <button className="kids-primary" type="button" disabled={!observationUnlocked} onClick={() => setScreen('clues')}>
           {observationUnlocked ? 'Ver pistas 🔎' : '🔒 Observe primeiro'}
         </button>
       </div>
     </section>}
 
-    {screen === 'clues' && <section className="kids-stage-grid" data-screen="clues">
-      <div className="kids-art-stage">
-        <img src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" />
-        <div className="kids-art-sticker">🔎 OLHO DE DETETIVE</div>
-      </div>
-      <div className="kids-game-card kids-clue-game-card">
+    {screen === 'clues' && <section className="kids-scene-v2 scene-clues" data-screen="clues">
+      <SceneArt src={firstKidsStory.scenes.clues} alt="Quadro colorido com pistas sobre a mensagem" />
+      <Character id="maya" className="character-maya" alt="Maya ajuda a procurar as pistas" testId="maya-guide" />
+      <div className="kids-scene-v2-ui ui-right compact-ui">
         <span className="kids-step-tag">DESAFIO VISUAL</span>
         <h1>Escolha 2 pistas!</h1>
-        <div className="kids-inline-guide">
-          <img src={maya.asset} alt="Maya ajuda a procurar as pistas" />
-          <div><small>MAYA DIZ:</small><b>“Tem 2 sinais estranhos aqui!”</b></div>
-        </div>
+        <p className="kids-v2-dialogue">Maya: “Tem sinais estranhos aqui!”</p>
         <div className="kids-choice-grid compact">
           {redFlags.map(flag => <ChoiceCard key={flag.id} icon={flag.icon} title={flag.label} selected={flags.includes(flag.id)} onClick={() => toggleFlag(flag.id)} />)}
         </div>
@@ -241,19 +198,12 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'https' && <section className="kids-stage-grid" data-screen="https">
-      <GuideStage
-        kidId="theo"
-        icon="🔒"
-        kicker="DICA DO THEO"
-        line="Só o cadeado não basta!"
-        tone="blue"
-        alt="Theo mostra uma pista sobre o cadeado"
-        testId="theo-guide"
-      />
-      <div className="kids-game-card">
+    {screen === 'https' && <section className="kids-scene-v2 scene-https" data-screen="https">
+      <SceneArt src={firstKidsStory.scenes.https} alt="Cadeado e navegador em uma cena de segurança digital" />
+      <Character id="theo" className="character-theo" alt="Theo explica a pista do cadeado" testId="theo-guide" />
+      <div className="kids-scene-v2-ui ui-right">
         <span className="kids-step-tag">PEGADINHA DIGITAL</span>
-        <div className="kids-visual-equation" aria-hidden="true"><span>🔒</span><b>=</b><span>✅?</span></div>
+        <p className="kids-v2-dialogue">Theo: “Só o cadeado não basta!”</p>
         <h1>Cadeado = site seguro?</h1>
         <div className="kids-choice-grid two">
           <ChoiceCard icon="✅" title="Sim" selected={httpsAnswer === 'yes'} onClick={() => setHttpsAnswer('yes')} />
@@ -267,17 +217,10 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'action' && <section className="kids-stage-grid" data-screen="action">
-      <GuideStage
-        kidId="nina"
-        icon="🛡️"
-        kicker="DICA DA NINA"
-        line="Vamos com calma!"
-        tone="green"
-        alt="Nina mostra o caminho mais seguro"
-        testId="nina-guide"
-      />
-      <div className="kids-game-card">
+    {screen === 'action' && <section className="kids-scene-v2 scene-action" data-screen="action">
+      <SceneArt src={firstKidsStory.scenes.action} alt="Três escolhas visuais para decidir o caminho mais seguro" />
+      <Character id="nina" className="character-nina" alt="Nina ajuda a escolher a ação mais segura" testId="nina-guide" />
+      <div className="kids-scene-v2-ui ui-bottom wide-ui">
         <span className="kids-step-tag">SUA DECISÃO</span>
         <h1>O que fazer agora?</h1>
         <div className="kids-choice-grid three">
@@ -293,21 +236,21 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'team' && <section className="kids-stage-grid" data-screen="team">
-      <DuoGuideStage />
-      <div className="kids-game-card kids-team-card">
+    {screen === 'team' && <section className="kids-scene-v2 scene-team" data-screen="team">
+      <SceneArt src={firstKidsStory.scenes.team} alt="Duas peças de pista se juntam: site oficial e adulto de confiança" />
+      <Character id="maya" className="character-maya team-left" alt="Maya ajuda a juntar as respostas" testId="maya-guide" />
+      <Character id="caio" className="character-caio team-right" alt="Caio ajuda a juntar as respostas" testId="caio-guide" />
+      <div className="kids-scene-v2-ui ui-bottom wide-ui team-ui" data-testid="team-guide-stage">
         <span className="kids-step-tag">DESAFIO DAS PISTAS</span>
         <h1>Junte as 2 respostas!</h1>
         <div className="kids-clue-pair">
           <article className="kids-clue-block">
-            <div className="kids-clue-picture" aria-hidden="true">🌐</div>
             <div className="kids-player-label">PISTA A</div>
             <h2>Qual parece oficial?</h2>
             <button className={domain === 'real' ? 'is-selected' : ''} type="button" onClick={() => setDomain('real')}>clubeaurora.com.br</button>
             <button className={domain === 'fake' ? 'is-selected wrong' : ''} type="button" onClick={() => setDomain('fake')}>aurora-acesso-seguro.net</button>
           </article>
           <article className="kids-clue-block">
-            <div className="kids-clue-picture" aria-hidden="true">🤝</div>
             <div className="kids-player-label">PISTA B</div>
             <h2>Quem pode ajudar?</h2>
             <button className={helper === 'adult' ? 'is-selected' : ''} type="button" onClick={() => setHelper('adult')}>Um adulto de confiança</button>
@@ -320,17 +263,10 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'shield' && <section className="kids-stage-grid" data-screen="shield">
-      <GuideStage
-        kidId="luna"
-        icon="🛡️"
-        kicker="SUPERPODERES"
-        line="Isso protege você!"
-        tone="yellow"
-        alt="Luna comemora os superpoderes digitais"
-        testId="luna-guide"
-      />
-      <div className="kids-game-card kids-shield-game-card">
+    {screen === 'shield' && <section className="kids-scene-v2 scene-shield" data-screen="shield">
+      <SceneArt src={firstKidsStory.scenes.shield} alt="Escudo digital com três atitudes seguras" />
+      <Character id="luna" className="character-luna" alt="Luna apresenta o escudo digital" testId="luna-guide" />
+      <div className="kids-scene-v2-ui ui-right compact-ui">
         <span className="kids-step-tag">ESCUDO CONTROOLS</span>
         <h1>Monte seu escudo!</h1>
         <p className="kids-short-copy">Toque nos 3 superpoderes.</p>
@@ -348,21 +284,15 @@ export default function KidsStoryPrototype() {
       </div>
     </section>}
 
-    {screen === 'ending' && <section className="kids-stage-grid" data-screen="ending">
-      <div className="kids-finale-art">
-        <img src={firstKidsStory.scenes.team} alt="A turma oficial do CONTROOLS comemora a missão" />
-        <span className="kids-finale-star is-one" aria-hidden="true">⭐</span>
-        <span className="kids-finale-star is-two" aria-hidden="true">✨</span>
-        <span className="kids-finale-star is-three" aria-hidden="true">⭐</span>
-        <span className="kids-confetti c1" aria-hidden="true">●</span>
-        <span className="kids-confetti c2" aria-hidden="true">▲</span>
-        <span className="kids-confetti c3" aria-hidden="true">■</span>
+    {screen === 'ending' && <section className="kids-scene-v2 scene-ending" data-screen="ending">
+      <SceneArt src={firstKidsStory.scenes.ending} alt="Final da missão com escudo e confetes" />
+      <div className="kids-ending-v2-cast" aria-hidden="true">
+        {kids.map(kid => <img key={kid.id} src={kid.asset} alt="" className={`cast-${kid.id}`} />)}
       </div>
-      <div className="kids-game-card kids-ending-card-v2">
-        <div className="kids-card-emoji" aria-hidden="true">🏆</div>
+      <div className="kids-scene-v2-ui ui-bottom ending-ui">
         <span className="kids-step-tag">MISSÃO CUMPRIDA</span>
         <h1>Você conseguiu!</h1>
-        <p><b>Parou. Pensou. Confirmou.</b><br />Esse é o superpoder digital!</p>
+        <p><b>Parou. Pensou. Confirmou.</b></p>
         <div className="kids-badges"><span>🔎<b>Olho de lince</b></span><span>🛡️<b>Pensou antes</b></span><span>⭐<b>Guardião digital</b></span></div>
         <button className="kids-primary" type="button" onClick={restart}>Jogar de novo</button>
       </div>

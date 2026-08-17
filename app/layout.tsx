@@ -7,6 +7,7 @@ import './kids-readable.css';
 import './kids-stage-v2.css';
 import './title-overlay-fix.css';
 import './kids-fullscreen-scenes.css';
+import './kids-scenes-v2.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),

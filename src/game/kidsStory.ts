@@ -20,13 +20,17 @@ export const firstKidsStory = {
   id: 'mysterious-message',
   number: '001',
   title: 'A Mensagem Misteriosa',
-  subtitle: 'Uma aventura cooperativa para pensar antes de clicar.',
+  subtitle: 'Uma aventura para pensar antes de clicar.',
   age: '7–10 anos',
   scenes: {
-    title: '/game/assets/scenes/title-a-mensagem-misteriosa.png',
-    message: '/game/assets/scenes/mensagem-suspeita.png',
-    clues: '/game/assets/scenes/quadro-de-pistas.png',
-    team: '/game/assets/reference/character-lineup.png',
+    title: '/game/assets/v2/01-hub.svg',
+    message: '/game/assets/v2/02-message.svg',
+    clues: '/game/assets/v2/03-clues.svg',
+    https: '/game/assets/v2/04-lock.svg',
+    action: '/game/assets/v2/05-action.svg',
+    team: '/game/assets/v2/06-team.svg',
+    shield: '/game/assets/v2/07-shield.svg',
+    ending: '/game/assets/v2/08-finale.svg',
   },
 } as const;
 

@@ -44,36 +44,40 @@ async function unlockObservation(page: Page) {
   const locked = page.getByRole('button', { name: /observe primeiro/i });
   await expect(locked).toBeVisible();
   await expect(locked).toBeDisabled();
-  await expect(page.locator('.kids-observation-orb strong')).toHaveText('30');
+  await expect(page.locator('.kids-v2-timer strong')).toHaveText('30');
   await page.clock.runFor(31_000);
   const unlocked = page.getByRole('button', { name: /ver pistas/i });
   await expect(unlocked).toBeVisible();
   await expect(unlocked).toBeEnabled();
 }
 
-async function expectColorFilledPanel(page: Page) {
-  const panel = page.locator('[data-screen] .kids-game-card').first();
-  await expect(panel).toBeVisible();
-  const paint = await panel.evaluate((node) => {
-    const style = getComputedStyle(node);
-    return { backgroundImage: style.backgroundImage, backgroundColor: style.backgroundColor };
-  });
-  expect(paint.backgroundImage).not.toBe('none');
-  expect(paint.backgroundImage).toContain('gradient');
+async function expectVisualScene(page: Page, screen: string) {
+  const scene = page.locator(`[data-screen="${screen}"]`);
+  await expect(scene).toBeVisible();
+  const art = scene.locator('.kids-scene-v2-art');
+  await expect(art).toBeVisible();
+  await expect(art).toHaveAttribute('src', /\/game\/assets\/v2\/.+\.svg$/);
+  const boxes = await Promise.all([scene.boundingBox(), art.boundingBox()]);
+  expect(boxes[0]).not.toBeNull();
+  expect(boxes[1]).not.toBeNull();
+  expect(boxes[1]!.width).toBeGreaterThanOrEqual(boxes[0]!.width - 4);
+  expect(boxes[1]!.height).toBeGreaterThanOrEqual(boxes[0]!.height - 4);
+  await expect(scene.locator('.kids-scene-v2-ui')).toBeVisible();
+  await expect(scene.locator('.kids-game-card')).toHaveCount(0);
 }
 
-test('kids title screen is single-player only and keeps original-resolution artwork', async ({ page }) => {
+test('kids title screen is single-player and uses the clean illustrated hub', async ({ page }) => {
   await page.goto('/pt/');
-  const art = page.getByRole('img', { name: /luna, theo, maya, caio e nina/i });
+  const art = page.getByRole('img', { name: /sala de aventuras do controols/i });
   await expect(art).toBeVisible();
+  await expect(art).toHaveAttribute('src', /\/game\/assets\/v2\/01-hub\.svg$/);
   await expect(page.getByRole('button', { name: /jogar/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /2 jogadores/i })).toHaveCount(0);
-  await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
-  await expect.poll(async () => art.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+  await expect(page.locator('.kids-home-v2-cast img')).toHaveCount(5);
   await expectSingleViewport(page);
 });
 
-test('Case 001 observation mission uses 30 seconds and fills the TV composition', async ({ page }) => {
+test('Case 001 observation mission uses 30 seconds and a full-screen scene', async ({ page }) => {
   await page.clock.install();
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
@@ -83,7 +87,7 @@ test('Case 001 observation mission uses 30 seconds and fills the TV composition'
   const heading = page.getByRole('heading', { name: /olhe com atenção/i });
   await expect(heading).toBeVisible();
   await expect(page.getByText(/tem pistas escondidas/i)).toBeVisible();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'intro');
   await expectSingleViewport(page);
 
   const type = await heading.evaluate((node) => {
@@ -94,21 +98,15 @@ test('Case 001 observation mission uses 30 seconds and fills the TV composition'
   expect(type.weight).toBeGreaterThanOrEqual(900);
   expect(type.family.toLowerCase()).toMatch(/rounded|trebuchet|comic|system/);
 
-  const artBox = await page.locator('[data-screen="intro"] .kids-art-stage').boundingBox();
-  const panelBox = await page.locator('[data-screen="intro"] .kids-game-card').boundingBox();
-  expect(artBox).not.toBeNull();
-  expect(panelBox).not.toBeNull();
-  expect(artBox!.width).toBeGreaterThan(panelBox!.width);
-
   await unlockObservation(page);
   await page.getByRole('button', { name: /ver pistas/i }).click();
   await expect(page.getByRole('heading', { name: /escolha 2 pistas/i })).toBeVisible();
-  await expect(page.getByRole('img', { name: /maya ajuda a procurar/i })).toBeVisible();
-  await expectColorFilledPanel(page);
+  await expectLargeGuide(page, 'maya-guide', 230);
+  await expectVisualScene(page, 'clues');
   await expectSingleViewport(page);
 });
 
-test('story challenges keep characters large and visually fill the TV stage', async ({ page }) => {
+test('story challenges keep one clear guide and scene art', async ({ page }) => {
   await page.clock.install();
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
@@ -122,36 +120,32 @@ test('story challenges keep characters large and visually fill the TV stage', as
   await page.getByRole('button', { name: /próxima missão/i }).click();
 
   await expectLargeGuide(page, 'theo-guide', 245);
-  const theoStage = await page.getByTestId('theo-guide-stage').boundingBox();
-  expect(theoStage).not.toBeNull();
-  expect(theoStage!.width).toBeGreaterThanOrEqual(300);
-  await expect(page.locator('.kids-visual-equation')).toBeVisible();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'https');
   await expectSingleViewport(page);
 
   await page.getByRole('button', { name: /^não$/i }).click();
   await page.getByRole('button', { name: /continuar/i }).click();
   await expectLargeGuide(page, 'nina-guide', 245);
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'action');
   await expectSingleViewport(page);
 
   await page.getByRole('button', { name: /abrir o app/i }).click();
   await page.getByRole('button', { name: /juntar respostas/i }).click();
-  await expectLargeGuide(page, 'maya-guide', 150);
-  await expectLargeGuide(page, 'caio-guide', 150);
+  await expectLargeGuide(page, 'maya-guide', 190);
+  await expectLargeGuide(page, 'caio-guide', 190);
   await expect(page.getByTestId('team-guide-stage')).toBeVisible();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'team');
   await expectSingleViewport(page);
 
   await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
   await page.getByRole('button', { name: /um adulto de confiança/i }).click();
   await page.getByRole('button', { name: /montar escudo/i }).click();
   await expectLargeGuide(page, 'luna-guide', 245);
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'shield');
   await expectSingleViewport(page);
 });
 
-test('solo flow uses full-resolution character and scene masters', async ({ page }) => {
+test('official character masters remain full resolution while v2 scene assets are vector', async ({ page }) => {
   await page.clock.install();
   await page.goto('/pt/');
   await page.getByRole('button', { name: /jogar/i }).click();
@@ -162,14 +156,12 @@ test('solo flow uses full-resolution character and scene masters', async ({ page
   await page.getByRole('button', { name: /começar aventura/i }).click();
   const scene = page.getByRole('img', { name: /mensagem suspeita do clube aurora/i });
   await expect(scene).toBeVisible();
-  await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
-  await expect.poll(async () => scene.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+  await expect(scene).toHaveAttribute('src', /02-message\.svg$/);
   await unlockObservation(page);
   await page.getByRole('button', { name: /ver pistas/i }).click();
   const clues = page.getByRole('img', { name: /quadro colorido com pistas/i });
   await expect(clues).toBeVisible();
-  await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThanOrEqual(1600);
-  await expect.poll(async () => clues.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBeGreaterThanOrEqual(900);
+  await expect(clues).toHaveAttribute('src', /03-clues\.svg$/);
 });
 
 test('mobile character selection always has exactly one active player and no page scroll', async ({ page }) => {
@@ -198,12 +190,12 @@ test('the complete episode fits in one 1280x650 TV-like browser viewport', async
   await expectSingleViewport(page);
 
   await page.getByRole('button', { name: /começar aventura/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'intro');
   await expectSingleViewport(page);
   await unlockObservation(page);
 
   await page.getByRole('button', { name: /ver pistas/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'clues');
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /link estranho/i }).click();
   await page.getByRole('button', { name: /muita pressa/i }).click();
@@ -212,29 +204,30 @@ test('the complete episode fits in one 1280x650 TV-like browser viewport', async
   await page.getByRole('button', { name: /próxima missão/i }).click();
 
   await page.getByRole('button', { name: /^não$/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'https');
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /continuar/i }).click();
 
   await page.getByRole('button', { name: /abrir o app/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'action');
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /juntar respostas/i }).click();
 
   await page.getByRole('button', { name: 'clubeaurora.com.br', exact: true }).click();
   await page.getByRole('button', { name: /um adulto de confiança/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'team');
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /montar escudo/i }).click();
 
   await page.getByRole('button', { name: /parar antes de clicar/i }).click();
   await page.getByRole('button', { name: /abrir o app ou site oficial/i }).click();
   await page.getByRole('button', { name: /pedir ajuda a um adulto de confiança/i }).click();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'shield');
   await expectSingleViewport(page);
   await page.getByRole('button', { name: /ver resultado/i }).click();
 
   await expect(page.getByRole('heading', { name: /você conseguiu/i })).toBeVisible();
-  await expectColorFilledPanel(page);
+  await expectVisualScene(page, 'ending');
+  await expect(page.locator('.kids-ending-v2-cast img')).toHaveCount(5);
   await expectSingleViewport(page);
 });
