@@ -25,7 +25,8 @@ jobs:
           const { chromium } = require('playwright');
           (async () => {
             const browser = await chromium.launch({ headless: true });
-            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            const viewportWidth = 390;
+            const page = await browser.newPage({ viewport: { width: viewportWidth, height: 844 } });
 
             await page.goto('https://controols.com/', { waitUntil: 'networkidle' });
             const bodyText = await page.locator('body').innerText();
@@ -43,7 +44,7 @@ jobs:
             if (kids.length !== 5) throw new Error(`Expected 5 live hero characters, got ${kids.length}`);
             for (const kid of kids) {
               if (!kid.complete || kid.naturalWidth < 100 || kid.naturalHeight < 100) throw new Error(`Live hero asset failed: ${JSON.stringify(kid)}`);
-              if (kid.rect.x < -1 || kid.rect.x + kid.rect.width > innerWidth + 1) throw new Error(`Hero character is clipped on mobile: ${JSON.stringify(kid.rect)}`);
+              if (kid.rect.x < -1 || kid.rect.x + kid.rect.width > viewportWidth + 1) throw new Error(`Hero character is clipped on mobile: ${JSON.stringify(kid.rect)}`);
             }
 
             await page.mouse.wheel(0, 900);
