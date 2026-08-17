@@ -8,26 +8,72 @@ permissions:
   contents: write
 
 jobs:
-  service-account-id:
+  asset-bridge:
+    if: ${{ !contains(github.event.head_commit.message, '[asset-bridge]') }}
     runs-on: ubuntu-latest
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      DRIVE_FILE_ID: 1isC9B9RXhwMF5YNb7KOTNEuptI5RcPaj
     steps:
       - uses: actions/checkout@v4
-      - name: Export service account email only
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate Google service account
+        id: google-auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/drive.readonly
+
+      - name: Download master asset pack from Drive
         shell: bash
         run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-          if (!raw) throw new Error('FIREBASE_SERVICE_ACCOUNT is unavailable');
-          const parsed = JSON.parse(raw);
-          if (!parsed.client_email) throw new Error('client_email missing');
-          fs.writeFileSync('service-account-email.txt', parsed.client_email + '\n');
-          NODE
-      - name: Upload service account identifier
-        uses: actions/upload-artifact@v4
-        with:
-          name: asset-bridge-service-account
-          path: service-account-email.txt
-          retention-days: 1
+          set -euo pipefail
+          mkdir -p /tmp/controols-assets
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer ${{ steps.google-auth.outputs.access_token }}" \
+            "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" \
+            -o /tmp/controols-assets/controols-assets-v2.zip
+          test -s /tmp/controols-assets/controols-assets-v2.zip
+
+      - name: Install real Case 001 PNG masters
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf public/game/assets/v2-real /tmp/controols-assets/unpacked
+          mkdir -p public/game/assets/v2-real /tmp/controols-assets/unpacked
+          unzip -q /tmp/controols-assets/controols-assets-v2.zip -d /tmp/controols-assets/unpacked
+          cp /tmp/controols-assets/unpacked/controols-assets-v2/scenes/*.png public/game/assets/v2-real/
+          test "$(find public/game/assets/v2-real -maxdepth 1 -name '*.png' | wc -l)" -eq 8
+
+      - name: Validate PNG master dimensions
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths = sorted(Path('public/game/assets/v2-real').glob('*.png'))
+          assert len(paths) == 8, len(paths)
+          for path in paths:
+              raw = path.read_bytes()[:24]
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
+              width, height = struct.unpack('>II', raw[16:24])
+              print(path.name, width, height)
+              assert width >= 1600 and height >= 900, (path, width, height)
+          PY
+
+      - name: Commit PNG masters to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/game/assets/v2-real
+          if git diff --cached --quiet; then
+            echo "Assets already present."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "[asset-bridge] Add real Case 001 PNG assets"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
