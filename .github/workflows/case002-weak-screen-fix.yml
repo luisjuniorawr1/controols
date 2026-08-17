@@ -27,123 +27,58 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          def replace_once(path, old, new):
-              p = Path(path)
-              text = p.read_text()
+          component = Path('src/components/KidsStoryPrototype.tsx')
+          text = component.read_text()
+          replacements = [
+              ('<h1>Qual é fácil de adivinhar?</h1>', '<h1>Qual senha é fácil de adivinhar?</h1>'),
+              ('<Choice label="Nuvem Salta Sobre 4 Luas" selected={weakAnswer === \'long1\'} wrong={weakAnswer === \'long1\'} onClick={() => setWeakAnswer(\'long1\')} />', '<Choice label="Bolo com 3 Velas" selected={weakAnswer === \'long1\'} wrong={weakAnswer === \'long1\'} onClick={() => setWeakAnswer(\'long1\')} />'),
+              ('<Choice label="Pato Roxo Viaja 27" selected={weakAnswer === \'long2\'} wrong={weakAnswer === \'long2\'} onClick={() => setWeakAnswer(\'long2\')} />', '<Choice label="3 Chaves Douradas" selected={weakAnswer === \'long2\'} wrong={weakAnswer === \'long2\'} onClick={() => setWeakAnswer(\'long2\')} />'),
+              ('className={`kids3-feedback ${weakAnswer === \'easy\' ? \'good\' : \'hint\'}`}', 'className={`kids3-feedback case002-weak-feedback ${weakAnswer === \'easy\' ? \'good\' : \'hint\'}`}'),
+              ('Sequências muito comuns são fáceis de tentar.', '123456 é uma sequência muito comum e fácil de tentar.'),
+              ('Uma frase longa costuma ser mais difícil de adivinhar.', 'Pense nas três pistas da imagem: a sequência de números é a mais óbvia.'),
+          ]
+          for old, new in replacements:
               if new in text:
-                  return False
+                  continue
               if old not in text:
-                  raise SystemExit(f'Expected block not found in {path}')
-              p.write_text(text.replace(old, new, 1))
-              return True
-
-          component_old = '''      <h1>Qual é fácil de adivinhar?</h1>
-      <div className="kids3-choice-grid one password-options">
-        <Choice label="123456" selected={weakAnswer === 'easy'} onClick={() => setWeakAnswer('easy')} />
-        <Choice label="Nuvem Salta Sobre 4 Luas" selected={weakAnswer === 'long1'} wrong={weakAnswer === 'long1'} onClick={() => setWeakAnswer('long1')} />
-        <Choice label="Pato Roxo Viaja 27" selected={weakAnswer === 'long2'} wrong={weakAnswer === 'long2'} onClick={() => setWeakAnswer('long2')} />
-      </div>
-      {weakAnswer && <div className={`kids3-feedback ${weakAnswer === 'easy' ? 'good' : 'hint'}`}><b>{weakAnswer === 'easy' ? 'Isso! 🔓' : 'Olhe de novo.'}</b><p>{weakAnswer === 'easy' ? 'Sequências muito comuns são fáceis de tentar.' : 'Uma frase longa costuma ser mais difícil de adivinhar.'}</p></div>}'''
-          component_new = '''      <h1>Qual senha é fácil de adivinhar?</h1>
-      <div className="kids3-choice-grid one password-options">
-        <Choice label="123456" selected={weakAnswer === 'easy'} onClick={() => setWeakAnswer('easy')} />
-        <Choice label="Bolo com 3 Velas" selected={weakAnswer === 'long1'} wrong={weakAnswer === 'long1'} onClick={() => setWeakAnswer('long1')} />
-        <Choice label="3 Chaves Douradas" selected={weakAnswer === 'long2'} wrong={weakAnswer === 'long2'} onClick={() => setWeakAnswer('long2')} />
-      </div>
-      {weakAnswer && <div className={`kids3-feedback case002-weak-feedback ${weakAnswer === 'easy' ? 'good' : 'hint'}`}><b>{weakAnswer === 'easy' ? 'Isso! 🔓' : 'Olhe de novo.'}</b><p>{weakAnswer === 'easy' ? '123456 é uma sequência muito comum e fácil de tentar.' : 'Pense nas três pistas da imagem: a sequência de números é a mais óbvia.'}</p></div>}'''
-          replace_once('src/components/KidsStoryPrototype.tsx', component_old, component_new)
+                  raise SystemExit(f'Expected text not found: {old}')
+              text = text.replace(old, new, 1)
+          component.write_text(text)
 
           css = Path('app/kids-right-panel-readable.css')
           css_text = css.read_text()
           marker = '/* Case 002 · Pista 1: feedback follows the same centered rail as the answer options. */'
           if marker not in css_text:
-              css.write_text(css_text.rstrip() + '''\n\n/* Case 002 · Pista 1: feedback follows the same centered rail as the answer options. */
-[data-screen="case002-weak"] .case002-weak-feedback {
-  width: 100%;
-  max-width: none;
-  min-height: clamp(72px, 10vh, 92px);
-  margin-inline: auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-[data-screen="case002-weak"] .case002-weak-feedback > b,
-[data-screen="case002-weak"] .case002-weak-feedback > p {
-  width: 100%;
-  margin-inline: auto !important;
-  text-align: center;
-}
-[data-screen="case002-weak"] .case002-weak-feedback > p {
-  max-width: 32ch;
-}
-@media (min-width: 761px) and (max-height: 700px) {
-  [data-screen="case002-weak"] .case002-weak-feedback {
-    min-height: 76px;
-  }
-}
-''')
-
-          test_path = Path('tests/qa-right-panel.spec.ts')
-          test_text = test_path.read_text()
-          test_old = '''  const scene = page.locator('[data-screen="case002-weak"]');
-  await expect(scene).toBeVisible();
-  const typeMetrics = await scene.evaluate((node) => {
-    const choiceLabel = node.querySelector('.kids3-choice b') as HTMLElement | null;
-    if (!choiceLabel) throw new Error('choice label missing');
-    return { choiceSize: parseFloat(getComputedStyle(choiceLabel).fontSize) };
-  });
-  expect(typeMetrics.choiceSize).toBeGreaterThanOrEqual(18.5);
-
-  await page.getByRole('button', { name: /^123456$/ }).click();'''
-          test_new = '''  const scene = page.locator('[data-screen="case002-weak"]');
-  await expect(scene).toBeVisible();
-  await expect(page.getByRole('heading', { name: /qual senha é fácil de adivinhar/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^123456$/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /bolo com 3 velas/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /3 chaves douradas/i })).toBeVisible();
-  await expect(page.getByText(/nuvem salta sobre 4 luas/i)).toHaveCount(0);
-  await expect(page.getByText(/pato roxo viaja 27/i)).toHaveCount(0);
-
-  const typeMetrics = await scene.evaluate((node) => {
-    const choiceLabel = node.querySelector('.kids3-choice b') as HTMLElement | null;
-    if (!choiceLabel) throw new Error('choice label missing');
-    return { choiceSize: parseFloat(getComputedStyle(choiceLabel).fontSize) };
-  });
-  expect(typeMetrics.choiceSize).toBeGreaterThanOrEqual(18.5);
-
-  await page.getByRole('button', { name: /bolo com 3 velas/i }).click();
-  await expect(scene.locator('.case002-weak-feedback')).toContainText(/pense nas três pistas da imagem/i);
-  const alignment = await scene.evaluate((node) => {
-    const options = node.querySelector('.password-options') as HTMLElement | null;
-    const feedback = node.querySelector('.case002-weak-feedback') as HTMLElement | null;
-    if (!options || !feedback) throw new Error('weak-screen alignment elements missing');
-    const optionRect = options.getBoundingClientRect();
-    const feedbackRect = feedback.getBoundingClientRect();
-    const style = getComputedStyle(feedback);
-    return {
-      optionLeft: optionRect.left,
-      optionWidth: optionRect.width,
-      feedbackLeft: feedbackRect.left,
-      feedbackWidth: feedbackRect.width,
-      alignItems: style.alignItems,
-      justifyContent: style.justifyContent,
-      textAlign: style.textAlign,
-    };
-  });
-  expect(Math.abs(alignment.feedbackLeft - alignment.optionLeft)).toBeLessThanOrEqual(1);
-  expect(Math.abs(alignment.feedbackWidth - alignment.optionWidth)).toBeLessThanOrEqual(1);
-  expect(alignment.alignItems).toBe('center');
-  expect(alignment.justifyContent).toBe('center');
-  expect(alignment.textAlign).toBe('center');
-
-  await page.getByRole('button', { name: /^123456$/ }).click();'''
-          if test_new not in test_text:
-              if test_old not in test_text:
-                  raise SystemExit('Expected QA block not found')
-              test_path.write_text(test_text.replace(test_old, test_new, 1))
+              css_block = '\n'.join([
+                  marker,
+                  '[data-screen="case002-weak"] .case002-weak-feedback {',
+                  '  width: 100%;',
+                  '  max-width: none;',
+                  '  min-height: clamp(72px, 10vh, 92px);',
+                  '  margin-inline: auto;',
+                  '  box-sizing: border-box;',
+                  '  display: flex;',
+                  '  flex-direction: column;',
+                  '  align-items: center;',
+                  '  justify-content: center;',
+                  '  text-align: center;',
+                  '}',
+                  '[data-screen="case002-weak"] .case002-weak-feedback > b,',
+                  '[data-screen="case002-weak"] .case002-weak-feedback > p {',
+                  '  width: 100%;',
+                  '  margin-inline: auto !important;',
+                  '  text-align: center;',
+                  '}',
+                  '[data-screen="case002-weak"] .case002-weak-feedback > p {',
+                  '  max-width: 32ch;',
+                  '}',
+                  '@media (min-width: 761px) and (max-height: 700px) {',
+                  '  [data-screen="case002-weak"] .case002-weak-feedback {',
+                  '    min-height: 76px;',
+                  '  }',
+                  '}',
+              ])
+              css.write_text(css_text.rstrip() + '\n\n' + css_block + '\n')
           PY
       - name: Commit patch when needed
         run: |
@@ -152,7 +87,7 @@ jobs:
           else
             git config user.name "controols-qa-bot"
             git config user.email "actions@users.noreply.github.com"
-            git add src/components/KidsStoryPrototype.tsx app/kids-right-panel-readable.css tests/qa-right-panel.spec.ts
+            git add src/components/KidsStoryPrototype.tsx app/kids-right-panel-readable.css
             git commit -m "Align Case 002 weak-password clues with artwork"
             git push origin HEAD:fix/case002-weak-password-image-alignment
           fi
