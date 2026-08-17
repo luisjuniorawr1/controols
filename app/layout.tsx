@@ -13,6 +13,7 @@ import './kids-game-v3.css';
 import './kids-right-panel-readable.css';
 import './library-card-right-safe-zone.css';
 import './marketing-home.css';
+import './scroll-modes.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
