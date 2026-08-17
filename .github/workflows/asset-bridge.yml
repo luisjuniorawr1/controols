@@ -19,13 +19,38 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Authenticate Google service account
-        id: google-auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          token_format: access_token
-          access_token_scopes: https://www.googleapis.com/auth/drive.readonly
+      - name: Mint Drive access token with service-account key
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const creds = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
+          if (!creds.client_email || !creds.private_key) throw new Error('service account credentials incomplete');
+          const now = Math.floor(Date.now() / 1000);
+          const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+          const unsigned = `${b64({alg:'RS256',typ:'JWT'})}.${b64({
+            iss: creds.client_email,
+            scope: 'https://www.googleapis.com/auth/drive.readonly',
+            aud: 'https://oauth2.googleapis.com/token',
+            iat: now,
+            exp: now + 3600,
+          })}`;
+          const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), creds.private_key).toString('base64url');
+          fs.writeFileSync('/tmp/google-assertion.jwt', `${unsigned}.${signature}`);
+          NODE
+          curl --fail --silent --show-error \
+            --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer' \
+            --data-urlencode "assertion=$(cat /tmp/google-assertion.jwt)" \
+            https://oauth2.googleapis.com/token > /tmp/google-token.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const token = JSON.parse(fs.readFileSync('/tmp/google-token.json', 'utf8'));
+          if (!token.access_token) throw new Error(`access token missing: ${JSON.stringify(token)}`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `DRIVE_ACCESS_TOKEN=${token.access_token}\n`);
+          NODE
+          rm -f /tmp/google-assertion.jwt /tmp/google-token.json
 
       - name: Download master asset pack from Drive
         shell: bash
@@ -33,7 +58,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/controols-assets
           curl --fail --location --retry 3 \
-            -H "Authorization: Bearer ${{ steps.google-auth.outputs.access_token }}" \
+            -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
             "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" \
             -o /tmp/controols-assets/controols-assets-v2.zip
           test -s /tmp/controols-assets/controols-assets-v2.zip
