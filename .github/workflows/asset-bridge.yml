@@ -1,4 +1,4 @@
-name: Temporary Asset Bridge
+name: Temporary Case 001 QA
 
 on:
   push:
@@ -6,82 +6,28 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  asset-bridge:
-    if: ${{ !contains(github.event.head_commit.message, '[asset-bridge]') }}
+  qa:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
-      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      DRIVE_FILE_ID: 1isC9B9RXhwMF5YNb7KOTNEuptI5RcPaj
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: fix/use-real-v2-png-assets
-          fetch-depth: 0
-
-      - name: Mint Drive token with service-account key
-        shell: bash
+          node-version: 22
+      - run: npm install
+      - name: Validate committed Case 001 PNG masters
         run: |
-          set -euo pipefail
-          node - <<'NODE' > /tmp/drive-token
-          const crypto = require('crypto');
-          const { execFileSync } = require('child_process');
-          const creds = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-          if (!creds.client_email || !creds.private_key) throw new Error('service account credentials incomplete');
-          const now = Math.floor(Date.now() / 1000);
-          const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
-          const unsigned = `${b64({alg:'RS256',typ:'JWT'})}.${b64({
-            iss:creds.client_email,
-            scope:'https://www.googleapis.com/auth/drive.readonly',
-            aud:'https://oauth2.googleapis.com/token',
-            iat:now,
-            exp:now+3600
-          })}`;
-          const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), creds.private_key).toString('base64url');
-          const response = execFileSync('curl', [
-            '--fail','--silent','--show-error',
-            '--data-urlencode','grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer',
-            '--data-urlencode',`assertion=${unsigned}.${signature}`,
-            'https://oauth2.googleapis.com/token'
-          ], {encoding:'utf8'});
-          const token = JSON.parse(response).access_token;
-          if (!token) throw new Error('access token missing');
-          process.stdout.write(token);
-          NODE
-          DRIVE_ACCESS_TOKEN=$(cat /tmp/drive-token)
-          echo "::add-mask::${DRIVE_ACCESS_TOKEN}"
-          echo "DRIVE_ACCESS_TOKEN=${DRIVE_ACCESS_TOKEN}" >> "$GITHUB_ENV"
-          rm -f /tmp/drive-token
-
-      - name: Download master asset pack through Drive API
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/controols-assets
-          OUT=/tmp/controols-assets/controols-assets-v2.zip
-          status=$(curl --silent --show-error --location --retry 3 \
-            -H "Authorization: Bearer ${DRIVE_ACCESS_TOKEN}" \
-            -o "$OUT" -w '%{http_code}' \
-            "https://www.googleapis.com/drive/v3/files/${DRIVE_FILE_ID}?alt=media" || true)
-          echo "Drive API download: HTTP ${status}."
-          test "$status" = "200"
-          unzip -tq "$OUT" >/dev/null
-
-      - name: Install and validate real Case 001 PNG masters
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf public/game/assets/v2-real /tmp/controols-assets/unpacked
-          mkdir -p public/game/assets/v2-real /tmp/controols-assets/unpacked
-          unzip -q /tmp/controols-assets/controols-assets-v2.zip -d /tmp/controols-assets/unpacked
-          cp /tmp/controols-assets/unpacked/controols-assets-v2/scenes/*.png public/game/assets/v2-real/
           python - <<'PY'
           from pathlib import Path
           import struct
           paths = sorted(Path('public/game/assets/v2-real').glob('*.png'))
-          assert len(paths) == 8, len(paths)
+          assert len(paths) == 8, f'Expected 8 PNGs, got {len(paths)}'
           for path in paths:
               raw = path.read_bytes()[:24]
               assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
@@ -89,17 +35,11 @@ jobs:
               print(path.name, width, height)
               assert width >= 1600 and height >= 900, (path, width, height)
           PY
-
-      - name: Commit PNG masters to PR branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add public/game/assets/v2-real
-          if git diff --cached --quiet; then
-            echo "Assets already present."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "[asset-bridge] Add real Case 001 PNG assets"
-          git push origin HEAD:fix/use-real-v2-png-assets
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build static site
+        run: npm run build
+      - name: Install Chromium for smoke QA
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test critical game flow
+        run: npm run qa:smoke
