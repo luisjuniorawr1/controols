@@ -1,0 +1,93 @@
+name: Case 003 Assets Import
+
+on:
+  push:
+    branches: [fix/case003-real-link-assets-v2]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      DRIVE_FILE_ID: 1pF9aMICVCrpJpMDcAVfqt1bHfMcx7K6b
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Drive auth helper
+        run: python -m pip install --quiet google-auth requests
+      - name: Download Case 003 asset pack from Drive
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+
+          info = json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])
+          creds = service_account.Credentials.from_service_account_info(
+              info,
+              scopes=['https://www.googleapis.com/auth/drive.readonly'],
+          )
+          session = AuthorizedSession(creds)
+          url = f"https://www.googleapis.com/drive/v3/files/{os.environ['DRIVE_FILE_ID']}?alt=media"
+          response = session.get(url, timeout=120)
+          response.raise_for_status()
+          Path('/tmp/case003.zip').write_bytes(response.content)
+          print('Downloaded', len(response.content), 'bytes')
+          PY
+      - name: Replace Case 003 PNG masters
+        run: |
+          rm -rf /tmp/case003-unpack
+          mkdir -p /tmp/case003-unpack
+          unzip -q /tmp/case003.zip -d /tmp/case003-unpack
+          python - <<'PY'
+          from pathlib import Path
+          import shutil, struct
+
+          src = Path('/tmp/case003-unpack/controols-case003-assets-v2/scenes')
+          dst = Path('public/game/assets/case-003')
+          expected = [
+              '00_capa_link_fantasma.png',
+              '01_luna_link_suspeito.png',
+              '02_maya_pistas_link.png',
+              '03_endereco_suspeito.png',
+              '04_nina_caminho_oficial.png',
+              '05_caio_pagina_pede_codigo.png',
+              '06_luna_mapa_link_seguro.png',
+              '07_final_link_desmascarado.png',
+          ]
+          paths = sorted(src.glob('*.png'))
+          assert [p.name for p in paths] == expected, [p.name for p in paths]
+          for p in paths:
+              raw = p.read_bytes()[:24]
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n', p
+              width, height = struct.unpack('>II', raw[16:24])
+              assert (width, height) == (1672, 941), (p, width, height)
+          dst.mkdir(parents=True, exist_ok=True)
+          for old in dst.glob('*.png'):
+              old.unlink()
+          for p in paths:
+              shutil.copy2(p, dst / p.name)
+          print('Validated and replaced', len(paths), 'Case 003 PNG masters')
+          PY
+      - name: Commit real Link Fantasma artwork
+        run: |
+          git config user.name "controols-asset-bridge"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/game/assets/case-003
+          if git diff --cached --quiet; then
+            echo "Case 003 assets already match the new package"
+            exit 0
+          fi
+          git commit -m "Replace Case 003 with real Link Fantasma artwork"
+          git pull --rebase origin fix/case003-real-link-assets-v2
+          git push origin HEAD:fix/case003-real-link-assets-v2
