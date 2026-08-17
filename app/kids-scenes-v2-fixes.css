@@ -28,3 +28,11 @@
   max-height:100%;
   box-sizing:border-box;
 }
+
+/* The legacy pop-in animation translates panels downward for a few hundred
+ * milliseconds. On a TV this can temporarily put the character selector
+ * outside the physical viewport, so selection stays visually stable. */
+.kids-cast-screen .kids-character-select{
+  animation:none!important;
+  transform:none!important;
+}
