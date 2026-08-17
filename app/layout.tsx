@@ -16,6 +16,7 @@ import './marketing-home.css';
 import './scroll-modes.css';
 import './marketing-home-refine.css';
 import './marketing-horizontal.css';
+import './marketing-horizontal-fixes.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://controols.com'),
