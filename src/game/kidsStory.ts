@@ -56,6 +56,9 @@ export const secondKidsStory = {
   },
 } as const;
 
+const CASE003_ASSET_VERSION = 'v3-20260817';
+const case003Asset = (name: string) => `/game/assets/case-003/${name}?${CASE003_ASSET_VERSION}`;
+
 export const thirdKidsStory = {
   id: 'case-003' as KidsGameId,
   number: '003',
@@ -63,15 +66,15 @@ export const thirdKidsStory = {
   subtitle: 'Nem todo link é o que parece.',
   age: '7–10 anos',
   accent: '#b98cff',
-  cover: '/game/assets/case-003/00_capa_link_fantasma.png',
+  cover: case003Asset('00_capa_link_fantasma.png'),
   scenes: {
-    warning: '/game/assets/case-003/01_luna_link_suspeito.png',
-    clues: '/game/assets/case-003/02_maya_pistas_link.png',
-    address: '/game/assets/case-003/03_endereco_suspeito.png',
-    path: '/game/assets/case-003/04_nina_caminho_oficial.png',
-    clone: '/game/assets/case-003/05_caio_pagina_pede_codigo.png',
-    map: '/game/assets/case-003/06_luna_mapa_link_seguro.png',
-    ending: '/game/assets/case-003/07_final_link_desmascarado.png',
+    warning: case003Asset('01_luna_link_suspeito.png'),
+    clues: case003Asset('02_maya_pistas_link.png'),
+    address: case003Asset('03_endereco_suspeito.png'),
+    path: case003Asset('04_nina_caminho_oficial.png'),
+    clone: case003Asset('05_caio_pagina_pede_codigo.png'),
+    map: case003Asset('06_luna_mapa_link_seguro.png'),
+    ending: case003Asset('07_final_link_desmascarado.png'),
   },
 } as const;
 
