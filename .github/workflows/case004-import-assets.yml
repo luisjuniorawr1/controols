@@ -1,0 +1,25 @@
+name: Case 004 Asset Import
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/case004-photo-privacy
+      - name: Resolve project service account
+        run: |
+          python - <<'PY'
+          import json, os
+          account = json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])
+          print('SERVICE_ACCOUNT_EMAIL=' + account['client_email'])
+          PY
