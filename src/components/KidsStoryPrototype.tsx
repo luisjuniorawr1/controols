@@ -4,10 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   case002Assets,
   case004Assets,
+  case005Assets,
+  fifthKidsStory,
   fourthKidsStory,
   kidsGames,
   passwordHabits,
   photoHabits,
+  playerHabits,
   secondKidsStory,
   type KidsGameId,
 } from '@/src/game/kidsStory';
@@ -15,6 +18,7 @@ import {
 type AppMode = 'library' | 'loading' | 'playing';
 type Case002Screen = 'warning' | 'weak' | 'strong' | 'reuse' | 'code' | 'key' | 'ending';
 type Case004Screen = 'warning' | 'clues' | 'principle' | 'permission' | 'risk' | 'shield' | 'ending';
+type Case005Screen = 'warning' | 'personal' | 'app' | 'limits' | 'pressure' | 'shield' | 'ending';
 
 type ChoiceProps = {
   icon?: string;
@@ -141,16 +145,16 @@ function LoadingCover({ story, assets, onReady }: { story: LoadingStory; assets:
 }
 
 function GameLibrary({ onChoose }: { onChoose: (id: KidsGameId) => void }) {
-  const [featuredId, setFeaturedId] = useState<KidsGameId>('case-004');
-  const featured = featuredId === 'case-004' ? fourthKidsStory : secondKidsStory;
-  const featuredLabel = featuredId === 'case-004' ? 'NOVA AVENTURA' : 'HISTÓRIA REFERÊNCIA';
+  const [featuredId, setFeaturedId] = useState<KidsGameId>('case-005');
+  const featured = kidsGames.find(story => story.id === featuredId) ?? kidsGames[0];
+  const featuredLabel = featuredId === 'case-005' ? 'NOVA AVENTURA' : featuredId === 'case-002' ? 'HISTÓRIA REFERÊNCIA' : 'AVENTURA CONTROOLS';
 
   return (
     <section className="kids3-library" data-screen="library">
       <div className="kids3-library-heading">
         <b>CONTROOLS</b>
         <h1>Escolha uma aventura</h1>
-        <p>2 histórias jogáveis</p>
+        <p>{kidsGames.length} histórias jogáveis</p>
       </div>
       <div className="kids3-game-grid">
         <button type="button" className="kids3-game-card" onClick={() => onChoose(featured.id)} aria-label={`Jogar ${featured.title}`}>
@@ -177,7 +181,7 @@ function GameLibrary({ onChoose }: { onChoose: (id: KidsGameId) => void }) {
               onClick={() => setFeaturedId(story.id)}
             >
               <img src={story.cover} alt="" />
-              <span><small>{story.id === 'case-004' ? 'NOVA' : 'REFERÊNCIA'}</small><b>{story.title}</b></span>
+              <span><small>{story.id === 'case-005' ? 'NOVA' : story.id === 'case-002' ? 'REFERÊNCIA' : 'AVENTURA'}</small><b>{story.title}</b></span>
             </button>
           ))}
         </div>
@@ -420,9 +424,134 @@ function Case004Game({ onExit }: { onExit: () => void }) {
   );
 }
 
+
+function Case005Game({ onExit }: { onExit: () => void }) {
+  const [screen, setScreen] = useState<Case005Screen>('warning');
+  const [warningAnswer, setWarningAnswer] = useState<'observe' | 'accept' | 'school' | null>(null);
+  const [personalAnswer, setPersonalAnswer] = useState<'protect' | 'school' | 'nearby' | null>(null);
+  const [appAnswer, setAppAnswer] = useState<'stay' | 'leave' | 'phone' | null>(null);
+  const [limitsAnswer, setLimitsAnswer] = useState<'stop' | 'polite' | 'details' | null>(null);
+  const [pressureAnswer, setPressureAnswer] = useState<'adult' | 'photo' | 'quick' | null>(null);
+  const [habits, setHabits] = useState<string[]>([]);
+  const [habitsChecked, setHabitsChecked] = useState(false);
+  const shieldSuccess = habits.length === 3 && habits.every(id => playerHabits.find(item => item.id === id)?.correct);
+
+  function toggleHabit(id: string) {
+    if (habitsChecked) return;
+    setHabits(current => current.includes(id) ? current.filter(item => item !== id) : current.length < 3 ? [...current, id] : current);
+  }
+
+  function reset() {
+    setScreen('warning');
+    setWarningAnswer(null);
+    setPersonalAnswer(null);
+    setAppAnswer(null);
+    setLimitsAnswer(null);
+    setPressureAnswer(null);
+    setHabits([]);
+    setHabitsChecked(false);
+  }
+
+  if (screen === 'warning') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.warning} alt="Luna e a turma recebem um convite de um jogador desconhecido" screen="case005-warning" progress={14} compact>
+      <span className="kids3-tag blue">NOVO JOGADOR</span>
+      <h1>Alguém desconhecido quer entrar.</h1>
+      <p>Ele parece amigável, mas ninguém sabe quem está do outro lado.</p>
+      <div className="kids3-choice-grid one">
+        <Choice icon="👀" label="Observar com calma antes de confiar" selected={warningAnswer === 'observe'} onClick={() => setWarningAnswer('observe')} />
+        <Choice icon="⚡" label="Aceitar rápido e conversar" selected={warningAnswer === 'accept'} wrong={warningAnswer === 'accept'} onClick={() => setWarningAnswer('accept')} />
+        <Choice icon="🏫" label="Contar o nome da escola" selected={warningAnswer === 'school'} wrong={warningAnswer === 'school'} onClick={() => setWarningAnswer('school')} />
+      </div>
+      {warningAnswer && <div className={`kids3-feedback ${warningAnswer === 'observe' ? 'good' : 'hint'}`}><b>{warningAnswer === 'observe' ? 'Boa escolha! 👀' : 'Calma primeiro.'}</b><p>{warningAnswer === 'observe' ? 'Nem todo jogador é quem diz ser. Primeiro observe e proteja suas informações.' : 'Ser educado não significa contar informações pessoais ou confiar rápido.'}</p></div>}
+      {warningAnswer === 'observe' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('personal')}>Ver a próxima mensagem →</button>}
+    </Scene>
+  );
+
+  if (screen === 'personal') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.personal} alt="Maya observa uma mensagem perguntando qual escola a turma frequenta" screen="case005-personal" progress={28} compact>
+      <span className="kids3-tag blue">PISTA 1</span>
+      <h1>“Qual escola você estuda?”</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="🛡️" label="Prefiro não contar informações pessoais" selected={personalAnswer === 'protect'} onClick={() => setPersonalAnswer('protect')} />
+        <Choice icon="🏫" label="Contar o nome da escola" selected={personalAnswer === 'school'} wrong={personalAnswer === 'school'} onClick={() => setPersonalAnswer('school')} />
+        <Choice icon="📍" label="Dizer que moro perto da escola" selected={personalAnswer === 'nearby'} wrong={personalAnswer === 'nearby'} onClick={() => setPersonalAnswer('nearby')} />
+      </div>
+      {personalAnswer && <div className={`kids3-feedback ${personalAnswer === 'protect' ? 'good' : 'hint'}`}><b>{personalAnswer === 'protect' ? 'Isso! 🛡️' : 'Essa informação é pessoal.'}</b><p>Escola, endereço, telefone e localização ajudam alguém a descobrir onde você está.</p></div>}
+      {personalAnswer === 'protect' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('app')}>Continuar →</button>}
+    </Scene>
+  );
+
+  if (screen === 'app') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.app} alt="Theo compara permanecer no jogo com levar a conversa para outro aplicativo" screen="case005-app" progress={42} compact>
+      <span className="kids3-tag blue">PISTA 2</span>
+      <h1>“Me chama em outro aplicativo!”</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="🎮" label="Ficar no ambiente conhecido e falar com um adulto" selected={appAnswer === 'stay'} onClick={() => setAppAnswer('stay')} />
+        <Choice icon="📱" label="Ir para outro aplicativo sem avisar" selected={appAnswer === 'leave'} wrong={appAnswer === 'leave'} onClick={() => setAppAnswer('leave')} />
+        <Choice icon="☎️" label="Passar o número de telefone" selected={appAnswer === 'phone'} wrong={appAnswer === 'phone'} onClick={() => setAppAnswer('phone')} />
+      </div>
+      {appAnswer && <div className={`kids3-feedback ${appAnswer === 'stay' ? 'good' : 'hint'}`}><b>{appAnswer === 'stay' ? 'Muito bem! 🎮' : 'Sinal de cuidado.'}</b><p>{appAnswer === 'stay' ? 'Pressão para mudar de aplicativo é um bom momento para pedir ajuda.' : 'Não entregue contato pessoal nem saia do ambiente conhecido por pressão.'}</p></div>}
+      {appAnswer === 'stay' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('limits')}>Próxima pista →</button>}
+    </Scene>
+  );
+
+  if (screen === 'limits') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.limits} alt="Nina coloca um limite em uma conversa insistente dentro do jogo" screen="case005-limits" progress={56} compact>
+      <span className="kids3-tag blue">PISTA 3</span>
+      <h1>A conversa começou a incomodar.</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="✋" label="Parar, bloquear se preciso e pedir ajuda" selected={limitsAnswer === 'stop'} onClick={() => setLimitsAnswer('stop')} />
+        <Choice icon="💬" label="Continuar respondendo por educação" selected={limitsAnswer === 'polite'} wrong={limitsAnswer === 'polite'} onClick={() => setLimitsAnswer('polite')} />
+        <Choice icon="🧾" label="Mandar mais detalhes para explicar" selected={limitsAnswer === 'details'} wrong={limitsAnswer === 'details'} onClick={() => setLimitsAnswer('details')} />
+      </div>
+      {limitsAnswer && <div className={`kids3-feedback ${limitsAnswer === 'stop' ? 'good' : 'hint'}`}><b>{limitsAnswer === 'stop' ? 'Limite protegido! ✋' : 'Você pode parar.'}</b><p>Você não precisa continuar uma conversa que deixa você desconfortável.</p></div>}
+      {limitsAnswer === 'stop' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('pressure')}>Continuar →</button>}
+    </Scene>
+  );
+
+  if (screen === 'pressure') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.pressure} alt="Caio recebe um pedido de foto de um jogador desconhecido" screen="case005-pressure" progress={70} compact>
+      <span className="kids3-tag blue">PRESSÃO</span>
+      <h1>“Se você é meu amigo, manda uma foto!”</h1>
+      <div className="kids3-choice-grid one">
+        <Choice icon="🤝" label="Dizer não, parar e avisar um adulto" selected={pressureAnswer === 'adult'} onClick={() => setPressureAnswer('adult')} />
+        <Choice icon="📸" label="Mandar a foto para não perder o amigo" selected={pressureAnswer === 'photo'} wrong={pressureAnswer === 'photo'} onClick={() => setPressureAnswer('photo')} />
+        <Choice icon="⚡" label="Mandar só uma foto rápida" selected={pressureAnswer === 'quick'} wrong={pressureAnswer === 'quick'} onClick={() => setPressureAnswer('quick')} />
+      </div>
+      {pressureAnswer && <div className={`kids3-feedback ${pressureAnswer === 'adult' ? 'good' : 'hint'}`}><b>{pressureAnswer === 'adult' ? 'Isso mesmo! 🛡️' : 'Amizade não pressiona.'}</b><p>Quem respeita você não exige foto, segredo ou informação pessoal.</p></div>}
+      {pressureAnswer === 'adult' && <button className="kids3-primary cyan" type="button" onClick={() => setScreen('shield')}>Montar o escudo →</button>}
+    </Scene>
+  );
+
+  if (screen === 'shield') return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.shield} alt="Luna monta um escudo digital com hábitos para jogar com segurança" screen="case005-shield" progress={84} compact>
+      <span className="kids3-tag blue">ESCUDO DO JOGADOR</span>
+      <h1>Escolha 3 hábitos!</h1>
+      <div className="kids3-choice-grid one tiny">
+        {playerHabits.map(item => <Choice key={item.id} icon={item.icon} label={item.label} selected={habits.includes(item.id)} onClick={() => toggleHabit(item.id)} />)}
+      </div>
+      <div className="kids3-counter"><b>{habits.length}</b><span>/3 hábitos</span></div>
+      {!habitsChecked && <button className="kids3-primary cyan" type="button" disabled={habits.length !== 3} onClick={() => setHabitsChecked(true)}>Ativar o escudo 🛡️</button>}
+      {habitsChecked && !shieldSuccess && <div className="kids3-feedback hint"><b>O escudo ainda tem uma brecha.</b><p>Proteja seus dados, não ceda à pressão e peça ajuda.</p><button type="button" onClick={() => { setHabits([]); setHabitsChecked(false); }}>Tentar outra vez</button></div>}
+      {habitsChecked && shieldSuccess && <><div className="kids3-feedback good"><b>Escudo completo! ✨</b></div><button className="kids3-primary cyan" type="button" onClick={() => setScreen('ending')}>Terminar a partida →</button></>}
+    </Scene>
+  );
+
+  return (
+    <Scene storyTitle={fifthKidsStory.title} src={fifthKidsStory.scenes.ending} alt="A turma comemora depois de bloquear o jogador desconhecido e continuar jogando com segurança" screen="case005-ending" progress={100} compact>
+      <span className="kids3-tag blue">PARTIDA SEGURA</span>
+      <h1>Missão cumprida!</h1>
+      <p><b>Jogue. Proteja. Peça ajuda.</b></p>
+      <div className="kids3-badges"><span>🎮<b>Jogador atento</b></span><span>🛡️<b>Dados protegidos</b></span><span>🤝<b>Ajuda quando precisa</b></span></div>
+      <button className="kids3-primary cyan" type="button" onClick={reset}>Jogar de novo ↻</button>
+      <button className="kids3-secondary" type="button" onClick={onExit}>Voltar ao catálogo</button>
+    </Scene>
+  );
+}
+
 export default function KidsStoryPrototype() {
   const [mode, setMode] = useState<AppMode>('library');
-  const [gameId, setGameId] = useState<KidsGameId>('case-004');
+  const [gameId, setGameId] = useState<KidsGameId>('case-005');
 
   const chooseGame = useCallback((id: KidsGameId) => {
     setGameId(id);
@@ -431,14 +560,14 @@ export default function KidsStoryPrototype() {
   const startGame = useCallback(() => setMode('playing'), []);
   const exitGame = useCallback(() => setMode('library'), []);
 
-  const activeStory = gameId === 'case-004' ? fourthKidsStory : secondKidsStory;
-  const activeAssets = gameId === 'case-004' ? case004Assets : case002Assets;
+  const activeStory = gameId === 'case-005' ? fifthKidsStory : gameId === 'case-004' ? fourthKidsStory : secondKidsStory;
+  const activeAssets = gameId === 'case-005' ? case005Assets : gameId === 'case-004' ? case004Assets : case002Assets;
 
   return (
     <main className="kids-game kids3-root">
       {mode === 'library' && <GameLibrary onChoose={chooseGame} />}
       {mode === 'loading' && <LoadingCover story={activeStory} assets={activeAssets} onReady={startGame} />}
-      {mode === 'playing' && (gameId === 'case-004' ? <Case004Game onExit={exitGame} /> : <Case002Game onExit={exitGame} />)}
+      {mode === 'playing' && (gameId === 'case-005' ? <Case005Game onExit={exitGame} /> : gameId === 'case-004' ? <Case004Game onExit={exitGame} /> : <Case002Game onExit={exitGame} />)}
     </main>
   );
 }
