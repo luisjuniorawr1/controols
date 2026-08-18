@@ -147,9 +147,13 @@ Não é obrigatório usar exatamente essa ordem em todas as histórias, mas todo
 O padrão do Cofre é obrigatório para novas cenas:
 
 - **55–65% da largura:** personagem, ação, objeto narrativo e cenário.
-- **35–45% da direita:** área visualmente calma para o painel HTML.
+- **35–45% da direita:** área visualmente calma e reservada para as colunas de interação HTML.
+- A safe zone direita é **obrigatória desde a criação da arte**; não deve ser improvisada depois com um painel cobrindo elementos importantes.
+- A arte e a interface devem compartilhar a mesma divisão visual: narrativa à esquerda/centro, interação à direita.
 - A safe zone deve fazer parte da composição da arte, não ser um vazio artificial.
-- Evitar rostos, mãos, pistas essenciais e texto baked-in na área do painel.
+- Fundo, luz, textura e elementos ambientais podem continuar na safe zone, desde que sejam discretos e não disputem atenção com a interface.
+- Evitar rostos, mãos, pistas essenciais, objetos centrais, áreas de leitura e texto baked-in na área do painel.
+- Nenhuma informação necessária para acertar uma escolha pode ficar escondida atrás da coluna de interação.
 
 ### Direção de arte
 
@@ -176,11 +180,29 @@ Manter:
 
 Cada estado do jogo ocupa **uma única viewport física**. Não existe scroll dentro da aventura.
 
+### Coluna de interação à direita
+
+A História 2 estabelece um contrato de layout: em desktop/TV, a interface principal vive no **lado direito da tela**, enquanto a ilustração mantém personagem e ação à esquerda/centro.
+
+Regras obrigatórias:
+
+- usar uma coluna/painel vertical principal no lado direito;
+- ocupar aproximadamente **35–45% da largura** em desktop/TV;
+- o painel deve chegar naturalmente à borda direita e pode ocupar toda a altura útil da viewport;
+- título, apoio, escolhas, feedback e ação de avanço devem permanecer dentro dessa mesma coluna sempre que possível;
+- não espalhar botões sobre a ilustração;
+- não colocar escolhas em cima do rosto ou do objeto narrativo;
+- manter alinhamento e posição consistentes entre as 7 cenas, para a criança aprender onde olhar e onde tocar;
+- a coluna pode mudar sua densidade conforme a cena, mas não deve “pular” de um lado para outro;
+- no mobile, o painel pode ocupar uma parcela maior da largura ou reorganizar-se, mas continua sendo o bloco principal de interação e toda a tela deve caber sem scroll.
+
+A coluna direita não é decoração: ela faz parte do modelo de interação do CONTROOLS.
+
 ### Painel direito
 
 - um único painel principal;
-- largura aproximada de 35% no desktop/TV;
-- headline grande;
+- largura aproximada de 35–45% no desktop/TV;
+- headline grande e pesada;
 - uma linha curta de apoio;
 - escolhas grandes e tocáveis;
 - feedback imediato;
@@ -208,9 +230,34 @@ Isso cria uma sensação de avanço constante sem precisar explicar quantidade d
 - resposta errada pode ser marcada em vermelho/alerta, mas nunca humilhar ou encerrar a partida;
 - resposta correta libera imediatamente a continuidade.
 
-## 7. Padrão de texto
+## 7. Padrão de texto e legibilidade
 
-A criança deve conseguir jogar lendo pouco.
+A criança deve conseguir jogar lendo pouco, **de forma rápida e à distância**. Tipografia não é acabamento; é parte da jogabilidade.
+
+### Tipografia obrigatória
+
+- usar letras **grandes, grossas e de alto contraste**;
+- preferir pesos **bold / extra-bold / black** (`font-weight` aproximadamente 800–1000) para títulos, opções e ações importantes;
+- evitar fontes finas, delicadas, condensadas demais ou com detalhes difíceis de reconhecer;
+- títulos devem dominar visualmente a coluna de interação;
+- textos de escolhas precisam ser maiores e mais fortes do que textos secundários;
+- não reduzir fonte para “fazer caber”: reduzir o texto, simplificar a frase ou redesenhar o layout;
+- nenhuma tela pode resolver excesso de conteúdo usando letra pequena;
+- manter espaçamento suficiente entre linhas e controles para leitura sem esforço;
+- botões devem ter rótulos grandes, bold e com área de toque confortável.
+
+### Referência de tamanho em desktop/TV
+
+Os valores podem variar com viewport, mas o padrão visual deve permanecer próximo de:
+
+- **headline principal:** aproximadamente 40–60 px;
+- **headline compacta:** aproximadamente 36–54 px;
+- **texto de apoio:** aproximadamente 18–24 px;
+- **rótulo de escolha:** aproximadamente 18–26 px;
+- **botão principal:** aproximadamente 18–24 px;
+- **metadados/progresso:** nunca tão pequenos a ponto de exigir aproximação da tela.
+
+Em telas menores, usar escalas responsivas mantendo hierarquia forte. O mobile pode reduzir tamanhos, mas **não pode transformar a experiência em uma página de texto miúdo**.
 
 ### Headline
 
@@ -232,6 +279,9 @@ Exemplo:
 ### Evitar
 
 - parágrafos;
+- texto pequeno para compensar excesso de conteúdo;
+- `font-weight` leve em conteúdo infantil essencial;
+- muitas linhas dentro de um botão;
 - termos técnicos quando existe uma ação simples equivalente;
 - moral da história antes da criança experimentar o problema;
 - múltiplas instruções no mesmo bloco;
@@ -268,7 +318,12 @@ Uma nova aventura só está pronta quando todos estes pontos forem verdadeiros:
 - [ ] capa + 7 cenas próprias;
 - [ ] todos os masters em 1672 × 941 ou superior mantendo 16:9;
 - [ ] identidade oficial dos personagens preservada;
-- [ ] safe zone direita consistente nas 7 cenas;
+- [ ] safe zone direita de 35–45% planejada na composição das 7 cenas;
+- [ ] coluna de interação principal permanece à direita em desktop/TV;
+- [ ] nenhuma pista ou elemento narrativo essencial fica atrás do painel direito;
+- [ ] headlines grandes e bold em todas as cenas;
+- [ ] escolhas e botões usam texto grande, pesado e de alto contraste;
+- [ ] nenhum layout reduz tipografia para compensar excesso de conteúdo;
 - [ ] uma única ideia principal por tela;
 - [ ] curva reconhecer → aplicar → decidir → sintetizar;
 - [ ] no máximo 3 opções por decisão, salvo justificativa forte;
@@ -279,6 +334,7 @@ Uma nova aventura só está pronta quando todos estes pontos forem verdadeiros:
 - [ ] desktop/TV e mobile cabem integralmente na viewport;
 - [ ] preload cobre todos os assets;
 - [ ] smoke QA percorre a história inteira;
+- [ ] QA verifica legibilidade e posicionamento da coluna direita nos viewports suportados;
 - [ ] nenhuma arte ou regra de uma história aposentada é reaproveitada como atalho.
 
 ## 11. Template para a próxima história
@@ -310,6 +366,10 @@ Antes de produzir qualquer imagem, preencher:
 **Frase-memória de 3 ideias:**
 
 **3 badges finais:**
+
+**Plano da safe zone direita (35–45%):**
+
+**Headline principal de cada cena (curta, grande e bold):**
 
 **Lista dos 8 arquivos de arte:**
 
