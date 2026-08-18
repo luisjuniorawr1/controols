@@ -56,7 +56,7 @@ export const secondKidsStory = {
   },
 } as const;
 
-const CASE003_ASSET_VERSION = 'v3-20260817';
+const CASE003_ASSET_VERSION = 'v4-20260817';
 const case003Asset = (name: string) => `/game/assets/case-003/${name}?${CASE003_ASSET_VERSION}`;
 
 export const thirdKidsStory = {
