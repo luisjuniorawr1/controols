@@ -1,0 +1,42 @@
+name: Story 2 Gold Standard QA
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Confirm retired stories are absent
+        run: |
+          test ! -e public/game/assets/v2-real
+          test ! -e public/game/assets/case-003
+          ! grep -R -E "case-001|case-003|firstKidsStory|thirdKidsStory|v2-real" src tests .github/workflows/deploy.yml
+      - name: Confirm Case 002 has exactly eight masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths = sorted(Path('public/game/assets/case-002').glob('*.png'))
+          assert len(paths) == 8, len(paths)
+          print('\n'.join(str(p) for p in paths))
+          PY
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Story 2 smoke QA
+        run: npm run qa:smoke
