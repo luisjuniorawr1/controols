@@ -5,16 +5,86 @@ on:
 permissions:
   contents: write
 jobs:
-  bootstrap:
+  import-and-qa:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     env:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
-      - name: Resolve importer identity
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Drive client
+        run: pip install --quiet google-auth requests
+      - name: Import Case 006 masters without recompression
         shell: bash
         run: |
           python - <<'PY'
-          import json, os
-          print('IMPORTER_EMAIL=' + json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])['client_email'])
+          import json, os, struct
+          from pathlib import Path
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          files = {
+            '1D3GKLGnf0POfYEnxRb2Mr-lVvzmJazwn': '00_capa_a_mensagem_que_parecia_verdadeira.png',
+            '1qWz4hszm_Ejfe8tsz6DemdPQ5DnD_FFQ': '01_luna_pedido_urgente.png',
+            '1GvWFQrnvAVgrW2Qfb3ho3a_SpfwtiFrj': '02_maya_pistas_da_mensagem.png',
+            '1MqpuWN0mxQ4ffI-7S97QUJxBVUw4LK1X': '03_theo_confirmar_por_outro_caminho.png',
+            '1Q9yIU98uywTJRMXx-HJ3kfD7qxDr_GyX': '04_nina_parar_antes_de_responder.png',
+            '1uFTv-JB3eBikCzmcViX4z9YcRwJPfBZ2': '05_caio_pedido_de_compra.png',
+            '19qRLpGEMLwJjPA_PqvaN0Af4FouVs5qq': '06_luna_farol_da_verdade.png',
+            '11ZB8NVB65HaKfwCwvMfRu5mHejj-Rtms': '07_final_pare_confirme_peca_ajuda.png',
+          }
+          out = Path('public/game/assets/case-006')
+          out.mkdir(parents=True, exist_ok=True)
+          info = json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])
+          creds = service_account.Credentials.from_service_account_info(
+              info, scopes=['https://www.googleapis.com/auth/drive.readonly'])
+          creds.refresh(Request())
+          headers = {'Authorization': f'Bearer {creds.token}'}
+          for file_id, name in files.items():
+              target = out / name
+              if not target.exists():
+                  response = requests.get(
+                      f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media',
+                      headers=headers, timeout=120)
+                  response.raise_for_status()
+                  target.write_bytes(response.content)
+              raw = target.read_bytes()
+              assert raw[:8] == b'\x89PNG\r\n\x1a\n', target
+              width, height = struct.unpack('>II', raw[16:24])
+              assert (width, height) == (1672, 941), (target, width, height)
+              assert len(raw) > 1_500_000, (target, len(raw))
+              print(name, width, height, len(raw))
+          assert len(list(out.glob('*.png'))) == 8
           PY
+      - name: Apply Case 006 source integration
+        run: python scripts/apply-case006.py
+      - name: Install project dependencies
+        run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Full smoke QA
+        run: npm run qa:smoke
+      - name: Commit Case 006 implementation to PR branch
+        shell: bash
+        run: |
+          git config user.name "controols-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/game/assets/case-006 src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts tests/qa-library-card-safe-zone.spec.ts
+          if git diff --cached --quiet; then
+            echo "No Case 006 changes to commit"
+            exit 0
+          fi
+          git commit -m "Implement A Mensagem que Parecia Verdadeira"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
