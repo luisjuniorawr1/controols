@@ -18,7 +18,7 @@ The game is **single-player by design**. One child plays each session and works 
 - **No CONTROOLS game screen may use page scrolling. Every game state must fit completely inside one physical viewport.** If a scene does not fit, redesign its layout, density, typography or controls instead of adding a scrollbar.
 - Stories teach through adventure, observation, decisions and problem solving rather than classroom-style lessons.
 - Approved game art is stored and served from the repository at its original resolution. Do not downscale or convert master artwork to a lossy replacement for deployment.
-- Scene art should reserve a calm UI-safe zone when interactive controls overlay the illustration. Case 002 is the current composition benchmark: character/action primarily left or center, with a clear right-side interaction area.
+- Scene art should reserve a calm UI-safe zone when interactive controls overlay the illustration. **O Cofre das Senhas is the composition benchmark:** character/action primarily left or center, with a clear right-side interaction area.
 - Future TV/QR pairing should preserve the solo model: one child/session/controller, with the TV acting as the adventure screen rather than introducing multiplayer.
 
 ## Product surfaces
@@ -28,22 +28,21 @@ The game is **single-player by design**. One child plays each session and works 
 - A future invitation flow will support short access codes and QR Codes. Access control must be validated by a backend/session mechanism; hiding a static game URL is not considered secure gating.
 - Browser game routes currently remain available during prototype development and QA.
 
-## First collection — Segurança Digital
+## Current story benchmark
 
-The first CONTROOLS collection teaches digital-safety behavior through visual adventures. Current cases include:
+The active playable reference is **O Cofre das Senhas**. It is the gold standard for the next CONTROOLS stories because it combines the strongest narrative rhythm, character rotation, interaction density and visual composition in the current prototype.
 
-- **Case 001 — A Mensagem Misteriosa** — suspicious messages and safer verification.
-- **Case 002 — O Cofre das Senhas** — strong, unique passwords and secret verification codes.
-- **Case 003 — O Link Fantasma** — fake links, look-alike addresses and cloned pages.
+The retired prototypes **A Mensagem Misteriosa** and **O Link Fantasma** have been removed from the active product and their production scene masters are no longer part of the game build.
 
-These cases establish the interaction and storytelling format that future subject collections can reuse.
+Every new adventure should start from the rules in [`docs/STORY_STANDARD.md`](docs/STORY_STANDARD.md), rather than copying an older case or improvising a new interaction model.
 
 ## Current implementation
 
 The active children's prototype lives in:
 
-- `src/game/kidsStory.ts` — official characters, story metadata and challenge data
-- `src/components/KidsStoryPrototype.tsx` — playable case flows
+- `src/game/kidsStory.ts` — official characters, reference-story metadata and challenge data
+- `src/components/KidsStoryPrototype.tsx` — playable gold-standard story flow
+- `docs/STORY_STANDARD.md` — narrative, visual and interaction blueprint for future stories
 - `app/page.tsx` — public CONTROOLS product homepage
 - `app/marketing-home.css` — public homepage visual system
 - `app/kids-game.css` / `app/kids-game-v3.css` — children's game visual system
@@ -51,8 +50,8 @@ The active children's prototype lives in:
 - `app/kids-readable.css` — child-first bold typography and image-led presentation contract
 - `public/game/assets/reference/character-lineup.png` — official recurring-cast visual reference
 - `public/game/assets/characters/` — official individual character masters
-- `public/game/assets/` — original-resolution scene and UI artwork
-- `tests/qa-smoke.spec.ts` — single-player, original-resolution, typography and viewport-fit QA
+- `public/game/assets/case-002/` — gold-standard story masters in original resolution
+- `tests/qa-smoke.spec.ts` — gold-standard flow, original-resolution and viewport-fit QA
 
 The playable prototype currently runs in the browser. Public marketing pages may scroll normally; game states may not.
 
@@ -70,4 +69,4 @@ npm run build
 npm run qa:smoke
 ```
 
-The deploy workflow runs the static build, smoke QA and publishes to Firebase Hosting. Game QA uses a TV-like viewport, fails if the game page or interactive controls escape the physical screen, and verifies that story typography remains large and heavy.
+The deploy workflow runs the static build, smoke QA and publishes to Firebase Hosting. Game QA uses a TV-like viewport, fails if the game page or interactive controls escape the physical screen, and verifies that the reference story keeps its original-resolution art and complete seven-beat flow.
