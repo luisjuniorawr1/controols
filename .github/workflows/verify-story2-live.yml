@@ -1,0 +1,69 @@
+name: Verify Story 2 Reset Live
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Confirm only Story 2 remains in build source
+        run: |
+          test ! -e public/game/assets/v2-real
+          test ! -e public/game/assets/case-003
+          test "$(find public/game/assets/case-002 -maxdepth 1 -name '*.png' | wc -l)" -eq 8
+          ! grep -R -E "case-001|case-003|firstKidsStory|thirdKidsStory|v2-real" src tests .github/workflows/deploy.yml
+      - name: Confirm Firebase credentials
+        run: test -n "$FIREBASE_SERVICE_ACCOUNT"
+      - name: Deploy current Story 2 reset to Firebase live
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: controols
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify public game catalog and Story 2 start
+        run: |
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1280, height: 650 } });
+            await page.goto('https://controols.com/pt/', { waitUntil: 'networkidle' });
+            const cards = page.locator('.kids3-game-card');
+            if (await cards.count() !== 1) throw new Error(`Expected 1 game card, got ${await cards.count()}`);
+            const body = await page.locator('body').innerText();
+            if (!/O Cofre das Senhas/i.test(body)) throw new Error('Cofre title missing from live catalog');
+            if (/A Mensagem Misteriosa/i.test(body)) throw new Error('Retired Story 1 is still visible');
+            if (/O Link Fantasma/i.test(body)) throw new Error('Retired Story 3 is still visible');
+            await page.getByRole('button', { name: /o cofre das senhas/i }).click();
+            await page.locator('[data-screen="case002-warning"]').waitFor({ state: 'visible', timeout: 25000 });
+            const warningArt = page.locator('[data-screen="case002-warning"] .kids3-scene-art');
+            const src = await warningArt.getAttribute('src');
+            if (!src || !src.includes('/game/assets/case-002/01_tentativa_senha_fraca.png')) throw new Error(`Unexpected Story 2 art: ${src}`);
+            console.log('LIVE_OK one Story 2 card, retired stories absent, Story 2 starts correctly');
+            await browser.close();
+          })().catch(err => { console.error(err); process.exit(1); });
+          NODE
