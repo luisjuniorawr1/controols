@@ -1,0 +1,63 @@
+name: Verify Case 003 Live Assets
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify all eight published Case 003 assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            00_capa_link_fantasma.png
+            01_luna_link_suspeito.png
+            02_maya_pistas_link.png
+            03_endereco_suspeito.png
+            04_nina_caminho_oficial.png
+            05_caio_pagina_pede_codigo.png
+            06_luna_mapa_link_seguro.png
+            07_final_link_desmascarado.png
+          )
+          expected=(
+            3b4f4ca7a8a7e567611415f3f3b185a01dbdc831
+            df2158fb102585d2fe36f8a849f3576ec1e7f2b8
+            f24d55ce5f61a3def09fc396304da5554f4d3861
+            3e7b35d4394edd4f96248fe0752e1c2bdaa2242f
+            1c2c75b2641456b2cc1edb9bbeab9675115d8b32
+            25bfdd48146fcedb94a3c4ae830e5505d6ef2241
+            8f5ba0768157a9ccbf43d8e93812bfe8701f4ef5
+            d6c70760cc26755286e65f0b92fddb502799c231
+          )
+
+          for attempt in $(seq 1 30); do
+            all_ok=1
+            echo "Live verification attempt $attempt"
+            for i in "${!files[@]}"; do
+              file="${files[$i]}"
+              url="https://controols.com/game/assets/case-003/${file}?v4-20260817&verify=${attempt}-$(date +%s%N)"
+              curl -fsSL "$url" -o "/tmp/${file}"
+              actual="$(git hash-object "/tmp/${file}")"
+              echo "$file actual=$actual expected=${expected[$i]}"
+              if [[ "$actual" != "${expected[$i]}" ]]; then
+                all_ok=0
+              fi
+            done
+            if [[ "$all_ok" == "1" ]]; then
+              echo "All eight Case 003 assets match the restored Link Fantasma package."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Published assets did not converge to the restored package in time." >&2
+          exit 1
