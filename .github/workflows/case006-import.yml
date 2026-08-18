@@ -1,0 +1,20 @@
+name: Case 006 Import
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve importer identity
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os
+          print('IMPORTER_EMAIL=' + json.loads(os.environ['FIREBASE_SERVICE_ACCOUNT'])['client_email'])
+          PY
