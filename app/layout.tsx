@@ -13,6 +13,7 @@ import './kids-game-v3.css';
 import './kids-right-panel-readable.css';
 import './kids-heading-standard.css';
 import './kids-library-stream.css';
+import './case004-cover-clean.css';
 import './marketing-home.css';
 import './scroll-modes.css';
 import './marketing-home-refine.css';
