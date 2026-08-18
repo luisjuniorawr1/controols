@@ -16,7 +16,7 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
-export type KidsGameId = 'case-002' | 'case-004' | 'case-005';
+export type KidsGameId = 'case-002' | 'case-004' | 'case-005' | 'case-006';
 
 /**
  * O Cofre das Senhas is the canonical CONTROOLS story reference.
@@ -87,10 +87,35 @@ export const fifthKidsStory = {
   },
 } as const;
 
-export const kidsGames = [fifthKidsStory, fourthKidsStory, secondKidsStory] as const;
+
+/**
+ * Case 006 teaches children to pause and independently verify urgent messages
+ * that appear to come from someone they know.
+ */
+export const sixthKidsStory = {
+  id: 'case-006' as KidsGameId,
+  number: '006',
+  title: 'A Mensagem que Parecia Verdadeira',
+  subtitle: 'Pare, confirme e peça ajuda quando uma mensagem parece estranha.',
+  age: '7–10 anos',
+  accent: '#ffd45c',
+  cover: '/game/assets/case-006/00_capa_a_mensagem_que_parecia_verdadeira.png',
+  scenes: {
+    warning: '/game/assets/case-006/01_luna_pedido_urgente.png',
+    clues: '/game/assets/case-006/02_maya_pistas_da_mensagem.png',
+    confirm: '/game/assets/case-006/03_theo_confirmar_por_outro_caminho.png',
+    pause: '/game/assets/case-006/04_nina_parar_antes_de_responder.png',
+    risk: '/game/assets/case-006/05_caio_pedido_de_compra.png',
+    lighthouse: '/game/assets/case-006/06_luna_farol_da_verdade.png',
+    ending: '/game/assets/case-006/07_final_pare_confirme_peca_ajuda.png',
+  },
+} as const;
+
+export const kidsGames = [sixthKidsStory, fifthKidsStory, fourthKidsStory, secondKidsStory] as const;
 export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
 export const case004Assets = [fourthKidsStory.cover, ...Object.values(fourthKidsStory.scenes)];
 export const case005Assets = [fifthKidsStory.cover, ...Object.values(fifthKidsStory.scenes)];
+export const case006Assets = [sixthKidsStory.cover, ...Object.values(sixthKidsStory.scenes)];
 
 export const passwordHabits = [
   { id: 'long', label: 'Usar uma senha longa', icon: '📏', correct: true },
@@ -108,6 +133,15 @@ export const photoHabits = [
   { id: 'details', label: 'Mostrar escola e endereço', icon: '🏫', correct: false },
 ] as const;
 
+
+
+export const messageHabits = [
+  { id: 'pause', label: 'Parar antes de agir', icon: '⏸️', correct: true },
+  { id: 'confirm', label: 'Confirmar por outro caminho', icon: '🔎', correct: true },
+  { id: 'adult', label: 'Pedir ajuda a um adulto', icon: '🤝', correct: true },
+  { id: 'profile', label: 'Confiar na foto ou na voz', icon: '🖼️', correct: false },
+  { id: 'rush', label: 'Responder rápido para não perder tempo', icon: '⚡', correct: false },
+] as const;
 
 export const playerHabits = [
   { id: 'private', label: 'Proteger informações pessoais', icon: '🛡️', correct: true },

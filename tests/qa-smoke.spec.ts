@@ -73,7 +73,17 @@ async function expectFullScreenScene(page: Page, screen: string, asset: RegExp) 
   await expectSingleViewport(page);
 }
 
+async function startCase006(page: Page) {
+  const card = page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i });
+  await expect(card).toBeVisible();
+  await card.click();
+  await expect(page.locator('[data-screen="loading-case-006"]')).toBeVisible();
+  await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
+  await expect(page.locator('[data-screen="case006-warning"]')).toBeVisible({ timeout: 5_000 });
+}
+
 async function startCase005(page: Page) {
+  await page.getByRole('button', { name: /destacar o jogador desconhecido/i }).click();
   const card = page.getByRole('button', { name: /jogar o jogador desconhecido/i });
   await expect(card).toBeVisible();
   await card.click();
@@ -102,22 +112,60 @@ async function startReferenceStory(page: Page) {
   await expect(page.locator('[data-screen="case002-warning"]')).toBeVisible({ timeout: 5_000 });
 }
 
-test('library exposes Case 005, Case 004 and the Case 002 reference story', async ({ page }) => {
+test('library exposes Case 006, Case 005, Case 004 and the Case 002 reference story', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
 
   await expect(page.getByRole('heading', { name: /escolha uma aventura/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /jogar o jogador desconhecido/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /destacar a mensagem que parecia verdadeira/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar o jogador desconhecido/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar a foto que contava demais/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar o cofre das senhas/i })).toBeVisible();
   await expect(page.getByText(/a mensagem misteriosa/i)).toHaveCount(0);
   await expect(page.getByText(/o link fantasma/i)).toHaveCount(0);
   await expect(page.locator('.kids3-game-card')).toHaveCount(1);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(3);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);
   await expectSingleViewport(page);
 });
 
+
+
+test('Case 006 preloads all eight full-resolution assets before gameplay', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCase006(page);
+  const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(name => name.includes('/game/assets/case-006/')));
+  expect(new Set(resources).size).toBeGreaterThanOrEqual(8);
+  await expectFullScreenScene(page, 'case006-warning', /\/game\/assets\/case-006\/01_luna_pedido_urgente\.png$/);
+});
+
+test('Case 006 completes the gold-standard seven-beat learning arc', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 650 });
+  await page.goto('/pt/');
+  await startCase006(page);
+  await page.getByRole('button', { name: /investigar/i }).click();
+  await expectFullScreenScene(page, 'case006-clues', /02_maya_pistas_da_mensagem\.png$/);
+  await page.getByRole('button', { name: /pede segredo e pressa/i }).click();
+  await page.getByRole('button', { name: /aprender a confirmar/i }).click();
+  await expectFullScreenScene(page, 'case006-confirm', /03_theo_confirmar_por_outro_caminho\.png$/);
+  await page.getByRole('button', { name: /confirmar por outro caminho/i }).click();
+  await page.getByRole('button', { name: /^continuar →$/i }).click();
+  await expectFullScreenScene(page, 'case006-pause', /04_nina_parar_antes_de_responder\.png$/);
+  await page.getByRole('button', { name: /não\. posso parar e conferir/i }).click();
+  await page.getByRole('button', { name: /^continuar →$/i }).click();
+  await expectFullScreenScene(page, 'case006-risk', /05_caio_pedido_de_compra\.png$/);
+  await page.getByRole('button', { name: /parar e chamar um adulto para confirmar/i }).click();
+  await page.getByRole('button', { name: /acender o farol/i }).click();
+  await expectFullScreenScene(page, 'case006-lighthouse', /06_luna_farol_da_verdade\.png$/);
+  await page.getByRole('button', { name: /parar antes de agir/i }).click();
+  await page.getByRole('button', { name: /confirmar por outro caminho/i }).click();
+  await page.getByRole('button', { name: /pedir ajuda a um adulto/i }).click();
+  await page.getByRole('button', { name: /acender o farol/i }).click();
+  await page.getByRole('button', { name: /ver o resultado/i }).click();
+  await expect(page.getByText(/pare\. confirme\. peça ajuda\./i)).toBeVisible();
+  await expectFullScreenScene(page, 'case006-ending', /07_final_pare_confirme_peca_ajuda\.png$/);
+});
 
 test('Case 005 preloads all eight full-resolution assets before gameplay', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
@@ -237,12 +285,12 @@ test('Case 002 reference story still completes its seven-beat learning arc', asy
   await expectFullScreenScene(page, 'case002-ending', /\/game\/assets\/case-002\/07_final_cofre_protegido\.png$/);
 });
 
-test('new library and Case 005 first scene fit a phone viewport without scrolling', async ({ page }) => {
+test('new library and Case 006 first scene fit a phone viewport without scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
-  await expect(page.getByRole('button', { name: /jogar o jogador desconhecido/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();
   await expectSingleViewport(page);
 
-  await startCase005(page);
-  await expectFullScreenScene(page, 'case005-warning', /\/game\/assets\/case-005\/01_luna_convite_inesperado\.png$/);
+  await startCase006(page);
+  await expectFullScreenScene(page, 'case006-warning', /\/game\/assets\/case-006\/01_luna_pedido_urgente\.png$/);
 });
