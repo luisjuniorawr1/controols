@@ -3,6 +3,8 @@ name: Streaming Game Library QA
 on:
   push:
     branches: [agent/netflix-game-library]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
