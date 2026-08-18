@@ -16,7 +16,7 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
-export type KidsGameId = 'case-002';
+export type KidsGameId = 'case-002' | 'case-004';
 
 /**
  * O Cofre das Senhas is the canonical CONTROOLS story reference.
@@ -42,8 +42,32 @@ export const secondKidsStory = {
   },
 } as const;
 
-export const kidsGames = [secondKidsStory] as const;
+/**
+ * Case 004 is the first new adventure built directly from STORY_STANDARD.md.
+ * It mirrors Case 002's seven-beat learning arc while teaching photo privacy.
+ */
+export const fourthKidsStory = {
+  id: 'case-004' as KidsGameId,
+  number: '004',
+  title: 'A Foto que Contava Demais',
+  subtitle: 'Descubra o que uma foto pode revelar antes de compartilhar.',
+  age: '7–10 anos',
+  accent: '#ffd44f',
+  cover: '/game/assets/case-004/00_capa_a_foto_que_contava_demais.png',
+  scenes: {
+    warning: '/game/assets/case-004/01_luna_foto_conta_demais.png',
+    clues: '/game/assets/case-004/02_maya_pistas_da_foto.png',
+    principle: '/game/assets/case-004/03_theo_foto_segura.png',
+    permission: '/game/assets/case-004/04_nina_pedir_permissao.png',
+    risk: '/game/assets/case-004/05_caio_mensagem_invasiva.png',
+    shield: '/game/assets/case-004/06_luna_escudo_da_foto.png',
+    ending: '/game/assets/case-004/07_final_foto_protegida.png',
+  },
+} as const;
+
+export const kidsGames = [fourthKidsStory, secondKidsStory] as const;
 export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
+export const case004Assets = [fourthKidsStory.cover, ...Object.values(fourthKidsStory.scenes)];
 
 export const passwordHabits = [
   { id: 'long', label: 'Usar uma senha longa', icon: '📏', correct: true },
@@ -51,4 +75,12 @@ export const passwordHabits = [
   { id: 'secret', label: 'Manter códigos de verificação em segredo', icon: '🤫', correct: true },
   { id: 'birthday', label: 'Usar aniversário ou nome', icon: '🎂', correct: false },
   { id: 'reuse', label: 'Repetir a mesma senha em tudo', icon: '🔁', correct: false },
+] as const;
+
+export const photoHabits = [
+  { id: 'background', label: 'Olhar o fundo antes de postar', icon: '👀', correct: true },
+  { id: 'permission', label: 'Pedir permissão para quem aparece', icon: '🤝', correct: true },
+  { id: 'location', label: 'Esconder localização e informações pessoais', icon: '📍', correct: true },
+  { id: 'rush', label: 'Postar sem conferir', icon: '⚡', correct: false },
+  { id: 'details', label: 'Mostrar escola e endereço', icon: '🏫', correct: false },
 ] as const;

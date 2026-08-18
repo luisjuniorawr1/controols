@@ -29,15 +29,24 @@ jobs:
           from pathlib import Path
           import struct
 
-          folder = Path('public/game/assets/case-002')
-          paths = sorted(folder.glob('*.png'))
-          assert len(paths) == 8, f'Expected 8 Case 002 PNGs, got {len(paths)}'
-          for path in paths:
-              raw = path.read_bytes()[:24]
-              assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
-              width, height = struct.unpack('>II', raw[16:24])
-              print('Case 002', path.name, width, height)
-              assert width >= 1600 and height >= 900, (path, width, height)
+          contracts = {
+              'case-002': {'exact': None},
+              'case-004': {'exact': (1672, 941)},
+          }
+
+          for case, contract in contracts.items():
+              folder = Path('public/game/assets') / case
+              paths = sorted(folder.glob('*.png'))
+              assert len(paths) == 8, f'Expected 8 {case} PNGs, got {len(paths)}'
+              for path in paths:
+                  raw = path.read_bytes()
+                  assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
+                  width, height = struct.unpack('>II', raw[16:24])
+                  print(case, path.name, width, height, len(raw))
+                  assert width >= 1600 and height >= 900, (path, width, height)
+                  if contract['exact']:
+                      assert (width, height) == contract['exact'], (path, width, height)
+                      assert len(raw) > 1_500_000, (path, len(raw))
           PY
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
