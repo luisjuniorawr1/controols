@@ -1,0 +1,63 @@
+name: Streaming Game Library QA
+
+on:
+  push:
+    branches: [agent/netflix-game-library]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify streaming library
+        run: |
+          python3 -m http.server 4173 --directory out >/tmp/controols-library.log 2>&1 &
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/pt/ >/dev/null && break; sleep .5; done
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            for (const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',width:390,height:844}]) {
+              const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, hasTouch: viewport.name === 'mobile', isMobile: viewport.name === 'mobile' });
+              await page.goto('http://127.0.0.1:4173/pt/', { waitUntil:'networkidle' });
+              const state = await page.evaluate(() => {
+                const library = document.querySelector('.kids3-library');
+                const cards = [...document.querySelectorAll('.kids3-game-card')];
+                return {
+                  scrollY,
+                  library: library?.getBoundingClientRect().toJSON(),
+                  cards: cards.map(card => ({
+                    rect: card.getBoundingClientRect().toJSON(),
+                    title: card.querySelector('h2')?.textContent?.trim(),
+                    imageLoaded: !!card.querySelector('img')?.complete && (card.querySelector('img')?.naturalWidth || 0) > 100,
+                  })),
+                  rootOverflow: getComputedStyle(document.querySelector('.kids3-root')).overflow,
+                };
+              });
+              if (state.cards.length !== 3) throw new Error(`Expected 3 real games: ${JSON.stringify(state)}`);
+              if (state.cards.some(card => !card.imageLoaded)) throw new Error(`A cover failed to load: ${JSON.stringify(state)}`);
+              if (state.cards[2].rect.width < viewport.width * .9) throw new Error(`Featured card is not hero width: ${JSON.stringify(state.cards[2])}`);
+              if (state.scrollY !== 0) throw new Error(`Library unexpectedly scrolls vertically: ${state.scrollY}`);
+              await page.screenshot({ path:`library-${viewport.name}.png`, fullPage:false });
+              await page.close();
+            }
+            await browser.close();
+          })();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: streaming-library-qa
+          path: library-*.png
