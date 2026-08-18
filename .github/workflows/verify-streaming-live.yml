@@ -1,0 +1,64 @@
+name: Verify Streaming Library Live
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Verify live game library
+        run: |
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            let lastState = null;
+            for (let attempt = 1; attempt <= 20; attempt++) {
+              const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+              await page.goto(`https://controols.com/pt/?streamcheck=${Date.now()}`, { waitUntil: 'networkidle' });
+              lastState = await page.evaluate(() => {
+                const cards = [...document.querySelectorAll('.kids3-game-card')];
+                const heading = document.querySelector('.kids3-library-heading');
+                return {
+                  cards: cards.length,
+                  titles: cards.map(card => card.querySelector('h2')?.textContent?.trim()),
+                  featured: cards[2]?.getBoundingClientRect().toJSON(),
+                  headingHeight: heading ? getComputedStyle(heading).height : '',
+                  bg: document.querySelector('.kids3-library') ? getComputedStyle(document.querySelector('.kids3-library')).backgroundColor : '',
+                  scrollY,
+                };
+              });
+              const ok = lastState.cards === 3 && lastState.featured?.width >= 1300 && lastState.headingHeight === '68px' && lastState.bg === 'rgb(5, 7, 11)' && lastState.scrollY === 0;
+              if (ok) {
+                await page.screenshot({ path: 'streaming-live.png' });
+                console.log(JSON.stringify({ attempt, lastState }, null, 2));
+                await page.close();
+                await browser.close();
+                return;
+              }
+              console.log(`Attempt ${attempt} not live yet: ${JSON.stringify(lastState)}`);
+              await page.close();
+              await new Promise(resolve => setTimeout(resolve, 15000));
+            }
+            await browser.close();
+            throw new Error(`Streaming library did not reach production in time: ${JSON.stringify(lastState)}`);
+          })();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: streaming-live-proof
+          path: streaming-live.png
