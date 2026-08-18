@@ -1,0 +1,39 @@
+name: Case 006 Final QA
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate all story masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          for case in ('case-002','case-004','case-005','case-006'):
+              paths=sorted((Path('public/game/assets')/case).glob('*.png'))
+              assert len(paths)==8,(case,len(paths))
+              for p in paths:
+                  raw=p.read_bytes(); assert raw[:8]==b'\x89PNG\r\n\x1a\n'
+                  w,h=struct.unpack('>II',raw[16:24]); assert w>=1600 and h>=900,(p,w,h)
+                  if case!='case-002': assert (w,h)==(1672,941),(p,w,h)
+          PY
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Smoke QA
+        run: npm run qa:smoke
