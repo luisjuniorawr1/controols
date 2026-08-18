@@ -1,0 +1,50 @@
+name: Case 005 Final QA
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/case005-unknown-player
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Validate all three story packages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          contracts = {
+              'case-002': None,
+              'case-004': (1672, 941),
+              'case-005': (1672, 941),
+          }
+          for case, exact in contracts.items():
+              paths = sorted((Path('public/game/assets') / case).glob('*.png'))
+              assert len(paths) == 8, (case, len(paths))
+              for p in paths:
+                  raw = p.read_bytes()
+                  assert raw[:8] == b'\x89PNG\r\n\x1a\n', p
+                  w,h = struct.unpack('>II', raw[16:24])
+                  assert w >= 1600 and h >= 900, (p,w,h)
+                  if exact:
+                      assert (w,h) == exact, (p,w,h)
+                      assert len(raw) > 1_500_000, (p,len(raw))
+          PY
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Full smoke QA
+        run: npm run qa:smoke
