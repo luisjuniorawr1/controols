@@ -1,4 +1,4 @@
-/* CONTROOLS game library — one cinematic featured story plus a compact streaming-style adventure rail. */
+/* CONTROOLS game library — cinematic art on the left, decision/info area on the right, compact streaming rail below. */
 
 .kids3-library[data-screen="library"]{
   position:relative!important;
@@ -17,10 +17,12 @@
   pointer-events:none;
   opacity:1!important;
   background:
-    radial-gradient(circle at 76% 18%,rgba(65,188,239,.14),transparent 30%),
-    linear-gradient(180deg,rgba(5,7,11,.08) 0%,rgba(5,7,11,.28) 48%,#05070b 92%);
+    radial-gradient(circle at 82% 23%,rgba(65,188,239,.13),transparent 29%),
+    radial-gradient(circle at 92% 66%,rgba(108,88,222,.12),transparent 27%),
+    linear-gradient(180deg,rgba(5,7,11,.04) 0%,rgba(5,7,11,.2) 56%,#05070b 94%);
 }
 
+/* Top navigation / identity strip. */
 .kids3-library-heading{
   position:absolute!important;
   z-index:50!important;
@@ -33,7 +35,7 @@
   align-items:center;
   gap:clamp(18px,2.4vw,36px)!important;
   text-align:left!important;
-  background:linear-gradient(180deg,rgba(3,5,9,.96),rgba(3,5,9,.68) 62%,transparent);
+  background:linear-gradient(180deg,rgba(3,5,9,.96),rgba(3,5,9,.67) 62%,transparent);
 }
 
 .kids3-library-heading>b{
@@ -76,6 +78,8 @@
   font-weight:800!important;
 }
 
+/* Featured story fills the screen, but follows the product contract:
+   illustration = left / information and action = right. */
 .kids3-game-grid{
   position:absolute!important;
   z-index:2!important;
@@ -100,6 +104,10 @@
   box-shadow:none!important;
   transform:none!important;
   overflow:hidden!important;
+  background:
+    radial-gradient(circle at 84% 29%,rgba(40,93,171,.24),transparent 28%),
+    radial-gradient(circle at 88% 68%,rgba(88,63,170,.18),transparent 31%),
+    linear-gradient(145deg,#081124 0%,#0b1731 73%,#091021 100%)!important;
 }
 .kids3-game-card:hover,.kids3-game-card:focus-visible{
   transform:none!important;
@@ -110,75 +118,98 @@
   content:"";
   position:absolute;
   inset:5px;
-  z-index:5;
+  z-index:20;
   border:3px solid rgba(255,255,255,.9);
   border-radius:5px;
   pointer-events:none;
 }
+
+/* Keep the cover art clean and dominant on the left. */
 .kids3-game-card>img{
+  position:absolute!important;
+  z-index:-2!important;
+  inset:0 auto 0 0!important;
+  width:64%!important;
+  height:100%!important;
+  object-fit:cover!important;
   object-position:center 46%!important;
-  filter:saturate(.94) brightness(.82);
+  filter:saturate(.96) brightness(.86);
 }
 .kids3-game-card .kids3-game-card-shade{
+  position:absolute!important;
+  z-index:-1!important;
+  inset:0!important;
   background:
-    linear-gradient(90deg,#05070bf7 0%,#05070bdd 25%,rgba(5,7,11,.6) 48%,rgba(5,7,11,.08) 74%),
-    linear-gradient(0deg,#05070b 0%,rgba(5,7,11,.48) 29%,transparent 58%)!important;
+    linear-gradient(90deg,
+      rgba(5,7,11,.08) 0%,
+      rgba(5,7,11,.02) 42%,
+      rgba(5,7,11,.28) 55%,
+      rgba(5,7,11,.94) 64%,
+      #081124 72%,
+      rgba(8,17,36,.98) 100%),
+    linear-gradient(0deg,#05070b 0%,rgba(5,7,11,.38) 18%,transparent 42%)!important;
 }
+
+/* Selected adventure information occupies the same right-side territory used by gameplay interactions. */
 .kids3-game-card>div{
-  left:clamp(24px,6vw,92px)!important;
-  right:auto!important;
-  top:auto!important;
-  bottom:clamp(150px,22vh,205px)!important;
-  width:min(540px,46vw)!important;
+  left:auto!important;
+  right:clamp(34px,5vw,82px)!important;
+  top:50%!important;
+  bottom:auto!important;
+  width:clamp(330px,30vw,500px)!important;
+  max-width:34vw!important;
   display:flex!important;
   flex-direction:column;
   align-items:flex-start!important;
-  gap:7px!important;
+  gap:9px!important;
   text-align:left!important;
-  transform:none!important;
+  transform:translateY(-54%)!important;
+  z-index:4;
 }
 .kids3-game-card small{
   color:#76ddff!important;
-  font-size:clamp(10px,1.35vw,14px)!important;
+  font-size:clamp(10px,1.1vw,14px)!important;
   letter-spacing:.12em!important;
   font-weight:1000!important;
 }
 .kids3-game-card h2{
   max-width:12ch;
   margin:0!important;
-  font-size:clamp(38px,5vw,70px)!important;
+  font-size:clamp(38px,4.7vw,68px)!important;
   line-height:.9!important;
   letter-spacing:-.055em!important;
   text-transform:uppercase!important;
-  text-shadow:0 6px 30px rgba(0,0,0,.68);
+  text-shadow:0 6px 30px rgba(0,0,0,.45);
   font-weight:1000!important;
   text-align:left!important;
+  text-wrap:balance;
 }
 .kids3-game-card p{
-  max-width:36ch;
-  margin:5px 0 0!important;
+  max-width:35ch;
+  margin:6px 0 0!important;
   color:#d6dce7!important;
-  font-size:clamp(13px,1.45vw,17px)!important;
+  font-size:clamp(13px,1.25vw,17px)!important;
   line-height:1.35!important;
   font-weight:800!important;
   text-align:left!important;
 }
 .kids3-game-card div>b{
-  margin-top:12px!important;
+  margin-top:13px!important;
   padding:11px 22px!important;
   border-radius:6px!important;
   background:#fff!important;
   color:#0b0e14!important;
-  font-size:clamp(12px,1.3vw,15px)!important;
+  font-size:clamp(12px,1.15vw,15px)!important;
   font-weight:1000!important;
   box-shadow:0 7px 22px rgba(0,0,0,.28);
 }
 
+/* Streaming-style rail: small 16:9 image cards, not large catalogue blocks. */
 .kids3-catalog-rail{
   position:absolute;
   z-index:45;
-  left:clamp(24px,6vw,92px);
-  right:clamp(22px,4vw,64px);
+  left:clamp(24px,5vw,82px);
+  right:clamp(24px,5vw,82px);
   bottom:16px;
   display:flex;
   flex-direction:column;
@@ -187,7 +218,7 @@
 }
 .kids3-catalog-rail>strong{
   color:#f8fbff;
-  font-size:clamp(13px,1.3vw,16px);
+  font-size:clamp(13px,1.2vw,16px);
   line-height:1;
   font-weight:1000;
   text-shadow:0 2px 10px #000;
@@ -197,52 +228,77 @@
   align-items:stretch;
   gap:10px;
   min-width:0;
+  overflow-x:auto;
+  overflow-y:visible;
+  padding:3px 2px 7px;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
 }
+.kids3-catalog-rail>div::-webkit-scrollbar{display:none}
+
 .kids3-catalog-tile{
   pointer-events:auto;
   position:relative;
-  flex:0 0 clamp(205px,20vw,280px);
-  height:84px;
-  display:grid;
-  grid-template-columns:44% 1fr;
+  flex:0 0 clamp(176px,14.5vw,238px);
+  width:auto;
+  height:auto;
+  aspect-ratio:16/9;
+  display:block;
   padding:0;
   overflow:hidden;
-  border:2px solid rgba(255,255,255,.2);
-  border-radius:9px;
-  background:rgba(8,14,26,.92);
+  border:2px solid rgba(255,255,255,.18);
+  border-radius:8px;
+  background:#0b1426;
   color:#fff;
   text-align:left;
-  box-shadow:0 8px 26px rgba(0,0,0,.36);
+  box-shadow:0 8px 24px rgba(0,0,0,.38);
   transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+  scroll-snap-align:start;
 }
 .kids3-catalog-tile:hover,
 .kids3-catalog-tile:focus-visible{
-  transform:translateY(-3px);
+  transform:translateY(-3px) scale(1.025);
   border-color:rgba(255,255,255,.88);
   outline:none;
+  z-index:3;
 }
 .kids3-catalog-tile.is-active{
   border-color:#76ddff;
-  box-shadow:0 0 0 1px rgba(118,221,255,.25),0 8px 28px rgba(0,0,0,.42);
+  box-shadow:0 0 0 1px rgba(118,221,255,.3),0 9px 27px rgba(0,0,0,.45);
 }
 .kids3-catalog-tile>img{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
   object-fit:cover;
   object-position:center;
-  filter:saturate(.94) brightness(.82);
+  filter:saturate(.95) brightness(.84);
+}
+.kids3-catalog-tile:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:linear-gradient(0deg,rgba(3,8,18,.9) 0%,rgba(3,8,18,.48) 34%,transparent 64%);
 }
 .kids3-catalog-tile>span{
+  position:absolute;
+  z-index:2;
+  left:9px;
+  right:9px;
+  bottom:8px;
   min-width:0;
   display:flex;
   flex-direction:column;
-  justify-content:center;
-  gap:4px;
-  padding:8px 10px;
+  justify-content:flex-end;
+  gap:3px;
+  padding:0;
 }
 .kids3-catalog-tile small{
   color:#76ddff;
-  font-size:9px;
+  font-size:8px;
   line-height:1;
   font-weight:1000;
   letter-spacing:.08em;
@@ -253,11 +309,31 @@
   -webkit-box-orient:vertical;
   overflow:hidden;
   color:#fff;
-  font-size:14px;
+  font-size:clamp(10px,.92vw,13px);
   line-height:1.02;
   font-weight:1000;
+  text-shadow:0 2px 8px rgba(0,0,0,.85);
 }
 
+/* Mid-size screens keep the right-side contract but give it a little more room. */
+@media(max-width:1100px) and (min-width:761px){
+  .kids3-game-card>img{width:61%!important;object-position:48% center!important}
+  .kids3-game-card .kids3-game-card-shade{
+    background:
+      linear-gradient(90deg,rgba(5,7,11,.07) 0%,rgba(5,7,11,.04) 37%,rgba(5,7,11,.38) 51%,rgba(5,7,11,.95) 61%,#081124 70%),
+      linear-gradient(0deg,#05070b 0%,rgba(5,7,11,.42) 19%,transparent 44%)!important;
+  }
+  .kids3-game-card>div{
+    right:28px!important;
+    width:35vw!important;
+    max-width:370px!important;
+  }
+  .kids3-game-card h2{font-size:clamp(34px,5.4vw,52px)!important}
+  .kids3-game-card p{font-size:12px!important;max-width:31ch}
+  .kids3-catalog-tile{flex-basis:clamp(160px,18vw,205px)}
+}
+
+/* On phones there is not enough horizontal territory for two zones, so the same hierarchy collapses gracefully. */
 @media(max-width:760px){
   .kids3-library-heading{
     height:58px;
@@ -269,63 +345,73 @@
   .kids3-library-heading h1{font-size:10px!important}
   .kids3-library-heading p{font-size:9px!important;max-width:95px;text-align:right;line-height:1.15!important}
 
-  .kids3-game-card>img{object-position:57% center!important}
+  .kids3-game-card{
+    background:#05070b!important;
+  }
+  .kids3-game-card>img{
+    width:100%!important;
+    height:68%!important;
+    object-position:56% center!important;
+  }
   .kids3-game-card .kids3-game-card-shade{
     background:
-      linear-gradient(90deg,rgba(5,7,11,.92),rgba(5,7,11,.48) 72%,rgba(5,7,11,.1)),
-      linear-gradient(0deg,#05070b 0%,rgba(5,7,11,.6) 35%,transparent 69%)!important;
+      linear-gradient(90deg,rgba(5,7,11,.68),rgba(5,7,11,.22) 72%,rgba(5,7,11,.06)),
+      linear-gradient(0deg,#05070b 29%,rgba(5,7,11,.82) 47%,rgba(5,7,11,.06) 73%)!important;
   }
   .kids3-game-card>div{
     left:18px!important;
-    bottom:112px!important;
-    width:min(77vw,330px)!important;
+    right:18px!important;
+    top:auto!important;
+    bottom:116px!important;
+    width:auto!important;
+    max-width:none!important;
+    transform:none!important;
     gap:5px!important;
   }
   .kids3-game-card h2{
     max-width:12ch;
-    font-size:clamp(29px,9.3vw,40px)!important;
+    font-size:clamp(27px,9vw,39px)!important;
     line-height:.91!important;
   }
-  .kids3-game-card p{font-size:11px!important;max-width:29ch;line-height:1.25!important}
+  .kids3-game-card p{font-size:11px!important;max-width:31ch;line-height:1.25!important}
   .kids3-game-card div>b{padding:9px 15px!important;font-size:11px!important;margin-top:6px!important}
 
   .kids3-catalog-rail{
     left:16px;
     right:16px;
-    bottom:10px;
+    bottom:8px;
     gap:5px;
   }
   .kids3-catalog-rail>strong{font-size:11px}
-  .kids3-catalog-rail>div{gap:7px}
+  .kids3-catalog-rail>div{gap:7px;padding-bottom:5px}
   .kids3-catalog-tile{
-    flex:1 1 0;
-    width:0;
-    min-width:0;
-    height:68px;
-    grid-template-columns:42% 1fr;
-    border-radius:7px;
+    flex-basis:132px;
+    border-radius:6px;
   }
-  .kids3-catalog-tile>span{padding:6px;gap:3px}
-  .kids3-catalog-tile small{font-size:7px}
-  .kids3-catalog-tile b{font-size:10px;line-height:1.05}
+  .kids3-catalog-tile>span{left:6px;right:6px;bottom:6px}
+  .kids3-catalog-tile small{font-size:6px}
+  .kids3-catalog-tile b{font-size:9px;line-height:1.03}
 }
 
 @media(max-height:700px) and (min-width:761px){
-  .kids3-game-card>div{bottom:126px!important;width:min(510px,46vw)!important}
-  .kids3-game-card h2{font-size:44px!important;max-width:13ch}
+  .kids3-game-card>div{
+    top:47%!important;
+    transform:translateY(-50%)!important;
+  }
+  .kids3-game-card h2{font-size:clamp(35px,4.4vw,50px)!important;max-width:13ch}
   .kids3-game-card p{font-size:12px!important}
   .kids3-game-card div>b{font-size:12px!important;margin-top:6px!important;padding:8px 15px!important}
-  .kids3-catalog-rail{bottom:10px;gap:5px}
+  .kids3-catalog-rail{bottom:8px;gap:5px}
   .kids3-catalog-rail>strong{font-size:12px}
-  .kids3-catalog-tile{height:66px;flex-basis:220px}
-  .kids3-catalog-tile b{font-size:11px}
-  .kids3-catalog-tile small{font-size:8px}
+  .kids3-catalog-tile{flex-basis:170px}
+  .kids3-catalog-tile b{font-size:10px}
+  .kids3-catalog-tile small{font-size:7px}
 }
 
 @media(max-width:430px) and (max-height:740px){
-  .kids3-game-card>div{bottom:100px!important}
-  .kids3-game-card h2{font-size:29px!important}
+  .kids3-game-card>div{bottom:102px!important}
+  .kids3-game-card h2{font-size:28px!important}
   .kids3-game-card p{font-size:10px!important}
-  .kids3-catalog-tile{height:60px}
-  .kids3-catalog-tile b{font-size:9px}
+  .kids3-catalog-tile{flex-basis:116px}
+  .kids3-catalog-tile b{font-size:8px}
 }
