@@ -57,6 +57,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/game/assets/case-005 src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts tests/qa-library-card-safe-zone.spec.ts tests/qa-right-panel.spec.ts .github/workflows/deploy.yml
+          git add public/game/assets/case-005 src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts tests/qa-library-card-safe-zone.spec.ts tests/qa-right-panel.spec.ts
           git commit -m "Implement Case 005 O Jogador Desconhecido [skip case005]"
           git push origin HEAD:agent/case005-unknown-player
