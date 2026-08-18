@@ -1,3 +1,4 @@
+# Temporary production diagnostic — do not merge.
 name: Diagnose CONTROOLS production
 
 on:
