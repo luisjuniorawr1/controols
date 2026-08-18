@@ -48,7 +48,7 @@ async function expectFullScreenScene(page: Page, screen: string, asset: RegExp) 
     return {
       scene: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
       image: image ? { x: image.x, y: image.y, width: image.width, height: image.height } : null,
-      panel: panel ? { x: panel.x, y: panel.y, width: panel.width, height: panel.height } : null,
+      panel: panel ? { x: panel.x, y: panel.y, width: panel.width, height: panel.height, right: panel.right, bottom: panel.bottom } : null,
       viewport: { width: innerWidth, height: innerHeight },
     };
   });
@@ -61,7 +61,15 @@ async function expectFullScreenScene(page: Page, screen: string, asset: RegExp) 
   expect(geometry.image!.width).toBeGreaterThanOrEqual(geometry.viewport.width - 1);
   expect(geometry.image!.height).toBeGreaterThanOrEqual(geometry.viewport.height - 1);
   expect(geometry.panel).not.toBeNull();
-  expect(geometry.panel!.x).toBeGreaterThan(geometry.viewport.width * .55);
+
+  if (geometry.viewport.width > 760) {
+    expect(geometry.panel!.x).toBeGreaterThan(geometry.viewport.width * .55);
+    expect(geometry.panel!.right).toBeGreaterThanOrEqual(geometry.viewport.width - 1);
+  } else {
+    expect(geometry.panel!.x).toBeGreaterThanOrEqual(-1);
+    expect(geometry.panel!.right).toBeLessThanOrEqual(geometry.viewport.width + 1);
+    expect(geometry.panel!.bottom).toBeLessThanOrEqual(geometry.viewport.height + 1);
+  }
   await expectSingleViewport(page);
 }
 
