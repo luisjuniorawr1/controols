@@ -16,7 +16,7 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
-export type KidsGameId = 'case-002' | 'case-004';
+export type KidsGameId = 'case-002' | 'case-004' | 'case-005';
 
 /**
  * O Cofre das Senhas is the canonical CONTROOLS story reference.
@@ -65,9 +65,32 @@ export const fourthKidsStory = {
   },
 } as const;
 
-export const kidsGames = [fourthKidsStory, secondKidsStory] as const;
+/**
+ * Case 005 follows the gold-standard story rhythm while teaching safe online play.
+ */
+export const fifthKidsStory = {
+  id: 'case-005' as KidsGameId,
+  number: '005',
+  title: 'O Jogador Desconhecido',
+  subtitle: 'Jogue com segurança quando alguém que você não conhece aparece.',
+  age: '7–10 anos',
+  accent: '#55d8ff',
+  cover: '/game/assets/case-005/00_capa_o_jogador_desconhecido.png',
+  scenes: {
+    warning: '/game/assets/case-005/01_luna_convite_inesperado.png',
+    personal: '/game/assets/case-005/02_maya_informacao_pessoal.png',
+    app: '/game/assets/case-005/03_theo_mudar_de_aplicativo.png',
+    limits: '/game/assets/case-005/04_nina_colocar_limites.png',
+    pressure: '/game/assets/case-005/05_caio_pedido_de_foto.png',
+    shield: '/game/assets/case-005/06_luna_escudo_do_jogador.png',
+    ending: '/game/assets/case-005/07_final_jogue_proteja_peca_ajuda.png',
+  },
+} as const;
+
+export const kidsGames = [fifthKidsStory, fourthKidsStory, secondKidsStory] as const;
 export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
 export const case004Assets = [fourthKidsStory.cover, ...Object.values(fourthKidsStory.scenes)];
+export const case005Assets = [fifthKidsStory.cover, ...Object.values(fifthKidsStory.scenes)];
 
 export const passwordHabits = [
   { id: 'long', label: 'Usar uma senha longa', icon: '📏', correct: true },
@@ -83,4 +106,13 @@ export const photoHabits = [
   { id: 'location', label: 'Esconder localização e informações pessoais', icon: '📍', correct: true },
   { id: 'rush', label: 'Postar sem conferir', icon: '⚡', correct: false },
   { id: 'details', label: 'Mostrar escola e endereço', icon: '🏫', correct: false },
+] as const;
+
+
+export const playerHabits = [
+  { id: 'private', label: 'Proteger informações pessoais', icon: '🛡️', correct: true },
+  { id: 'stay', label: 'Não sair do jogo por pressão', icon: '🎮', correct: true },
+  { id: 'adult', label: 'Pedir ajuda a um adulto', icon: '🤝', correct: true },
+  { id: 'photo', label: 'Mandar foto para agradar', icon: '📸', correct: false },
+  { id: 'details', label: 'Passar escola, telefone ou endereço', icon: '🏫', correct: false },
 ] as const;

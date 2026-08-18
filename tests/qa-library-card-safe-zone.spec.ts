@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test('streaming catalog keeps one cinematic featured story plus two adventure tiles', async ({ page }) => {
+test('streaming catalog keeps one cinematic featured story plus three adventure tiles', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
 
   const cards = page.locator('.kids3-game-card');
   await expect(cards).toHaveCount(1);
   const card = cards.first();
-  await expect(card).toContainText(/a foto que contava demais/i);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(2);
+  await expect(card).toContainText(/o jogador desconhecido/i);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(3);
 
   const metrics = await card.evaluate((node) => {
     const card = node as HTMLElement;
@@ -66,14 +66,14 @@ test('streaming catalog keeps one cinematic featured story plus two adventure ti
   await expect(card).toContainText(/o cofre das senhas/i);
 });
 
-test('two-story streaming catalog remains fully usable on a phone viewport', async ({ page }) => {
+test('three-story streaming catalog remains fully usable on a phone viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
 
   const card = page.locator('.kids3-game-card');
   await expect(card).toHaveCount(1);
-  await expect(card).toContainText(/a foto que contava demais/i);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(2);
+  await expect(card).toContainText(/o jogador desconhecido/i);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(3);
 
   const overflow = await page.evaluate(() => ({
     width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),

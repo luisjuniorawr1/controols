@@ -81,6 +81,7 @@ test('desktop game interaction rail uses the full right side with child-readable
 test('Case 004 uses the same right interaction rail contract', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
+  await page.getByRole('button', { name: /destacar a foto que contava demais/i }).click();
   await page.getByRole('button', { name: /jogar a foto que contava demais/i }).click();
   await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
   const scene = page.locator('[data-screen="case004-warning"]');
