@@ -1,0 +1,81 @@
+name: Verify Case 004 Live
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Validate both story asset sets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          for case in ('case-002','case-004'):
+              paths=sorted((Path('public/game/assets')/case).glob('*.png'))
+              assert len(paths)==8,(case,len(paths))
+              for p in paths:
+                  raw=p.read_bytes(); assert raw[:8]==b'\x89PNG\r\n\x1a\n'
+                  w,h=struct.unpack('>II',raw[16:24]); assert w>=1600 and h>=900,(p,w,h)
+                  if case=='case-004': assert (w,h)==(1672,941),(p,w,h)
+          PY
+      - name: Confirm Firebase credentials
+        run: test -n "$FIREBASE_SERVICE_ACCOUNT"
+      - name: Deploy merged Case 004 build to Firebase live
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: controols
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify public catalog and Case 004 start
+        run: |
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:650}});
+            await page.goto('https://controols.com/pt/',{waitUntil:'networkidle'});
+            if (await page.locator('.kids3-catalog-tile').count() !== 2) throw new Error('Expected 2 live story tiles');
+            const body=await page.locator('body').innerText();
+            if (!/A Foto que Contava Demais/i.test(body)) throw new Error('Case 004 missing from live catalog');
+            if (!/O Cofre das Senhas/i.test(body)) throw new Error('Case 002 missing from live catalog');
+            if (/A Mensagem Misteriosa/i.test(body) || /O Link Fantasma/i.test(body)) throw new Error('Retired story visible');
+            await page.getByRole('button',{name:/jogar a foto que contava demais/i}).click();
+            await page.locator('[data-screen="case004-warning"]').waitFor({state:'visible',timeout:25000});
+            const src=await page.locator('[data-screen="case004-warning"] .kids3-scene-art').getAttribute('src');
+            if (!src || !src.includes('/game/assets/case-004/01_luna_foto_conta_demais.png')) throw new Error(`Unexpected Case 004 art: ${src}`);
+            const metrics=await page.locator('[data-screen="case004-warning"]').evaluate(node=>{
+              const panel=node.querySelector('.kids3-panel').getBoundingClientRect();
+              const h1=node.querySelector('h1');
+              return {panelX:panel.x,panelRight:panel.right,width:innerWidth,fontSize:parseFloat(getComputedStyle(h1).fontSize),fontWeight:parseInt(getComputedStyle(h1).fontWeight,10)};
+            });
+            if (!(metrics.panelX > metrics.width*.55 && metrics.panelRight >= metrics.width-1)) throw new Error('Live right interaction rail contract failed');
+            if (metrics.fontSize < 39 || metrics.fontWeight < 700) throw new Error('Live readable typography contract failed');
+            console.log('LIVE_OK Case004 + Case002 catalog, Case004 starts with correct art, right rail and bold type');
+            await browser.close();
+          })().catch(err=>{console.error(err);process.exit(1)});
+          NODE
