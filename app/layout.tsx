@@ -11,6 +11,7 @@ import './kids-scenes-v2.css';
 import './kids-scenes-v2-fixes.css';
 import './kids-game-v3.css';
 import './kids-right-panel-readable.css';
+import './kids-heading-standard.css';
 import './kids-library-stream.css';
 import './marketing-home.css';
 import './scroll-modes.css';
