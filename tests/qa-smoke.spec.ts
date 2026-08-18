@@ -25,6 +25,9 @@ async function expectSingleViewport(page: Page) {
   expect(screenBox!.y + screenBox!.height).toBeLessThanOrEqual(metrics.innerHeight + 1);
 
   const clippedButtons = await page.locator('main.kids3-root button:visible').evaluateAll((buttons) => buttons.flatMap((button) => {
+    // Streaming rails intentionally keep later cards outside the viewport until the user scrolls.
+    // They must not count as page-level clipping as long as their scroll container stays in-bounds.
+    if (button.closest('.kids3-catalog-rail')) return [];
     const rect = button.getBoundingClientRect();
     const clipped = rect.left < -1 || rect.top < -1 || rect.right > window.innerWidth + 1 || rect.bottom > window.innerHeight + 1;
     return clipped ? [button.textContent?.trim() || 'unnamed button'] : [];
@@ -128,7 +131,6 @@ test('library exposes Case 006, Case 005, Case 004 and the Case 002 reference st
   await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);
   await expectSingleViewport(page);
 });
-
 
 
 test('Case 006 preloads all eight full-resolution assets before gameplay', async ({ page }) => {
@@ -285,7 +287,7 @@ test('Case 002 reference story still completes its seven-beat learning arc', asy
   await expectFullScreenScene(page, 'case002-ending', /\/game\/assets\/case-002\/07_final_cofre_protegido\.png$/);
 });
 
-test('new library and Case 006 first scene fit a phone viewport without scrolling', async ({ page }) => {
+test('new library and Case 006 first scene fit a phone viewport without page scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
   await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();
