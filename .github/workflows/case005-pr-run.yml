@@ -1,0 +1,60 @@
+name: Case 005 PR Runner
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/case005-unknown-player
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Drive helper
+        run: npm install --no-save --package-lock=false google-auth-library@9
+      - name: Import Case 005 masters
+        run: node scripts/case005_import.mjs
+      - name: Validate imported masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths=sorted(Path('public/game/assets/case-005').glob('*.png'))
+          assert len(paths)==8, len(paths)
+          for p in paths:
+              raw=p.read_bytes(); assert raw[:8]==b'\x89PNG\r\n\x1a\n'
+              w,h=struct.unpack('>II',raw[16:24]); assert (w,h)==(1672,941),(p,w,h)
+              assert len(raw)>1_500_000,(p,len(raw))
+              print(p.name,w,h,len(raw))
+          PY
+      - name: Apply Case 005 implementation
+        run: python scripts/case005_integrate.py
+      - name: Install project dependencies
+        run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Full smoke QA
+        run: npm run qa:smoke
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/game/assets/case-005 src/game/kidsStory.ts src/components/KidsStoryPrototype.tsx tests/qa-smoke.spec.ts tests/qa-library-card-safe-zone.spec.ts .github/workflows/deploy.yml
+          git commit -m "Implement Case 005 O Jogador Desconhecido [skip case005]"
+          git push origin HEAD:agent/case005-unknown-player
