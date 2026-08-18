@@ -1,0 +1,8 @@
+/* Case 004 cover contains its own title on the right side of the artwork.
+   In the streaming library the product title already lives in the right-side UI,
+   so crop the featured cover from the left and keep only the illustration visible. */
+@media (min-width: 761px) {
+  .kids3-game-card > img[src*="/case-004/00_capa_a_foto_que_contava_demais.png"] {
+    object-position: left center !important;
+  }
+}
