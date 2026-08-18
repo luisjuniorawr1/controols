@@ -32,6 +32,7 @@ jobs:
           contracts = {
               'case-002': {'exact': None},
               'case-004': {'exact': (1672, 941)},
+              'case-005': {'exact': (1672, 941)},
           }
 
           for case, contract in contracts.items():
