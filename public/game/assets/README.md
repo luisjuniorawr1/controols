@@ -25,4 +25,17 @@ Novas cenas devem preservar rosto, cabelo, roupas, cores e acessórios desses pe
 - Cenas 16:9: 1672 × 941 px.
 - Lineup e folha de recompensas: 1448 × 1086 px.
 
-A primeira aventura é **A Mensagem Misteriosa**. Todas as aventuras são para **uma criança por vez**, com os personagens da turma atuando como aliados dentro da história. A experiência privilegia imagens, escolhas curtas e cooperação com o elenco.
+## História de referência
+
+**O Cofre das Senhas** é o benchmark visual e narrativo oficial. Seus oito masters ficam em `case-002/`: uma capa e sete cenas de história.
+
+Toda nova aventura deve preservar o que funciona nesse conjunto:
+
+- ação e personagem principal à esquerda/centro;
+- faixa direita calma e escura para a interface;
+- iluminação, acabamento e proporções consistentes entre cenas;
+- um personagem protagonista claro por batida, com rotação natural da turma;
+- um objeto ou situação visual que explique a pergunta antes do texto;
+- final com a turma e uma sensação inequívoca de missão concluída.
+
+Os antigos masters jogáveis de **A Mensagem Misteriosa** e **O Link Fantasma** foram aposentados e removidos do produto. O padrão completo para novas histórias está em `docs/STORY_STANDARD.md`.
