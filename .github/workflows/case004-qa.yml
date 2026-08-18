@@ -1,0 +1,102 @@
+name: Case 004 Integration QA
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/case004-photo-privacy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Validate story masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          for case in ('case-002','case-004'):
+              paths=sorted((Path('public/game/assets')/case).glob('*.png'))
+              assert len(paths)==8,(case,len(paths))
+              for p in paths:
+                  raw=p.read_bytes()
+                  assert raw[:8]==b'\x89PNG\r\n\x1a\n',p
+                  w,h=struct.unpack('>II',raw[16:24])
+                  assert w>=1600 and h>=900,(p,w,h)
+                  if case=='case-004': assert (w,h)==(1672,941),(p,w,h)
+          PY
+      - name: Type check
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Full game smoke QA
+        run: npm run qa:smoke
+      - name: Capture Case 004 visual QA
+        run: |
+          mkdir -p qa-captures
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          const { spawn } = require('child_process');
+          const server = spawn('python', ['-m','http.server','4173','-d','out'], { stdio:'ignore' });
+          const sleep = ms => new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            await sleep(1200);
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:650}});
+            await page.goto('http://127.0.0.1:4173/pt/',{waitUntil:'networkidle'});
+            await page.screenshot({path:'qa-captures/00-library-desktop.png'});
+            await page.getByRole('button',{name:/jogar a foto que contava demais/i}).click();
+            await page.locator('[data-screen="case004-warning"]').waitFor({state:'visible',timeout:25000});
+            await page.screenshot({path:'qa-captures/01-warning-desktop.png'});
+            await page.getByRole('button',{name:/investigar a foto/i}).click();
+            await page.screenshot({path:'qa-captures/02-clues-desktop.png'});
+            await page.getByRole('button',{name:/o prédio ao fundo/i}).click();
+            await page.getByRole('button',{name:/preparar a foto/i}).click();
+            await page.screenshot({path:'qa-captures/03-principle-desktop.png'});
+            await page.getByRole('button',{name:/a que esconde detalhes do lugar/i}).click();
+            await page.getByRole('button',{name:/próxima pista/i}).click();
+            await page.screenshot({path:'qa-captures/04-permission-desktop.png'});
+            await page.getByRole('button',{name:/perguntar antes de postar/i}).click();
+            await page.getByRole('button',{name:/continuar/i}).click();
+            await page.screenshot({path:'qa-captures/05-risk-desktop.png'});
+            await page.getByRole('button',{name:/não responder e avisar um adulto/i}).click();
+            await page.getByRole('button',{name:/montar o escudo/i}).click();
+            await page.screenshot({path:'qa-captures/06-shield-desktop.png'});
+            await page.getByRole('button',{name:/olhar o fundo antes de postar/i}).click();
+            await page.getByRole('button',{name:/pedir permissão para quem aparece/i}).click();
+            await page.getByRole('button',{name:/esconder localização e informações pessoais/i}).click();
+            await page.getByRole('button',{name:/ativar o escudo/i}).click();
+            await page.getByRole('button',{name:/ver a foto segura/i}).click();
+            await page.screenshot({path:'qa-captures/07-ending-desktop.png'});
+
+            await page.setViewportSize({width:390,height:844});
+            await page.goto('http://127.0.0.1:4173/pt/',{waitUntil:'networkidle'});
+            await page.screenshot({path:'qa-captures/10-library-mobile.png'});
+            await page.getByRole('button',{name:/jogar a foto que contava demais/i}).click();
+            await page.locator('[data-screen="case004-warning"]').waitFor({state:'visible',timeout:25000});
+            await page.screenshot({path:'qa-captures/11-warning-mobile.png'});
+            await browser.close();
+            server.kill();
+          })().catch(err=>{server.kill();console.error(err);process.exit(1)});
+          NODE
+      - name: Commit temporary visual captures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qa-captures
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add temporary Case 004 visual QA captures [skip ci]"
+          git push origin HEAD:agent/case004-photo-privacy
