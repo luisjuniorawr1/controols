@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('desktop game interaction rail uses the full right side with child-readable type', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
-  await page.getByRole('button', { name: /caso 002/i }).click();
+  await page.getByRole('button', { name: /o cofre das senhas/i }).click();
   await expect(page.locator('.kids3-loader-card > strong')).toHaveText('100%', { timeout: 20_000 });
   await expect(page.locator('[data-screen="case002-warning"]')).toBeVisible({ timeout: 5_000 });
 
