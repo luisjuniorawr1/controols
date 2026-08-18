@@ -1,0 +1,83 @@
+name: Verify Case 005 Live
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-1GTDJXPQZC
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: Build static site
+        run: npm run build
+      - name: Validate Case 005 masters
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          paths=sorted(Path('public/game/assets/case-005').glob('*.png'))
+          assert len(paths)==8, len(paths)
+          for p in paths:
+              raw=p.read_bytes(); assert raw[:8]==b'\x89PNG\r\n\x1a\n'
+              w,h=struct.unpack('>II',raw[16:24]); assert (w,h)==(1672,941),(p,w,h)
+              assert len(raw)>1_500_000,(p,len(raw))
+          PY
+      - name: Deploy merged Case 005 build to Firebase live
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: controols
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify public Case 005 experience
+        run: |
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:650}});
+            await page.goto(`https://controols.com/pt/?case005=${Date.now()}`,{waitUntil:'networkidle'});
+            const tiles=await page.locator('.kids3-catalog-tile').count();
+            if (tiles !== 3) throw new Error(`Expected 3 live story tiles, got ${tiles}`);
+            const body=await page.locator('body').innerText();
+            for (const title of ['O Jogador Desconhecido','A Foto que Contava Demais','O Cofre das Senhas']) {
+              if (!body.includes(title)) throw new Error(`${title} missing from live catalog`);
+            }
+            await page.getByRole('button',{name:/jogar o jogador desconhecido/i}).click();
+            await page.locator('[data-screen="case005-warning"]').waitFor({state:'visible',timeout:25000});
+            const art=page.locator('[data-screen="case005-warning"] .kids3-scene-art');
+            const src=await art.getAttribute('src');
+            if (!src || !src.includes('/game/assets/case-005/01_luna_convite_inesperado.png')) throw new Error(`Unexpected Case 005 art: ${src}`);
+            const natural=await art.evaluate(img=>({w:img.naturalWidth,h:img.naturalHeight}));
+            if (natural.w < 1600 || natural.h < 900) throw new Error(`Case 005 art too small: ${natural.w}x${natural.h}`);
+            const metrics=await page.locator('[data-screen="case005-warning"]').evaluate(node=>{
+              const panel=node.querySelector('.kids3-panel').getBoundingClientRect();
+              const h1=node.querySelector('h1');
+              return {
+                panelX:panel.x,panelRight:panel.right,width:innerWidth,
+                fontSize:parseFloat(getComputedStyle(h1).fontSize),
+                fontWeight:parseInt(getComputedStyle(h1).fontWeight,10),
+                scrollHeight:document.documentElement.scrollHeight,innerHeight,
+              };
+            });
+            if (!(metrics.panelX > metrics.width*.55 && metrics.panelRight >= metrics.width-1)) throw new Error('Right interaction rail contract failed live');
+            if (metrics.fontSize < 39 || metrics.fontWeight < 700) throw new Error('Large/bold typography contract failed live');
+            if (metrics.scrollHeight > metrics.innerHeight + 1) throw new Error('Case 005 created vertical page scroll live');
+            console.log('LIVE_OK Case005 catalog + correct first asset + right rail + bold type + no scroll');
+            await browser.close();
+          })().catch(err=>{console.error(err);process.exit(1)});
+          NODE
