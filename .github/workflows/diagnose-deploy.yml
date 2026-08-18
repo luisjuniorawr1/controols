@@ -1,0 +1,112 @@
+name: Diagnose CONTROOLS production
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - name: Check Firebase credential
+        shell: bash
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT is missing"
+            exit 2
+          fi
+          echo "Firebase service account secret is present"
+
+      - name: Check public DNS and HTTP
+        shell: bash
+        run: |
+          set +e
+          echo "=== DNS ==="
+          getent ahostsv4 controols.com || true
+          getent ahostsv4 www.controols.com || true
+          getent ahostsv4 controols.web.app || true
+          echo "=== HTTP ==="
+          curl -sSIL --max-time 15 https://controols.com | head -n 12 || true
+          curl -sSIL --max-time 15 https://www.controols.com | head -n 12 || true
+          curl -sSIL --max-time 15 https://controols.web.app | head -n 12 || true
+
+      - name: Inspect Firebase Hosting state
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('crypto');
+
+          const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          const projectId = 'controols';
+          const siteId = 'controols';
+          const b64url = value => Buffer.from(value).toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const header = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+          const payload = b64url(JSON.stringify({
+            iss: sa.client_email,
+            scope: 'https://www.googleapis.com/auth/firebase.hosting https://www.googleapis.com/auth/cloud-platform',
+            aud: 'https://oauth2.googleapis.com/token',
+            iat: now,
+            exp: now + 3600,
+          }));
+          const unsigned = `${header}.${payload}`;
+          const signer = crypto.createSign('RSA-SHA256');
+          signer.update(unsigned);
+          signer.end();
+          const assertion = `${unsigned}.${signer.sign(sa.private_key).toString('base64url')}`;
+
+          async function token() {
+            const body = new URLSearchParams({
+              grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+              assertion,
+            });
+            const r = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'content-type': 'application/x-www-form-urlencoded' },
+              body,
+            });
+            if (!r.ok) throw new Error(`OAuth failed: ${r.status} ${await r.text()}`);
+            return (await r.json()).access_token;
+          }
+
+          async function get(url, accessToken) {
+            const r = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
+            const text = await r.text();
+            console.log(`GET ${url} -> ${r.status}`);
+            if (!r.ok) throw new Error(text);
+            return JSON.parse(text);
+          }
+
+          (async () => {
+            const accessToken = await token();
+            const parent = `projects/${projectId}/sites/${siteId}`;
+            const domains = await get(`https://firebasehosting.googleapis.com/v1beta1/${parent}/customDomains`, accessToken);
+            for (const d of domains.customDomains || []) {
+              console.log(JSON.stringify({
+                name: d.name,
+                hostState: d.hostState,
+                ownershipState: d.ownershipState,
+                certState: d.cert?.state,
+                redirectTarget: d.redirectTarget,
+                issues: d.issues,
+                requiredDnsUpdates: d.requiredDnsUpdates,
+              }, null, 2));
+            }
+            const releases = await get(`https://firebasehosting.googleapis.com/v1beta1/sites/${siteId}/releases?pageSize=5`, accessToken);
+            console.log('LATEST_RELEASES');
+            for (const r of releases.releases || []) {
+              console.log(JSON.stringify({ name: r.name, version: r.version?.name, type: r.type, releaseTime: r.releaseTime }, null, 2));
+            }
+          })().catch(err => {
+            console.error(err.stack || String(err));
+            process.exit(1);
+          });
+          NODE
