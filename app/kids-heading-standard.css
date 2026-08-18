@@ -1,0 +1,7 @@
+/* CONTROOLS Story Standard — child-readable headlines on supported TV viewports. */
+@media (min-width: 761px) and (max-height: 700px) {
+  .kids3-panel.is-compact h1 {
+    font-size: 40px !important;
+    font-weight: 1000 !important;
+  }
+}
