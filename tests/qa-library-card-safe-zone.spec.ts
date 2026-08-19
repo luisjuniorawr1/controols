@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test('streaming catalog keeps left-side artwork, right-side story details and four adventure tiles', async ({ page }) => {
+test('streaming catalog keeps left-side artwork, right-side story details and five adventure tiles', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
 
   const cards = page.locator('.kids3-game-card');
   await expect(cards).toHaveCount(1);
   const card = cards.first();
-  await expect(card).toContainText(/a mensagem que parecia verdadeira/i);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);
+  await expect(card).toContainText(/a cidade que ficou no escuro/i);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(5);
 
   const metrics = await card.evaluate((node) => {
     const card = node as HTMLElement;
@@ -59,8 +59,9 @@ test('streaming catalog keeps left-side artwork, right-side story details and fo
     return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
   }));
   for (const tile of tiles) {
+    // Tiles inside a horizontal streaming rail may be off-screen to the right.
+    // The rail itself owns that overflow; document-level overflow remains forbidden.
     expect(tile.left).toBeGreaterThanOrEqual(-1);
-    expect(tile.right).toBeLessThanOrEqual(metrics.viewport.width + 1);
     expect(tile.top).toBeGreaterThanOrEqual(-1);
     expect(tile.bottom).toBeLessThanOrEqual(metrics.viewport.height + 1);
     expect(tile.width / tile.height).toBeGreaterThan(1.7);
@@ -73,14 +74,14 @@ test('streaming catalog keeps left-side artwork, right-side story details and fo
   await expect(card).toContainText(/o cofre das senhas/i);
 });
 
-test('four-story streaming catalog stays inside the page and scrolls horizontally on a phone', async ({ page }) => {
+test('five-story streaming catalog stays inside the page and scrolls horizontally on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
 
   const card = page.locator('.kids3-game-card');
   await expect(card).toHaveCount(1);
-  await expect(card).toContainText(/a mensagem que parecia verdadeira/i);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);
+  await expect(card).toContainText(/a cidade que ficou no escuro/i);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(5);
 
   const overflow = await page.evaluate(() => ({
     width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
