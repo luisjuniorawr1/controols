@@ -77,6 +77,7 @@ async function expectFullScreenScene(page: Page, screen: string, asset: RegExp) 
 }
 
 async function startCase006(page: Page) {
+  await page.getByRole('button', { name: /destacar a mensagem que parecia verdadeira/i }).click();
   const card = page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i });
   await expect(card).toBeVisible();
   await card.click();
@@ -115,12 +116,12 @@ async function startReferenceStory(page: Page) {
   await expect(page.locator('[data-screen="case002-warning"]')).toBeVisible({ timeout: 5_000 });
 }
 
-test('library exposes Case 006, Case 005, Case 004 and the Case 002 reference story', async ({ page }) => {
+test('library exposes Super 001, Case 006, Case 005, Case 004 and the Case 002 reference story', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 650 });
   await page.goto('/pt/');
 
   await expect(page.getByRole('heading', { name: /escolha uma aventura/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /jogar a cidade que ficou no escuro/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar a mensagem que parecia verdadeira/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar o jogador desconhecido/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /destacar a foto que contava demais/i })).toBeVisible();
@@ -128,7 +129,7 @@ test('library exposes Case 006, Case 005, Case 004 and the Case 002 reference st
   await expect(page.getByText(/a mensagem misteriosa/i)).toHaveCount(0);
   await expect(page.getByText(/o link fantasma/i)).toHaveCount(0);
   await expect(page.locator('.kids3-game-card')).toHaveCount(1);
-  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);
+  await expect(page.locator('.kids3-catalog-tile')).toHaveCount(5);
   await expectSingleViewport(page);
 });
 
@@ -287,10 +288,10 @@ test('Case 002 reference story still completes its seven-beat learning arc', asy
   await expectFullScreenScene(page, 'case002-ending', /\/game\/assets\/case-002\/07_final_cofre_protegido\.png$/);
 });
 
-test('new library and Case 006 first scene fit a phone viewport without page scrolling', async ({ page }) => {
+test('five-story library and Case 006 first scene fit a phone viewport without page scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/');
-  await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /jogar a cidade que ficou no escuro/i })).toBeVisible();
   await expectSingleViewport(page);
 
   await startCase006(page);
