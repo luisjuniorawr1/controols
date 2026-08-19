@@ -16,7 +16,7 @@ export const kids: Kid[] = [
   { id: 'nina', name: 'Nina', trait: 'Cuidadosa', color: '#76ad42', asset: '/game/assets/characters/nina.png' },
 ];
 
-export type KidsGameId = 'case-002' | 'case-004' | 'case-005' | 'case-006';
+export type KidsGameId = 'super-001' | 'case-002' | 'case-004' | 'case-005' | 'case-006';
 
 /**
  * O Cofre das Senhas is the canonical CONTROOLS story reference.
@@ -111,7 +111,37 @@ export const sixthKidsStory = {
   },
 } as const;
 
-export const kidsGames = [sixthKidsStory, fifthKidsStory, fourthKidsStory, secondKidsStory] as const;
+export const superKidsStory = {
+  id: 'super-001' as KidsGameId,
+  number: 'SUPER 001',
+  title: 'A Cidade que Ficou no Escuro',
+  subtitle: 'Uma grande missão sobre energia, prioridades, segurança e trabalho em equipe.',
+  age: '5–10 anos',
+  accent: '#f6bd22',
+  cover: '/game/assets/super-001/00_capa_cidade_no_escuro.png',
+  scenes: {
+    blackout: '/game/assets/super-001/01_clubhouse_apagao.png',
+    lantern: '/game/assets/super-001/02_nina_lanterna.png',
+    cable: '/game/assets/super-001/03_nina_fio_caido.png',
+    backpack: '/game/assets/super-001/04_nina_mochila.png',
+    map: '/game/assets/super-001/05_theo_mapa_energia.png',
+    interruption: '/game/assets/super-001/06_theo_caminho_interrompido.png',
+    objects: '/game/assets/super-001/07_theo_objetos_energia.png',
+    priorities: '/game/assets/super-001/08_maya_mapa_prioridades.png',
+    priorityChoice: '/game/assets/super-001/09_maya_escolha_prioridades.png',
+    waste: '/game/assets/super-001/10_caio_caca_desperdicio.png',
+    reserve: '/game/assets/super-001/11_caio_reserva_energia.png',
+    neighborhood: '/game/assets/super-001/12_luna_bairro_apagado.png',
+    team: '/game/assets/super-001/13_luna_monte_equipe.png',
+    plan: '/game/assets/super-001/14_plano_da_luz.png',
+    lighting: '/game/assets/super-001/15_cidade_acendendo.png',
+    ending: '/game/assets/super-001/16_final_cidade_iluminada.png',
+  },
+} as const;
+
+export const super001Assets = [superKidsStory.cover, ...Object.values(superKidsStory.scenes)];
+
+export const kidsGames = [superKidsStory, sixthKidsStory, fifthKidsStory, fourthKidsStory, secondKidsStory] as const;
 export const case002Assets = [secondKidsStory.cover, ...Object.values(secondKidsStory.scenes)];
 export const case004Assets = [fourthKidsStory.cover, ...Object.values(fourthKidsStory.scenes)];
 export const case005Assets = [fifthKidsStory.cover, ...Object.values(fifthKidsStory.scenes)];
