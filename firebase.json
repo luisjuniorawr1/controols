@@ -30,6 +30,10 @@
         "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
       },
       {
+        "source": "/game/layout-overrides.json",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
         "source": "**/*.@(js|css|woff2)",
         "headers": [{ "key": "Cache-Control", "value": "public,max-age=31536000,immutable" }]
       }
