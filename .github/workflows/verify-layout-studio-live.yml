@@ -1,0 +1,36 @@
+name: Verify Layout Studio Live
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for production and verify layout studio
+        shell: bash
+        run: |
+          set -euo pipefail
+          PAGE='https://controols.com/layout-studio/'
+          OVERRIDES='https://controols.com/game/layout-overrides.json'
+          for attempt in $(seq 1 45); do
+            echo "Verification attempt ${attempt}/45"
+            html=$(curl --fail --silent --show-error --location --max-time 20 "$PAGE" || true)
+            overrides_status=$(curl --silent --show-error --location --max-time 20 -o /tmp/layout-overrides.json -w '%{http_code}' "$OVERRIDES" || true)
+            if printf '%s' "$html" | grep -q 'Studio de Enquadramento' && printf '%s' "$html" | grep -q 'CONTROOLS' && [ "$overrides_status" = '200' ]; then
+              python - <<'PY'
+import json
+from pathlib import Path
+json.loads(Path('/tmp/layout-overrides.json').read_text())
+print('layout-overrides.json is valid JSON')
+PY
+              echo 'LAYOUT_STUDIO_LIVE_OK'
+              exit 0
+            fi
+            echo "Not live yet: studio=$(printf '%s' "$html" | grep -c 'Studio de Enquadramento' || true), overrides_http=${overrides_status}"
+            sleep 15
+          done
+          echo 'Layout Studio did not reach production within the verification window.'
+          exit 1
