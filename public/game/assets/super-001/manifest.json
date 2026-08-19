@@ -1,0 +1,25 @@
+{
+  "id": "super-001",
+  "title": "A Cidade que Ficou no Escuro",
+  "asset_count": 17,
+  "master": "1672x941 PNG",
+  "assets": [
+    {"file":"00_capa_cidade_no_escuro.png","width":1672,"height":941,"format":"PNG","sha256":"4fbab3a5167e6b97b981ccc0a0d5bb429f18bad6ceacc14539a406df8c0e1149"},
+    {"file":"01_clubhouse_apagao.png","width":1672,"height":941,"format":"PNG","sha256":"cb8b7cc9666f1b20f83f466819810d93b8561f4bc4a89d10fc7f480644f69ea6"},
+    {"file":"02_nina_lanterna.png","width":1672,"height":941,"format":"PNG","sha256":"91820c9102809ca579ef201fe5809e55b7aba6095ac66399ab48e128b66486a6"},
+    {"file":"03_nina_fio_caido.png","width":1672,"height":941,"format":"PNG","sha256":"0f5f63d7c8623215e3d25160526be5ecb0450a058efb0c9a4abe3d38b42efba6"},
+    {"file":"04_nina_mochila.png","width":1672,"height":941,"format":"PNG","sha256":"c73a27b6bfbc7032b5757248ccf443e43cf13897b8558fbb10f3d4cba7e1cc83"},
+    {"file":"05_theo_mapa_energia.png","width":1672,"height":941,"format":"PNG","sha256":"f8a21af20f5506bb4c71e8498c4205a6c76d244239ec16adfcaeba098d73af91"},
+    {"file":"06_theo_caminho_interrompido.png","width":1672,"height":941,"format":"PNG","sha256":"5295e251b18a9a4f8f693640997decf770900594838cbd41dac439cf45db21e8"},
+    {"file":"07_theo_objetos_energia.png","width":1672,"height":941,"format":"PNG","sha256":"e7aeacde32e4456ebb65f181ab70c6960b3b942fc0bde6881c29f100f12dc2d8"},
+    {"file":"08_maya_mapa_prioridades.png","width":1672,"height":941,"format":"PNG","sha256":"c40c0f2d33e17d82eb8906c6c12ad0391ba4c37ed44d7fb9a1a6ae8280ffca09"},
+    {"file":"09_maya_escolha_prioridades.png","width":1672,"height":941,"format":"PNG","sha256":"f13289fc86d9c793ff7a33ab4802be434e4a314d0bcab8916366735fb08bf178"},
+    {"file":"10_caio_caca_desperdicio.png","width":1672,"height":941,"format":"PNG","sha256":"7a30f0af28332ec63463f3df3b4cae38cd07050a6e945c0b36c52b67d17cde0e"},
+    {"file":"11_caio_reserva_energia.png","width":1672,"height":941,"format":"PNG","sha256":"831f822ed426fc222a7ca9ef461dc8a03d59f872d04073fc7c1096bd2b219468"},
+    {"file":"12_luna_bairro_apagado.png","width":1672,"height":941,"format":"PNG","sha256":"67990eed964b1c3f4368bd0b261125561cadec047d8848350b3a35ff1979ad47"},
+    {"file":"13_luna_monte_equipe.png","width":1672,"height":941,"format":"PNG","sha256":"d5e57beb6c3516b778de763b84405e0c033ef4ef02a07149338f73a31a9df53b"},
+    {"file":"14_plano_da_luz.png","width":1672,"height":941,"format":"PNG","sha256":"a77b978adab7d8272a328b16559e384ec1017f0f93cad6cec9accbda7d156772"},
+    {"file":"15_cidade_acendendo.png","width":1672,"height":941,"format":"PNG","sha256":"6e31dbed3481ebf28d7b3d228d20a5a38faae798351c94a9eea32007656a6874"},
+    {"file":"16_final_cidade_iluminada.png","width":1672,"height":941,"format":"PNG","sha256":"b62bb2f747683c962d7bd71d803695e797859284aa1da7d6b99336e553599cef"}
+  ]
+}

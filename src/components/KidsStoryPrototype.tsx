@@ -6,8 +6,10 @@ import {
   case004Assets,
   case005Assets,
   case006Assets,
+  super001Assets,
   fifthKidsStory,
   sixthKidsStory,
+  superKidsStory,
   fourthKidsStory,
   kidsGames,
   passwordHabits,
@@ -17,6 +19,7 @@ import {
   secondKidsStory,
   type KidsGameId,
 } from '@/src/game/kidsStory';
+import Super001Game from '@/src/components/Super001Game';
 
 type AppMode = 'library' | 'loading' | 'playing';
 type Case002Screen = 'warning' | 'weak' | 'strong' | 'reuse' | 'code' | 'key' | 'ending';
@@ -149,9 +152,9 @@ function LoadingCover({ story, assets, onReady }: { story: LoadingStory; assets:
 }
 
 function GameLibrary({ onChoose }: { onChoose: (id: KidsGameId) => void }) {
-  const [featuredId, setFeaturedId] = useState<KidsGameId>('case-006');
+  const [featuredId, setFeaturedId] = useState<KidsGameId>('super-001');
   const featured = kidsGames.find(story => story.id === featuredId) ?? kidsGames[0];
-  const featuredLabel = featuredId === 'case-006' ? 'NOVA AVENTURA' : featuredId === 'case-002' ? 'HISTÓRIA REFERÊNCIA' : 'AVENTURA CONTROOLS';
+  const featuredLabel = featuredId === 'super-001' ? 'SUPER AVENTURA' : featuredId === 'case-006' ? 'NOVA AVENTURA' : featuredId === 'case-002' ? 'HISTÓRIA REFERÊNCIA' : 'AVENTURA CONTROOLS';
 
   return (
     <section className="kids3-library" data-screen="library">
@@ -185,7 +188,7 @@ function GameLibrary({ onChoose }: { onChoose: (id: KidsGameId) => void }) {
               onClick={() => setFeaturedId(story.id)}
             >
               <img src={story.cover} alt="" />
-              <span><small>{story.id === 'case-006' ? 'NOVA' : story.id === 'case-002' ? 'REFERÊNCIA' : 'AVENTURA'}</small><b>{story.title}</b></span>
+              <span><small>{story.id === 'super-001' ? 'SUPER AVENTURA' : story.id === 'case-006' ? 'NOVA' : story.id === 'case-002' ? 'REFERÊNCIA' : 'AVENTURA'}</small><b>{story.title}</b></span>
             </button>
           ))}
         </div>
@@ -681,14 +684,14 @@ export default function KidsStoryPrototype() {
   const startGame = useCallback(() => setMode('playing'), []);
   const exitGame = useCallback(() => setMode('library'), []);
 
-  const activeStory = gameId === 'case-006' ? sixthKidsStory : gameId === 'case-005' ? fifthKidsStory : gameId === 'case-004' ? fourthKidsStory : secondKidsStory;
-  const activeAssets = gameId === 'case-006' ? case006Assets : gameId === 'case-005' ? case005Assets : gameId === 'case-004' ? case004Assets : case002Assets;
+  const activeStory = gameId === 'super-001' ? superKidsStory : gameId === 'case-006' ? sixthKidsStory : gameId === 'case-005' ? fifthKidsStory : gameId === 'case-004' ? fourthKidsStory : secondKidsStory;
+  const activeAssets = gameId === 'super-001' ? super001Assets : gameId === 'case-006' ? case006Assets : gameId === 'case-005' ? case005Assets : gameId === 'case-004' ? case004Assets : case002Assets;
 
   return (
     <main className="kids-game kids3-root">
       {mode === 'library' && <GameLibrary onChoose={chooseGame} />}
       {mode === 'loading' && <LoadingCover story={activeStory} assets={activeAssets} onReady={startGame} />}
-      {mode === 'playing' && (gameId === 'case-006' ? <Case006Game onExit={exitGame} /> : gameId === 'case-005' ? <Case005Game onExit={exitGame} /> : gameId === 'case-004' ? <Case004Game onExit={exitGame} /> : <Case002Game onExit={exitGame} />)}
+      {mode === 'playing' && (gameId === 'super-001' ? <Super001Game onExit={exitGame} /> : gameId === 'case-006' ? <Case006Game onExit={exitGame} /> : gameId === 'case-005' ? <Case005Game onExit={exitGame} /> : gameId === 'case-004' ? <Case004Game onExit={exitGame} /> : <Case002Game onExit={exitGame} />)}
     </main>
   );
 }
