@@ -40,10 +40,13 @@ export default function LayoutOverridesRuntime() {
           }
 
           img.dataset.controolsLayoutManaged = 'true';
-          img.style.objectPosition = `${preset.x}% ${preset.y}%`;
-          img.style.transform = `scale(${preset.zoom})`;
-          img.style.transformOrigin = 'center center';
-          img.style.willChange = 'transform';
+          // Some legacy layout layers use !important for safe-zone crops. The
+          // editor is the explicit per-asset source of truth, so managed values
+          // intentionally receive the same priority and win at inline scope.
+          img.style.setProperty('object-position', `${preset.x}% ${preset.y}%`, 'important');
+          img.style.setProperty('transform', `scale(${preset.zoom})`, 'important');
+          img.style.setProperty('transform-origin', 'center center', 'important');
+          img.style.setProperty('will-change', 'transform', 'important');
         });
       });
     };
