@@ -1,0 +1,42 @@
+name: Verify Super 001 Live
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for production and verify Super 001
+        shell: bash
+        run: |
+          set -euo pipefail
+          PAGE='https://controols.com/pt/'
+          ASSET='https://controols.com/game/assets/super-001/00_capa_cidade_no_escuro.png'
+          for attempt in $(seq 1 45); do
+            echo "Verification attempt ${attempt}/45"
+            html=$(curl --fail --silent --show-error --location --max-time 20 "$PAGE" || true)
+            asset_status=$(curl --silent --show-error --location --max-time 20 -o /tmp/super001-cover.png -w '%{http_code}' "$ASSET" || true)
+            if printf '%s' "$html" | grep -q 'A Cidade que Ficou no Escuro' && [ "$asset_status" = '200' ]; then
+              python - <<'PY'
+          from pathlib import Path
+          import struct
+          p=Path('/tmp/super001-cover.png')
+          raw=p.read_bytes()[:24]
+          assert raw[:8] == b'\x89PNG\r\n\x1a\n'
+          assert struct.unpack('>II', raw[16:24]) == (1672, 941)
+          print('Live Super 001 cover is 1672x941 PNG')
+          PY
+              echo 'SUPER001_LIVE_OK'
+              exit 0
+            fi
+            echo "Not live yet: page_match=$(printf '%s' "$html" | grep -c 'A Cidade que Ficou no Escuro' || true), asset_http=${asset_status}"
+            sleep 15
+          done
+          echo 'Production did not expose Super 001 within the verification window.'
+          exit 1
