@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import LayoutOverridesRuntime from '@/src/components/LayoutOverridesRuntime';
 import './globals.css';
 import './kids-game.css';
 import './tv-viewport.css';
@@ -34,7 +35,10 @@ const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <LayoutOverridesRuntime />
+        {children}
+      </body>
       {gaMeasurementId && <>
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
