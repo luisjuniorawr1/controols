@@ -286,7 +286,7 @@ export default function LayoutStudio() {
 
           <section className={styles.controlCard}>
             <h2>Publicação</h2>
-            <p>As mudanças já valem no jogo neste navegador. Para transformar os ajustes em padrão global, exporte o JSON e publique o arquivo no projeto.</p>
+            <p>Enquanto você ajusta, as mudanças já aparecem no jogo neste navegador. Quando terminar, baixe o JSON e me envie aqui no ChatGPT; eu aplico o arquivo ao projeto e publico o enquadramento para todo mundo.</p>
             <button type="button" className={styles.primary} onClick={exportJson}>Baixar layout-overrides.json</button>
             <button type="button" className={styles.danger} onClick={restorePublished}>Voltar ao layout publicado</button>
           </section>
