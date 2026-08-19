@@ -30,16 +30,17 @@ jobs:
           import struct
 
           contracts = {
-              'case-002': {'exact': None},
-              'case-004': {'exact': (1672, 941)},
-              'case-005': {'exact': (1672, 941)},
-              'case-006': {'exact': (1672, 941)},
+              'case-002': {'count': 8, 'exact': None},
+              'case-004': {'count': 8, 'exact': (1672, 941)},
+              'case-005': {'count': 8, 'exact': (1672, 941)},
+              'case-006': {'count': 8, 'exact': (1672, 941)},
+              'super-001': {'count': 17, 'exact': (1672, 941)},
           }
 
           for case, contract in contracts.items():
               folder = Path('public/game/assets') / case
               paths = sorted(folder.glob('*.png'))
-              assert len(paths) == 8, f'Expected 8 {case} PNGs, got {len(paths)}'
+              assert len(paths) == contract['count'], f"Expected {contract['count']} {case} PNGs, got {len(paths)}"
               for path in paths:
                   raw = path.read_bytes()
                   assert raw[:8] == b'\x89PNG\r\n\x1a\n', path
