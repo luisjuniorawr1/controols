@@ -1,0 +1,75 @@
+name: Super 001 QA Contract Update
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/super-001-assets
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Update legacy smoke expectations for Super 001
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('tests/qa-smoke.spec.ts')
+          s = p.read_text()
+
+          old_helper = '''async function startCase006(page: Page) {
+            const card = page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i });'''.replace('            ', '  ')
+          new_helper = '''async function startCase006(page: Page) {
+            await page.getByRole('button', { name: /destacar a mensagem que parecia verdadeira/i }).click();
+            const card = page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i });'''.replace('            ', '  ')
+          if old_helper in s:
+              s = s.replace(old_helper, new_helper, 1)
+
+          s = s.replace(
+              "test('library exposes Case 006, Case 005, Case 004 and the Case 002 reference story'",
+              "test('library exposes Super 001, Case 006, Case 005, Case 004 and the Case 002 reference story'",
+          )
+          s = s.replace(
+              "await expect(page.getByRole('button', { name: /jogar a mensagem que parecia verdadeira/i })).toBeVisible();",
+              "await expect(page.getByRole('button', { name: /jogar a cidade que ficou no escuro/i })).toBeVisible();",
+          )
+          s = s.replace(
+              "await expect(page.locator('.kids3-catalog-tile')).toHaveCount(4);",
+              "await expect(page.locator('.kids3-catalog-tile')).toHaveCount(5);",
+          )
+          s = s.replace(
+              "test('new library and Case 006 first scene fit a phone viewport without page scrolling'",
+              "test('five-story library and Case 006 first scene fit a phone viewport without page scrolling'",
+          )
+          p.write_text(s)
+          PY
+
+      - name: Commit updated QA contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add tests/qa-smoke.spec.ts
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "[super-001-qa] Update smoke contract for Super 001"
+            git push origin HEAD:agent/super-001-assets
+          fi
+
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run qa:smoke
