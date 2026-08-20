@@ -1,0 +1,23 @@
+# Temporary utility workflow — do not merge.
+name: Read Firebase service account identity
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+    steps:
+      - name: Print non-secret service account email
+        shell: bash
+        run: |
+          node -e "const s=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); console.log('SERVICE_ACCOUNT_EMAIL='+s.client_email)"
