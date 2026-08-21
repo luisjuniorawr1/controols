@@ -1,0 +1,42 @@
+name: Materialize MG-001 assets
+
+on:
+  push:
+    branches:
+      - feature/mg-001-olho-vivo
+    paths:
+      - asset-packs/mg001/READY
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild optimized HD assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/game/assets/mini-001
+          cat asset-packs/mg001/chunks/part-*.b64 | base64 --decode > /tmp/mg001-scenes.zip
+          unzip -o /tmp/mg001-scenes.zip -d public/game/assets/mini-001
+          test -f public/game/assets/mini-001/00_abertura.webp
+          test -f public/game/assets/mini-001/07_resultado.webp
+
+      - name: Commit materialized assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf asset-packs/mg001
+          rm -f .github/workflows/materialize-mg001-assets.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/game/assets/mini-001 asset-packs/mg001 .github/workflows/materialize-mg001-assets.yml
+          git commit -m "Materialize MG-001 optimized HD assets"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
