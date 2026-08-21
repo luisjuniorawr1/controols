@@ -1,0 +1,25 @@
+{
+  "opening": [{ "id": "start", "bbox": [0.34, 0.79, 0.32, 0.14], "hand": "either", "hold_ms": 800 }],
+  "tutorial": [{ "id": "school_badge", "bbox": [0.66, 0.33, 0.18, 0.25], "hand": "right", "hold_ms": 800, "feedback": "Informação protegida!" }],
+  "park": [{ "id": "location_phone", "bbox": [0.585, 0.43, 0.13, 0.31], "hand": "right", "hold_ms": 800, "feedback": "Localização protegida!" }],
+  "house": [
+    { "id": "house_number", "bbox": [0.6, 0.3, 0.1, 0.15], "hand": "right", "hold_ms": 800 },
+    { "id": "street_name", "bbox": [0.79, 0.36, 0.15, 0.18], "hand": "right", "hold_ms": 800 }
+  ],
+  "party": [{ "id": "invitation_address", "bbox": [0.61, 0.31, 0.22, 0.37], "hand": "right", "hold_ms": 800 }],
+  "study": [
+    { "id": "password", "bbox": [0.39, 0.37, 0.17, 0.31], "hand": "left", "hold_ms": 800 },
+    { "id": "phone", "bbox": [0.61, 0.36, 0.15, 0.32], "hand": "right", "hold_ms": 800 },
+    { "id": "qr_code", "bbox": [0.79, 0.39, 0.13, 0.3], "hand": "right", "hold_ms": 800 }
+  ],
+  "final": [
+    { "id": "school", "bbox": [0.06, 0.65, 0.15, 0.24], "hand": "left", "hold_ms": 800 },
+    { "id": "location", "bbox": [0.32, 0.66, 0.13, 0.23], "hand": "left", "hold_ms": 800 },
+    { "id": "password", "bbox": [0.57, 0.66, 0.11, 0.23], "hand": "right", "hold_ms": 800 },
+    { "id": "address", "bbox": [0.82, 0.65, 0.12, 0.24], "hand": "right", "hold_ms": 800 }
+  ],
+  "result": [
+    { "id": "play_again", "bbox": [0.32, 0.69, 0.38, 0.13], "hand": "either", "hold_ms": 800 },
+    { "id": "menu", "bbox": [0.41, 0.84, 0.18, 0.1], "hand": "either", "hold_ms": 800 }
+  ]
+}
