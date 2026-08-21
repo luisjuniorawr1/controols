@@ -1,0 +1,40 @@
+{
+  "id": "MG-001",
+  "title": "Olho Vivo!",
+  "type": "MINI_GAME",
+  "language": "pt-BR",
+  "platform": "TV",
+  "resolution": {
+    "width": 1280,
+    "height": 720
+  },
+  "target_gameplay_minutes": 5,
+  "natural_tolerance_minutes": 8,
+  "motion": {
+    "foundation": "MexeMundo Motion Foundation",
+    "hold_to_confirm_ms": 800,
+    "no_abrupt_movements": true,
+    "no_hand_crossing": true,
+    "left_hand_prefers_left_zone": true,
+    "right_hand_prefers_right_zone": true,
+    "center_accepts_either_hand": true
+  },
+  "characters_required": [
+    "CTR_LUNA_001",
+    "CTR_THEO_001",
+    "CTR_MAYA_001",
+    "CTR_CAIO_001",
+    "CTR_NINA_001"
+  ],
+  "scenes": [
+    { "id": "opening", "file": "00_abertura.webp", "next": "tutorial" },
+    { "id": "tutorial", "file": "01_tutorial.webp", "next": "park" },
+    { "id": "park", "file": "02_fase_1_parque.webp", "next": "house" },
+    { "id": "house", "file": "03_fase_2_frente_de_casa.webp", "next": "party" },
+    { "id": "party", "file": "04_fase_3_festa.webp", "next": "study" },
+    { "id": "study", "file": "05_fase_4_mesa_de_estudos.webp", "next": "final" },
+    { "id": "final", "file": "06_desafio_final.webp", "next": "result" },
+    { "id": "result", "file": "07_resultado.webp", "next": null }
+  ],
+  "asset_delivery": "webp 1280x720 optimized for TV runtime"
+}
