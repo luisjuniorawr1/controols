@@ -242,7 +242,6 @@ function triggerNoraCalculistaAfterBottom(
       kind: "PENDING_DISCARD",
       amount: 1,
       sourceCardId: "SET001-0046",
-      expiresAtTurn: next.turn,
       data: { choiceKey: "noraCalculistaDiscard" },
     });
   }
