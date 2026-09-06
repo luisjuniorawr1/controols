@@ -56,12 +56,6 @@ export type TargetSelector =
   | "RANDOM_ALLY_CONTROOLZ"
   | "RANDOM_ENEMY_CONTROOLZ";
 
-/**
- * Structured effects are deliberately explicit. The engine never interprets
- * Portuguese rules text as executable code. Complex Set 001 cards can keep
- * their player-facing text while their runtime behavior is attached by a
- * stable runtimeId and resolved by the audited Set 001 rules module.
- */
 export type EffectAction =
   | { type: "DEAL_DAMAGE"; amount: number; target: TargetSelector }
   | { type: "RESTORE_DEFENSE"; amount: number; target: TargetSelector }
@@ -86,20 +80,13 @@ export type EffectAction =
 
 export interface CardEffect {
   trigger: EffectTrigger;
-  /** Final player-facing wording printed on the card. */
   text: string;
-  /** Structured implementation used by the deterministic engine. */
   actions?: readonly EffectAction[];
-  /**
-   * Stable pointer to the audited card-specific runtime. Used for mechanics
-   * that are richer than the small generic EffectAction vocabulary.
-   */
   runtimeId?: string;
   limits?: readonly EffectLimit[];
 }
 
 export interface CardBaseDefinition {
-  /** Stable id. Never reuse an id for a different card. Example: SET001-0042. */
   id: string;
   setId: string;
   collectorNumber: number;
@@ -107,11 +94,11 @@ export interface CardBaseDefinition {
   cardClass: CardClass;
   rarity: CardRarity;
   cost: number;
-  /** Short optional subtype used for flavor/search, not for hidden rules. */
+  /** Present on Controolz; optional here so generic runtime helpers can inspect safely. */
+  attack?: number;
+  defense?: number;
   subtype?: string;
-  /** Complete concise rules text as shown to the player. */
   rulesText: string;
-  /** Internal design tags; not necessarily displayed in-game. */
   archetypes?: readonly string[];
   effects?: readonly CardEffect[];
   flavorText?: string;
@@ -130,10 +117,6 @@ export interface CommandCardDefinition extends CardBaseDefinition {
 
 export type CardDefinition = ControolzCardDefinition | CommandCardDefinition;
 
-/**
- * A collectible copy is separate from the card definition. This lets two
- * mechanically identical cards have different ownership/history/cosmetics.
- */
 export interface CardInstance {
   instanceId: string;
   definitionId: string;
@@ -203,7 +186,6 @@ export interface PlayerMatchState {
   signal: number;
   maxEnergy: number;
   energy: number;
-  /** Number of turns this player has actually started; fixes energy growth symmetry. */
   ownTurnsStarted: number;
   deck: readonly string[];
   hand: readonly string[];
@@ -212,11 +194,6 @@ export interface PlayerMatchState {
   turnStats: PlayerTurnStats;
 }
 
-/**
- * Generic serialized metadata used by Set 001 mechanics. The rules module owns
- * the meaning of each modifier kind, while the match state remains replayable
- * and safe to persist server-side.
- */
 export interface RuntimeModifier {
   id: string;
   kind: string;
@@ -233,9 +210,7 @@ export interface MatchRuntimeState {
   unitModifiers: Readonly<Record<string, readonly RuntimeModifier[]>>;
   playerModifiers: Readonly<Record<string, readonly RuntimeModifier[]>>;
   exileByPlayer: Readonly<Record<string, readonly string[]>>;
-  /** Turn-scoped counters are reset for a Controller when their next turn starts. */
   turnCounters: Readonly<Record<string, number>>;
-  /** Monotonic deterministic sequence for runtime ids/tokens/replay ordering. */
   sequence: number;
 }
 
@@ -256,7 +231,6 @@ export interface MatchState {
   matchId: string;
   rulesVersion: string;
   cardPoolVersion: string;
-  /** Global turn sequence, starting at 1. */
   turn: number;
   activePlayerId: string;
   phase: MatchPhase;
