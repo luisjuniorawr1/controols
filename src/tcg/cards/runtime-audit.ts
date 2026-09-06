@@ -107,6 +107,11 @@ export function auditRuntimeCoverage(
   };
 }
 
+/**
+ * Runtime-ready here means only that every rules effect has a structured
+ * action. It does not certify balance, target legality, temporary-duration
+ * support or trigger correctness; those are audited separately.
+ */
 export function isCardRuntimeReady(card: CardDefinition): boolean {
   if (!card.rulesText.trim()) return true;
   const effects = card.effects ?? [];
