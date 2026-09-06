@@ -7,7 +7,7 @@ import { defineConfig } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
-  testMatch: "tcg-engine.spec.ts",
+  testMatch: "tcg-*.spec.ts",
   timeout: 30_000,
   fullyParallel: false,
   workers: 1,
