@@ -9,7 +9,17 @@ import {
   playCommand,
   playControolz,
 } from "../src/tcg/engine/duel";
-import { createInitialMatchState, getPlayer } from "../src/tcg/engine/match";
+import {
+  createInitialMatchState,
+  drawCards,
+  getPlayer,
+} from "../src/tcg/engine/match";
+import {
+  getPlayerModifiers,
+  hasPendingRuntimeDecision,
+  incrementRuntimeCounter,
+  resolvePendingDiscard,
+} from "../src/tcg/engine/runtime-state";
 import { resolveSet001RuntimeEffectAll } from "../src/tcg/engine/set001-runtime-extra";
 import {
   resolveSet001RuntimeEffect,
@@ -86,6 +96,29 @@ function createMatch(
   });
 }
 
+function createHighEnergyMatch(
+  playerADeck: readonly string[],
+  playerBDeck: readonly string[] = fillerB,
+) {
+  const rules = {
+    ...DEFAULT_GAME_RULES,
+    startingMaxEnergy: 7,
+  };
+  return {
+    rules,
+    state: createInitialMatchState({
+      matchId: "high-energy-test",
+      playerAId: "A",
+      playerBId: "B",
+      playerADeck,
+      playerBDeck,
+      firstPlayerId: "A",
+      cardPoolVersion: "SET001-v1",
+      rules,
+    }),
+  };
+}
+
 /**
  * These ids are intentionally executed by event/stat/cost hooks rather than
  * by resolveSet001RuntimeEffectAll. Keeping them explicit makes the 200-card
@@ -104,10 +137,13 @@ const EVENT_DRIVEN_RUNTIME_IDS = new Set<string>([
   "SET001-0033:0",
   "SET001-0037:0",
   "SET001-0042:0",
+  "SET001-0043:0",
+  "SET001-0046:0",
   "SET001-0048:0",
   "SET001-0050:1",
   "SET001-0060:0",
   "SET001-0062:0",
+  "SET001-0063:0",
   "SET001-0065:0",
   "SET001-0067:0",
   "SET001-0072:0",
@@ -131,6 +167,7 @@ const EVENT_DRIVEN_RUNTIME_IDS = new Set<string>([
   "SET001-0147:0",
   "SET001-0150:0",
   "SET001-0152:0",
+  "SET001-0153:0",
   "SET001-0154:0",
   "SET001-0158:0",
   "SET001-0159:0",
@@ -140,9 +177,11 @@ const EVENT_DRIVEN_RUNTIME_IDS = new Set<string>([
   "SET001-0165:0",
   "SET001-0166:1",
   "SET001-0177:0",
+  "SET001-0182:0",
   "SET001-0189:0",
   "SET001-0192:0",
   "SET001-0194:0",
+  "SET001-0194:1",
 ]);
 
 test("Set 001 keeps exactly 200 cards and uses SINAL in runtime wording", () => {
@@ -271,6 +310,123 @@ test("Troca Justa applies permanent +1/+1 through a structured Comando", () => {
   expect(buffed.maxDefense).toBe(2);
   expect(buffed.currentDefense).toBe(2);
   expect(getPlayer(result.state, "A").discard).toContain("SET001-0195");
+  expect(result.pendingEffects).toHaveLength(0);
+});
+
+test("Beto Planilha discounts only the first card drawn outside the turn draw", () => {
+  const deckA = [
+    "SET001-0043",
+    "SET001-0001",
+    "SET001-0005",
+    "SET001-0010",
+    "SET001-0012",
+    "SET001-0044",
+    "SET001-0053",
+    ...fillerA.slice(0, 17),
+  ];
+  const created = createHighEnergyMatch(deckA);
+  let state = playControolz({
+    state: created.state,
+    playerId: "A",
+    definitionId: "SET001-0043",
+    lane: 0,
+    catalogue: COLLECTION_001,
+    rules: created.rules,
+  }).state;
+
+  state = drawCards(state, "A", 1, "TURN");
+  expect(
+    getPlayerModifiers(state, "A").filter((modifier) => modifier.kind === "CARD_COST"),
+  ).toHaveLength(0);
+
+  state = drawCards(state, "A", 1, "EFFECT");
+  const discounts = getPlayerModifiers(state, "A").filter(
+    (modifier) => modifier.kind === "CARD_COST",
+  );
+  expect(discounts).toHaveLength(1);
+  expect(discounts[0]?.amount).toBe(-1);
+  expect(discounts[0]?.data?.definitionId).toBe("SET001-0053");
+
+  state = drawCards(state, "A", 1, "EFFECT");
+  expect(
+    getPlayerModifiers(state, "A").filter((modifier) => modifier.kind === "CARD_COST"),
+  ).toHaveLength(1);
+});
+
+test("Nora-7 Calculista creates one mandatory draw-discard decision per turn", () => {
+  const deckA = [
+    "SET001-0046",
+    "SET001-0001",
+    "SET001-0005",
+    "SET001-0010",
+    "SET001-0012",
+    "SET001-0051",
+    "SET001-0053",
+    ...fillerA.slice(0, 17),
+  ];
+  const created = createHighEnergyMatch(deckA);
+  let state = playControolz({
+    state: created.state,
+    playerId: "A",
+    definitionId: "SET001-0046",
+    lane: 0,
+    catalogue: COLLECTION_001,
+    rules: created.rules,
+  }).state;
+
+  const handBefore = getPlayer(state, "A").hand.length;
+  state = incrementRuntimeCounter(state, "A", "cardsPutBottom", 1);
+  expect(getPlayer(state, "A").hand.length).toBe(handBefore + 1);
+  expect(hasPendingRuntimeDecision(state, "A")).toBe(true);
+  expect(() => endTurn(state, "A", created.rules, COLLECTION_001)).toThrow(
+    /decisão pendente/i,
+  );
+
+  const handAfterFirstTrigger = getPlayer(state, "A").hand.length;
+  state = incrementRuntimeCounter(state, "A", "cardsPutBottom", 1);
+  expect(getPlayer(state, "A").hand.length).toBe(handAfterFirstTrigger);
+
+  state = resolvePendingDiscard(state, "A", "SET001-0001");
+  expect(hasPendingRuntimeDecision(state, "A")).toBe(false);
+  expect(getPlayer(state, "A").discard).toContain("SET001-0001");
+});
+
+test("Dossiê Vivo resolves DESCONEXÃO as draw two then chosen discard", () => {
+  const deckA = [
+    "SET001-0047",
+    "SET001-0001",
+    "SET001-0005",
+    "SET001-0010",
+    "SET001-0012",
+    "SET001-0051",
+    "SET001-0053",
+    ...fillerA.slice(0, 17),
+  ];
+  const created = createHighEnergyMatch(deckA);
+  let state = playControolz({
+    state: created.state,
+    playerId: "A",
+    definitionId: "SET001-0047",
+    lane: 0,
+    catalogue: COLLECTION_001,
+    rules: created.rules,
+  }).state;
+  const unit = getPlayer(state, "A").board[0]!;
+
+  const result = damageUnit(
+    state,
+    unit.matchUnitId,
+    7,
+    COLLECTION_001,
+    undefined,
+    { cards: { discard: ["SET001-0051"] } },
+  );
+  state = result.state;
+
+  expect(getPlayer(state, "A").board[0]).toBeNull();
+  expect(getPlayer(state, "A").discard).toContain("SET001-0047");
+  expect(getPlayer(state, "A").discard).toContain("SET001-0051");
+  expect(getPlayer(state, "A").hand).toContain("SET001-0053");
   expect(result.pendingEffects).toHaveLength(0);
 });
 
