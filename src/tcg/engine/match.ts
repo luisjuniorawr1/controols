@@ -315,6 +315,12 @@ export function preparePlayerTurn(
   rules: GameRulesConfig = DEFAULT_GAME_RULES,
 ): MatchState {
   if (state.outcome) return state;
+  if (
+    state.activePlayerId !== playerId &&
+    hasPendingRuntimeDecision(state, state.activePlayerId)
+  ) {
+    throw new Error("Resolva a decisão pendente antes de encerrar o turno.");
+  }
 
   let nextState = cleanupExpiredRuntime(resetGlobalTurnStats(state));
   nextState = resetRuntimeCountersForPlayer(nextState, playerId);
