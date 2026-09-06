@@ -10,6 +10,11 @@ import {
   playControolz,
 } from "../src/tcg/engine/duel";
 import { createInitialMatchState, getPlayer } from "../src/tcg/engine/match";
+import { resolveSet001RuntimeEffectAll } from "../src/tcg/engine/set001-runtime-extra";
+import {
+  resolveSet001RuntimeEffect,
+  type Set001RuntimeCallbacks,
+} from "../src/tcg/engine/set001-runtime";
 import { DEFAULT_GAME_RULES } from "../src/tcg/rules";
 
 const fillerA: readonly string[] = [
@@ -80,6 +85,65 @@ function createMatch(
     cardPoolVersion: "SET001-v1",
   });
 }
+
+/**
+ * These ids are intentionally executed by event/stat/cost hooks rather than
+ * by resolveSet001RuntimeEffectAll. Keeping them explicit makes the 200-card
+ * coverage test fail whenever a new delegated effect has no runtime path.
+ */
+const EVENT_DRIVEN_RUNTIME_IDS = new Set<string>([
+  "SET001-0002:0",
+  "SET001-0004:0",
+  "SET001-0007:0",
+  "SET001-0014:0",
+  "SET001-0017:0",
+  "SET001-0018:0",
+  "SET001-0019:0",
+  "SET001-0021:1",
+  "SET001-0032:0",
+  "SET001-0033:0",
+  "SET001-0037:0",
+  "SET001-0042:0",
+  "SET001-0048:0",
+  "SET001-0050:1",
+  "SET001-0060:0",
+  "SET001-0062:0",
+  "SET001-0065:0",
+  "SET001-0067:0",
+  "SET001-0072:0",
+  "SET001-0074:0",
+  "SET001-0075:0",
+  "SET001-0076:0",
+  "SET001-0078:0",
+  "SET001-0079:1",
+  "SET001-0089:0",
+  "SET001-0095:0",
+  "SET001-0096:0",
+  "SET001-0101:0",
+  "SET001-0103:0",
+  "SET001-0106:0",
+  "SET001-0108:1",
+  "SET001-0124:0",
+  "SET001-0130:0",
+  "SET001-0132:0",
+  "SET001-0135:0",
+  "SET001-0137:1",
+  "SET001-0147:0",
+  "SET001-0150:0",
+  "SET001-0152:0",
+  "SET001-0154:0",
+  "SET001-0158:0",
+  "SET001-0159:0",
+  "SET001-0161:0",
+  "SET001-0163:0",
+  "SET001-0164:0",
+  "SET001-0165:0",
+  "SET001-0166:1",
+  "SET001-0177:0",
+  "SET001-0189:0",
+  "SET001-0192:0",
+  "SET001-0194:0",
+]);
 
 test("Set 001 keeps exactly 200 cards and uses SINAL in runtime wording", () => {
   expect(COLLECTION_001).toHaveLength(200);
@@ -210,10 +274,59 @@ test("Troca Justa applies permanent +1/+1 through a structured Comando", () => {
   expect(result.pendingEffects).toHaveLength(0);
 });
 
-test("runtime audit exposes remaining text-only mechanics instead of guessing", () => {
+test("all printed effects are structured or delegated to a stable runtime id", () => {
   const report = auditRuntimeCoverage(COLLECTION_001);
   expect(report.totalCards).toBe(200);
-  expect(report.fullyExecutableCards).toBeGreaterThan(0);
-  expect(report.executableEffects).toBeGreaterThan(0);
-  expect(report.issues.some((issue) => issue.reason === "TEXT_ONLY")).toBeTruthy();
+  expect(report.executableEffects).toBe(report.totalEffects);
+  expect(report.textOnlyCards).toBe(0);
+  expect(report.issues.filter((issue) => issue.reason === "TEXT_ONLY")).toHaveLength(0);
+});
+
+test("every delegated Set 001 effect has a resolver or explicit event hook", () => {
+  const initial = createMatch();
+  const callbacks: Set001RuntimeCallbacks = {
+    damageUnit: (state) => ({ state, pendingEffects: [] }),
+    disconnectUnit: (state) => ({ state, pendingEffects: [] }),
+    resolveConnection: (state) => ({ state, pendingEffects: [] }),
+  };
+  const unsupported: string[] = [];
+
+  for (const card of COLLECTION_001) {
+    for (const effect of card.effects ?? []) {
+      if (!effect.runtimeId || effect.actions?.length) continue;
+      if (EVENT_DRIVEN_RUNTIME_IDS.has(effect.runtimeId)) continue;
+
+      const context = { sourcePlayerId: "A" };
+      const base = resolveSet001RuntimeEffect(
+        initial,
+        effect.runtimeId,
+        effect.text,
+        effect.trigger,
+        COLLECTION_001,
+        context,
+        callbacks,
+      );
+      const result = resolveSet001RuntimeEffectAll(
+        base,
+        initial,
+        effect.runtimeId,
+        effect.text,
+        effect.trigger,
+        COLLECTION_001,
+        context,
+        callbacks,
+      );
+      if (
+        result.pendingEffects.some(
+          (pending) =>
+            pending.reason === "UNSUPPORTED_ACTION" &&
+            pending.decisionKey === `runtime:${effect.runtimeId}`,
+        )
+      ) {
+        unsupported.push(`${effect.runtimeId} ${card.name} — ${effect.text}`);
+      }
+    }
+  }
+
+  expect(unsupported, unsupported.join("\n")).toEqual([]);
 });
