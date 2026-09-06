@@ -3,6 +3,7 @@ import type {
   MatchOutcome,
   MatchState,
   PlayerMatchState,
+  PlayerTurnStats,
 } from "../domain";
 import { DEFAULT_GAME_RULES, type GameRulesConfig } from "../rules";
 
@@ -18,6 +19,17 @@ export interface CreateMatchInput {
   rules?: GameRulesConfig;
 }
 
+export function emptyTurnStats(): PlayerTurnStats {
+  return {
+    damageTaken: 0,
+    unitsAttacked: 0,
+    unitsDestroyed: 0,
+    cardsPlayed: 0,
+    commandsPlayed: 0,
+    disconnectionsTriggered: 0,
+  };
+}
+
 function emptyBoard(): BoardState {
   return [null, null, null];
 }
@@ -26,6 +38,7 @@ function createPlayerState(
   playerId: string,
   orderedDeck: readonly string[],
   rules: GameRulesConfig,
+  startsMatch: boolean,
 ): PlayerMatchState {
   const openingHand = orderedDeck.slice(0, rules.startingHandSize);
   const remainingDeck = orderedDeck.slice(rules.startingHandSize);
@@ -35,10 +48,12 @@ function createPlayerState(
     signal: rules.startingSignal,
     maxEnergy: rules.startingMaxEnergy,
     energy: rules.startingMaxEnergy,
+    ownTurnsStarted: startsMatch ? 1 : 0,
     deck: remainingDeck,
     hand: openingHand,
     discard: [],
     board: emptyBoard(),
+    turnStats: emptyTurnStats(),
   };
 }
 
@@ -64,8 +79,18 @@ export function createInitialMatchState(input: CreateMatchInput): MatchState {
     activePlayerId: input.firstPlayerId,
     phase: "CONTROL",
     players: [
-      createPlayerState(input.playerAId, input.playerADeck, rules),
-      createPlayerState(input.playerBId, input.playerBDeck, rules),
+      createPlayerState(
+        input.playerAId,
+        input.playerADeck,
+        rules,
+        input.firstPlayerId === input.playerAId,
+      ),
+      createPlayerState(
+        input.playerBId,
+        input.playerBDeck,
+        rules,
+        input.firstPlayerId === input.playerBId,
+      ),
     ],
     outcome: null,
   };
@@ -89,7 +114,7 @@ export function getOpponent(state: MatchState, playerId: string): PlayerMatchSta
   return state.players[getOpponentIndex(state, playerId)];
 }
 
-function replacePlayer(
+export function replacePlayer(
   state: MatchState,
   playerIndex: 0 | 1,
   nextPlayer: PlayerMatchState,
@@ -102,6 +127,15 @@ function replacePlayer(
   return { ...state, players };
 }
 
+export function updatePlayer(
+  state: MatchState,
+  playerId: string,
+  updater: (player: PlayerMatchState) => PlayerMatchState,
+): MatchState {
+  const index = getPlayerIndex(state, playerId);
+  return replacePlayer(state, index, updater(state.players[index]));
+}
+
 export function changeSignal(
   state: MatchState,
   playerId: string,
@@ -112,10 +146,18 @@ export function changeSignal(
 
   const playerIndex = getPlayerIndex(state, playerId);
   const player = state.players[playerIndex];
-  const nextSignal = Math.max(0, player.signal + Math.trunc(delta));
+  const normalizedDelta = Math.trunc(delta);
+  const nextSignal = Math.max(0, player.signal + normalizedDelta);
   const nextState = replacePlayer(state, playerIndex, {
     ...player,
     signal: nextSignal,
+    turnStats:
+      normalizedDelta < 0
+        ? {
+            ...player.turnStats,
+            damageTaken: player.turnStats.damageTaken + Math.abs(normalizedDelta),
+          }
+        : player.turnStats,
   });
 
   return resolveSignalOutcome(nextState);
@@ -202,6 +244,16 @@ export function spendEnergy(
   });
 }
 
+function resetGlobalTurnStats(state: MatchState): MatchState {
+  return {
+    ...state,
+    players: state.players.map((player) => ({
+      ...player,
+      turnStats: emptyTurnStats(),
+    })) as [PlayerMatchState, PlayerMatchState],
+  };
+}
+
 export function preparePlayerTurn(
   state: MatchState,
   playerId: string,
@@ -209,11 +261,12 @@ export function preparePlayerTurn(
 ): MatchState {
   if (state.outcome) return state;
 
-  const playerIndex = getPlayerIndex(state, playerId);
-  const player = state.players[playerIndex];
-  const isFirstTurnForMatch = state.turn === 1;
-  const nextMaxEnergy = isFirstTurnForMatch
-    ? player.maxEnergy
+  let nextState = resetGlobalTurnStats(state);
+  const playerIndex = getPlayerIndex(nextState, playerId);
+  const player = nextState.players[playerIndex];
+  const isFirstOwnTurn = player.ownTurnsStarted === 0;
+  const nextMaxEnergy = isFirstOwnTurn
+    ? rules.startingMaxEnergy
     : Math.min(
         rules.maxEnergy,
         player.maxEnergy + rules.energyGrowthPerOwnTurn,
@@ -223,10 +276,11 @@ export function preparePlayerTurn(
     unit ? { ...unit, attacksUsedThisTurn: 0 } : null,
   ) as BoardState;
 
-  let nextState = replacePlayer(state, playerIndex, {
+  nextState = replacePlayer(nextState, playerIndex, {
     ...player,
     maxEnergy: nextMaxEnergy,
     energy: nextMaxEnergy,
+    ownTurnsStarted: player.ownTurnsStarted + 1,
     board: refreshedBoard,
   });
 
