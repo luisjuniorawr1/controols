@@ -1,4 +1,55 @@
-# CONTROOLS
+# CONTROOLS / CONTROOLZ
+
+> **Branch `tcg-foundation`:** esta branch contém a fundação técnica da nova fase **CONTROOLZ**, um TCG digital presencial 1x1. A `main` ainda representa o produto infantil anterior e não deve ser substituída até o novo loop de duelo estar validado.
+
+## Nova fase — CONTROOLZ TCG
+
+A arquitetura nova está isolada em `src/tcg/` e `docs/tcg/`.
+
+### Estado atual da fundação
+
+- Coleção 001 importada com 200 cartas;
+- classes RAGE, LOGIC, WILD, GLITCH, VOID, PRIME e NEUTRAL;
+- tipos CONTROOLZ e COMMAND (COMANDO na interface);
+- 20 de SINAL por Controller;
+- campo de 3 linhas;
+- energia crescente por **turno próprio** de cada Controller, até 7;
+- CONEXÃO e DESCONEXÃO modeladas como triggers;
+- primeiro motor determinístico para conectar Controolz, executar Comandos, atacar, causar dano, destruir unidades e reduzir SINAL;
+- combate simultâneo remove todos os Controolz já letalmente atingidos antes de resolver DESCONEXÕES daquele evento;
+- primeira leva de efeitos estruturados do Set 001;
+- auditoria de cobertura para impedir que texto livre seja executado por adivinhação;
+- testes dedicados em `tests/tcg-engine.spec.ts`;
+- CI isolado de PR em `.github/workflows/tcg-pr.yml`.
+
+### Arquivos principais
+
+- `docs/tcg/GAME_RULES.md` — regras-base do duelo;
+- `docs/tcg/ARCHITECTURE.md` — arquitetura de produto, economia e backend;
+- `src/tcg/domain.ts` — modelo de domínio;
+- `src/tcg/rules.ts` — configuração central das regras;
+- `src/tcg/cards/collection001.ts` — catálogo runtime da Coleção 001;
+- `src/tcg/cards/set001/` — importação por classe e normalização runtime;
+- `src/tcg/cards/runtime-audit.ts` — auditoria do que já pode ser executado pelo engine;
+- `src/tcg/engine/match.ts` — estado/turnos/SINAL;
+- `src/tcg/engine/duel.ts` — ações do duelo;
+- `src/tcg/backend-contracts.ts` — pacotes, moeda, presença, antifraude e trocas.
+
+### Desenvolvimento da nova fase
+
+```bash
+npm install
+npm run lint
+npm run qa:tcg
+```
+
+O motor ainda está em construção. Nem toda habilidade das 200 cartas possui ação estruturada; quando uma carta ainda depende apenas de texto, o runtime a reporta como pendente em vez de interpretar seu texto automaticamente.
+
+---
+
+## Produto anterior preservado nesta branch
+
+O restante deste repositório continua contendo o protótipo visual infantil original para que nada seja perdido durante a transição.
 
 CONTROOLS is a visual adventure-game universe for children ages 7–10. The product is designed to turn different subjects into playful stories, challenges and discoveries with a recurring cast of characters.
 
