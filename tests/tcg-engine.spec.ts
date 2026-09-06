@@ -12,7 +12,7 @@ import {
 import { createInitialMatchState, getPlayer } from "../src/tcg/engine/match";
 import { DEFAULT_GAME_RULES } from "../src/tcg/rules";
 
-const fillerA = [
+const fillerA: readonly string[] = [
   "SET001-0001",
   "SET001-0005",
   "SET001-0010",
@@ -37,9 +37,9 @@ const fillerA = [
   "SET001-0121",
   "SET001-0126",
   "SET001-0131",
-] as const;
+];
 
-const fillerB = [
+const fillerB: readonly string[] = [
   "SET001-0030",
   "SET001-0034",
   "SET001-0039",
@@ -64,9 +64,12 @@ const fillerB = [
   "SET001-0155",
   "SET001-0160",
   "SET001-0175",
-] as const;
+];
 
-function createMatch(playerADeck = fillerA, playerBDeck = fillerB) {
+function createMatch(
+  playerADeck: readonly string[] = fillerA,
+  playerBDeck: readonly string[] = fillerB,
+) {
   return createInitialMatchState({
     matchId: "test-match",
     playerAId: "A",
