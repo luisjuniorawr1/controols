@@ -7,9 +7,13 @@ import type {
 } from "../domain";
 import { DEFAULT_GAME_RULES, type GameRulesConfig } from "../rules";
 import {
+  addPlayerModifier,
   cleanupExpiredRuntime,
   emptyMatchRuntimeState,
+  getPlayerModifiers,
+  getRuntimeCounter,
   resetRuntimeCountersForPlayer,
+  setRuntimeCounter,
 } from "./runtime-state";
 
 export interface CreateMatchInput {
@@ -205,10 +209,19 @@ export function resolveSignalOutcome(state: MatchState): MatchState {
   return { ...state, phase: "FINISHED", outcome };
 }
 
+export type DrawReason = "TURN" | "EFFECT";
+
+/**
+ * Draws cards from the ordered server-side deck. Card effects use EFFECT by
+ * default; the universal turn draw explicitly passes TURN. This distinction is
+ * required by cards such as Beto Planilha without teaching individual card
+ * resolvers how the base draw phase works.
+ */
 export function drawCards(
   state: MatchState,
   playerId: string,
   amount = 1,
+  reason: DrawReason = "EFFECT",
 ): MatchState {
   if (state.outcome) return state;
   if (!Number.isInteger(amount) || amount < 0) {
@@ -216,16 +229,48 @@ export function drawCards(
   }
   if (amount === 0) return state;
 
+  if (
+    reason === "EFFECT" &&
+    getPlayerModifiers(state, playerId).some(
+      (modifier) =>
+        modifier.kind === "NO_MORE_DRAW" &&
+        (modifier.expiresAtTurn === undefined || modifier.expiresAtTurn >= state.turn),
+    )
+  ) {
+    return state;
+  }
+
   const playerIndex = getPlayerIndex(state, playerId);
   const player = state.players[playerIndex];
   const actualAmount = Math.min(amount, player.deck.length);
   const drawn = player.deck.slice(0, actualAmount);
 
-  return replacePlayer(state, playerIndex, {
+  let next = replacePlayer(state, playerIndex, {
     ...player,
     deck: player.deck.slice(actualAmount),
     hand: [...player.hand, ...drawn],
   });
+
+  const hasBeto = player.board.some(
+    (unit) => unit?.definitionId === "SET001-0043",
+  );
+  if (
+    reason === "EFFECT" &&
+    drawn.length > 0 &&
+    hasBeto &&
+    getRuntimeCounter(next, playerId, "betoPlanilhaDiscount") === 0
+  ) {
+    next = addPlayerModifier(next, playerId, {
+      kind: "CARD_COST",
+      amount: -1,
+      expiresAtTurn: next.turn,
+      sourceCardId: "SET001-0043",
+      data: { definitionId: drawn[0] },
+    });
+    next = setRuntimeCounter(next, playerId, "betoPlanilhaDiscount", 1);
+  }
+
+  return next;
 }
 
 export function spendEnergy(
@@ -291,7 +336,7 @@ export function preparePlayerTurn(
     board: refreshedBoard,
   });
 
-  nextState = drawCards(nextState, playerId, rules.drawPerTurn);
+  nextState = drawCards(nextState, playerId, rules.drawPerTurn, "TURN");
 
   return {
     ...nextState,
