@@ -88,6 +88,10 @@ A carta pode não possuir DESCONEXÃO.
 
 Efeitos de DESCONEXÃO devem ser protegidos contra loops infinitos de destruir/retornar/reinvocar.
 
+Quando dois ou mais Controolz são destruídos pelo mesmo evento simultâneo, todos os que já receberam dano letal saem do campo **antes** de qualquer DESCONEXÃO daquele evento ser resolvida. Assim uma DESCONEXÃO não pode salvar retroativamente uma unidade que já foi destruída pelo mesmo combate.
+
+A ordem definitiva para resolver múltiplas DESCONEXÕES simultâneas será formalizada antes do beta competitivo. O protótipo usa ordem determinística: efeitos do Controller ativo primeiro e depois os do adversário.
+
 ## 7. COMANDOS
 
 **COMANDO** é o tipo de carta usado no lugar de “feitiço”.
@@ -98,13 +102,15 @@ Comandos devem respeitar a identidade mecânica de sua classe. Não devemos cria
 
 ## 8. Energia
 
-Configuração-base inicial:
+Configuração-base inicial de energia por **turno próprio de cada Controller**:
 
-- turno 1: máximo 1;
-- turno 2: máximo 2;
-- turno 3: máximo 3;
+- 1º turno próprio: máximo 1;
+- 2º turno próprio: máximo 2;
+- 3º turno próprio: máximo 3;
 - ...;
 - máximo padrão: 7.
+
+Isso significa que o segundo jogador também começa seu primeiro turno próprio com 1 de energia; ele não recebe 2 apenas porque aquele é o segundo turno global da partida.
 
 No início do próprio turno, o jogador recupera sua energia disponível até o máximo atual.
 
@@ -135,6 +141,8 @@ Após o combate:
 - defensor sofre 5;
 - o defensor chega a 0 e é destruído;
 - o atacante permanece com 1 DEF atual.
+
+Se os dois chegarem a 0 DEF ou menos no mesmo combate, ambos são marcados como destruídos e removidos antes das DESCONEXÕES desse combate serem processadas.
 
 ### Dano excedente
 
