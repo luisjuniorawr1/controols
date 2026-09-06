@@ -28,7 +28,6 @@ import {
   getPlayerModifiers,
   getRuntimeCounter,
   getUnitModifiers,
-  incrementRuntimeCounter,
   removePlayerModifiers,
   setRuntimeCounter,
 } from "./runtime-state";
@@ -43,7 +42,9 @@ import {
   resolveSet001RuntimeEffect,
   type RuntimeChoiceBindings,
   type RuntimeTargetBindings,
+  type Set001RuntimeCallbacks,
   type Set001RuntimePending,
+  type Set001RuntimeResult,
 } from "./set001-runtime";
 import { resolveSet001RuntimeEffectAll } from "./set001-runtime-extra";
 import {
@@ -52,7 +53,6 @@ import {
   afterSet001CardPlayed,
   afterSet001DefenseRecovered,
   afterSet001Disconnection,
-  afterSet001SignalDamage,
   afterSet001StatsSwapped,
   afterSet001TurnStart,
   afterSet001UnitConnected,
@@ -350,8 +350,7 @@ function recordUnitDamage(
 
 function afterAnyUnitStatsAltered(state: MatchState, unitId: string): MatchState {
   const location = findUnit(state, unitId);
-  if (!location) return state;
-  if (location.unit.definitionId !== "SET001-0182") return state;
+  if (!location || location.unit.definitionId !== "SET001-0182") return state;
   const key = `mascoteStat:${unitId}`;
   if (getRuntimeCounter(state, location.unit.ownerPlayerId, key) > 0) return state;
   let next = addUnitModifier(state, unitId, {
@@ -394,8 +393,9 @@ function restoreUnitDefense(
   catalogue: readonly CardDefinition[],
 ): MatchState {
   const fresh = findUnit(state, target.unit.matchUnitId);
-  if (!fresh) return state;
-  if (hasUnitRuntimeFlag(state, fresh.unit.matchUnitId, "CANNOT_RECEIVE_DEF")) return state;
+  if (!fresh || hasUnitRuntimeFlag(state, fresh.unit.matchUnitId, "CANNOT_RECEIVE_DEF")) {
+    return state;
+  }
   const before = fresh.unit.currentDefense;
   const after = Math.min(
     fresh.unit.maxDefense,
@@ -431,7 +431,7 @@ function returnUnitToHand(
     fresh.unit.definitionId,
     choices,
   );
-  return { state: event.state, pendingEffects: event.pendingEffects };
+  return { state: event.state, pendingEffects: runtimePendingToEngine(event.pendingEffects) };
 }
 
 function destroyUnitWithoutTrigger(state: MatchState, target: UnitLocation): MatchState {
@@ -448,6 +448,30 @@ function runtimePendingToEngine(
   pending: readonly Set001RuntimePending[],
 ): PendingEffect[] {
   return pending.map((item) => ({ ...item }));
+}
+
+function enginePendingToRuntime(
+  pending: readonly PendingEffect[],
+): Set001RuntimePending[] {
+  return pending.map((item) => ({
+    cardId: item.cardId,
+    sourcePlayerId: item.sourcePlayerId,
+    sourceUnitId: item.sourceUnitId,
+    trigger: item.trigger,
+    text: item.text,
+    reason:
+      item.reason === "TARGET_REQUIRED" ||
+      item.reason === "DECISION_REQUIRED" ||
+      item.reason === "UNSUPPORTED_ACTION"
+        ? item.reason
+        : "UNSUPPORTED_ACTION",
+    requiredTarget: item.requiredTarget,
+    decisionKey: item.decisionKey,
+  }));
+}
+
+function toRuntimeResult(result: EngineResult): Set001RuntimeResult {
+  return { state: result.state, pendingEffects: enginePendingToRuntime(result.pendingEffects) };
 }
 
 function snapshotBoard(
@@ -541,49 +565,53 @@ function detectRuntimeSideEffects(
 function runtimeCallbacks(
   catalogue: readonly CardDefinition[],
   context: EffectContext,
-) {
+): Set001RuntimeCallbacks {
   return {
     damageUnit: (
-      state: MatchState,
-      matchUnitId: string,
-      amount: number,
-      targets?: RuntimeTargetBindings,
-      choices?: RuntimeChoiceBindings,
+      state,
+      matchUnitId,
+      amount,
+      targets,
+      choices,
     ) => {
       const sourceDefinition = context.sourceUnitId
         ? findUnit(state, context.sourceUnitId)?.unit.definitionId
         : undefined;
-      return damageUnit(
-        state,
-        matchUnitId,
-        amount,
-        catalogue,
-        targets,
-        choices,
-        context.sourcePlayerId,
-        sourceDefinition,
+      return toRuntimeResult(
+        damageUnit(
+          state,
+          matchUnitId,
+          amount,
+          catalogue,
+          targets,
+          choices,
+          context.sourcePlayerId,
+          sourceDefinition,
+        ),
       );
     },
     disconnectUnit: (
-      state: MatchState,
-      matchUnitId: string,
-      targets?: RuntimeTargetBindings,
-      choices?: RuntimeChoiceBindings,
-    ) => disconnectUnit(state, matchUnitId, catalogue, targets, choices),
+      state,
+      matchUnitId,
+      targets,
+      choices,
+    ) => toRuntimeResult(disconnectUnit(state, matchUnitId, catalogue, targets, choices)),
     resolveConnection: (
-      state: MatchState,
-      definitionId: string,
-      sourcePlayerId: string,
-      sourceUnitId: string,
-      targets?: RuntimeTargetBindings,
-      choices?: RuntimeChoiceBindings,
+      state,
+      definitionId,
+      sourcePlayerId,
+      sourceUnitId,
+      targets,
+      choices,
     ) =>
-      resolveCardTrigger(
-        state,
-        getCard(catalogue, definitionId),
-        "CONNECTION",
-        catalogue,
-        { sourcePlayerId, sourceUnitId, targets, choices },
+      toRuntimeResult(
+        resolveCardTrigger(
+          state,
+          getCard(catalogue, definitionId),
+          "CONNECTION",
+          catalogue,
+          { sourcePlayerId, sourceUnitId, targets, choices },
+        ),
       ),
   };
 }
@@ -601,10 +629,9 @@ function resolveRuntimeFollowups(
       item.decisionKey?.startsWith("executeCopiedCommand:")
     ) {
       const definitionId = item.decisionKey.slice("executeCopiedCommand:".length);
-      const card = getCard(catalogue, definitionId);
       const copied = resolveCardTrigger(
         next,
-        card,
+        getCard(catalogue, definitionId),
         "COMMAND_RESOLVE",
         catalogue,
         context,
@@ -652,7 +679,6 @@ export function resolveCardTrigger(
         });
         continue;
       }
-
       for (const action of effect.actions) {
         const applied = applyEffectAction(next, action, catalogue, context, card.id);
         next = applied.state;
@@ -745,7 +771,6 @@ function damageSignal(
   if (prepared.amount <= 0) return prepared.state;
   let next = changeSignal(prepared.state, targetPlayerId, -prepared.amount);
   next = recordSet001SignalDamage(next, targetPlayerId, prepared.amount);
-  next = afterSet001SignalDamage(next, targetPlayerId, prepared.amount);
   return next;
 }
 
@@ -1047,8 +1072,7 @@ function batchDisconnectLethalUnits(
   targets?: EffectTargetBindings,
   choices?: RuntimeChoiceBindings,
 ): EngineResult {
-  const unique = [...new Set(unitIds)];
-  const records = unique
+  const records = [...new Set(unitIds)]
     .map((id) => findUnit(state, id))
     .filter((entry): entry is UnitLocation => Boolean(entry));
   let next = state;
@@ -1429,10 +1453,9 @@ export function attackLane(input: AttackLaneInput): EngineResult {
 
   const pending: PendingEffect[] = [];
   if (!hasUnitRuntimeFlag(next, attacker.matchUnitId, "NO_ON_ATTACK")) {
-    const attackerCard = getCard(input.catalogue, attacker.definitionId);
     const attackTrigger = resolveCardTrigger(
       next,
-      attackerCard,
+      getCard(input.catalogue, attacker.definitionId),
       "ON_ATTACK",
       input.catalogue,
       {
