@@ -204,18 +204,107 @@ export function setRuntimeCounter(
   };
 }
 
+function triggerNoraCalculistaAfterBottom(
+  state: MatchState,
+  playerId: string,
+): MatchState {
+  const player = state.players.find((candidate) => candidate.playerId === playerId);
+  if (!player) return state;
+  if (!player.board.some((unit) => unit?.definitionId === "SET001-0046")) return state;
+  if (getRuntimeCounter(state, playerId, "noraCalculistaTriggered") > 0) return state;
+
+  let next = setRuntimeCounter(state, playerId, "noraCalculistaTriggered", 1);
+  const refreshed = next.players.find((candidate) => candidate.playerId === playerId)!;
+  const drawBlocked = getPlayerModifiers(next, playerId).some(
+    (modifier) =>
+      modifier.kind === "NO_MORE_DRAW" &&
+      (modifier.expiresAtTurn === undefined || modifier.expiresAtTurn >= next.turn),
+  );
+
+  if (!drawBlocked && refreshed.deck.length > 0) {
+    const drawn = refreshed.deck[0];
+    next = {
+      ...next,
+      players: next.players.map((candidate) =>
+        candidate.playerId === playerId
+          ? {
+              ...candidate,
+              deck: candidate.deck.slice(1),
+              hand: [...candidate.hand, drawn],
+            }
+          : candidate,
+      ) as MatchState["players"],
+    };
+  }
+
+  if (next.players.find((candidate) => candidate.playerId === playerId)!.hand.length > 0) {
+    next = addPlayerModifier(next, playerId, {
+      kind: "PENDING_DISCARD",
+      amount: 1,
+      sourceCardId: "SET001-0046",
+      expiresAtTurn: next.turn,
+      data: { choiceKey: "noraCalculistaDiscard" },
+    });
+  }
+  return next;
+}
+
+/**
+ * Resolves a deferred own-hand discard created by effects that must draw before
+ * the player can choose what to discard. This is intentionally server-side so
+ * the future mobile UI only submits a card id; it never mutates the hand.
+ */
+export function resolvePendingDiscard(
+  state: MatchState,
+  playerId: string,
+  definitionId: string,
+): MatchState {
+  const pending = getPlayerModifiers(state, playerId).find(
+    (modifier) =>
+      modifier.kind === "PENDING_DISCARD" &&
+      (modifier.amount ?? 0) > 0 &&
+      (modifier.expiresAtTurn === undefined || modifier.expiresAtTurn >= state.turn),
+  );
+  if (!pending) throw new Error("Não existe descarte pendente para este Controller.");
+
+  const playerIndex = state.players.findIndex((candidate) => candidate.playerId === playerId);
+  if (playerIndex < 0) throw new Error("Controller não pertence à partida.");
+  const player = state.players[playerIndex];
+  const cardIndex = player.hand.indexOf(definitionId);
+  if (cardIndex < 0) throw new Error("A carta escolhida para descarte não está na mão.");
+
+  const players = [...state.players] as [typeof state.players[0], typeof state.players[1]];
+  players[playerIndex] = {
+    ...player,
+    hand: [...player.hand.slice(0, cardIndex), ...player.hand.slice(cardIndex + 1)],
+    discard: [...player.discard, definitionId],
+  };
+  let next: MatchState = { ...state, players };
+  next = removePlayerModifiers(next, playerId, (modifier) => modifier.id === pending.id);
+  return next;
+}
+
+export function hasPendingRuntimeDecision(state: MatchState, playerId: string): boolean {
+  return getPlayerModifiers(state, playerId).some(
+    (modifier) =>
+      modifier.kind === "PENDING_DISCARD" &&
+      (modifier.amount ?? 0) > 0 &&
+      (modifier.expiresAtTurn === undefined || modifier.expiresAtTurn >= state.turn),
+  );
+}
+
 export function incrementRuntimeCounter(
   state: MatchState,
   playerId: string,
   key: string,
   amount = 1,
 ): MatchState {
-  return setRuntimeCounter(
-    state,
-    playerId,
-    key,
-    getRuntimeCounter(state, playerId, key) + amount,
-  );
+  const previous = getRuntimeCounter(state, playerId, key);
+  let next = setRuntimeCounter(state, playerId, key, previous + amount);
+  if (key === "cardsPutBottom" && amount > 0) {
+    next = triggerNoraCalculistaAfterBottom(next, playerId);
+  }
+  return next;
 }
 
 export function resetRuntimeCountersForPlayer(state: MatchState, playerId: string): MatchState {
