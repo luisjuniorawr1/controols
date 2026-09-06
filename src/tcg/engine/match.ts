@@ -6,6 +6,11 @@ import type {
   PlayerTurnStats,
 } from "../domain";
 import { DEFAULT_GAME_RULES, type GameRulesConfig } from "../rules";
+import {
+  cleanupExpiredRuntime,
+  emptyMatchRuntimeState,
+  resetRuntimeCountersForPlayer,
+} from "./runtime-state";
 
 export interface CreateMatchInput {
   matchId: string;
@@ -93,6 +98,7 @@ export function createInitialMatchState(input: CreateMatchInput): MatchState {
       ),
     ],
     outcome: null,
+    runtime: emptyMatchRuntimeState(),
   };
 }
 
@@ -261,7 +267,8 @@ export function preparePlayerTurn(
 ): MatchState {
   if (state.outcome) return state;
 
-  let nextState = resetGlobalTurnStats(state);
+  let nextState = cleanupExpiredRuntime(resetGlobalTurnStats(state));
+  nextState = resetRuntimeCountersForPlayer(nextState, playerId);
   const playerIndex = getPlayerIndex(nextState, playerId);
   const player = nextState.players[playerIndex];
   const isFirstOwnTurn = player.ownTurnsStarted === 0;
