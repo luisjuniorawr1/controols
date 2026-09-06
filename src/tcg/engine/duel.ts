@@ -135,17 +135,17 @@ function targetNeedsExplicitBinding(selector: TargetSelector): boolean {
 }
 
 function actionTarget(action: EffectAction): TargetSelector | null {
-  if (
-    action.type === "DEAL_DAMAGE" ||
-    action.type === "RESTORE_DEFENSE" ||
-    action.type === "MODIFY_ATTACK" ||
-    action.type === "MODIFY_DEFENSE" ||
-    action.type === "DESTROY" ||
-    action.type === "RETURN_TO_HAND"
-  ) {
-    return action.target;
+  switch (action.type) {
+    case "DEAL_DAMAGE":
+    case "RESTORE_DEFENSE":
+    case "MODIFY_ATTACK":
+    case "MODIFY_DEFENSE":
+    case "DESTROY":
+    case "RETURN_TO_HAND":
+      return action.target;
+    default:
+      return null;
   }
-  return null;
 }
 
 function missingTargetForEffect(
@@ -243,6 +243,16 @@ function incrementDisconnectionStat(state: MatchState, ownerPlayerId: string): M
     turnStats: {
       ...player.turnStats,
       disconnectionsTriggered: player.turnStats.disconnectionsTriggered + 1,
+    },
+  }));
+}
+
+function recordUnitDamage(state: MatchState, ownerPlayerId: string, amount: number): MatchState {
+  return updatePlayer(state, ownerPlayerId, (player) => ({
+    ...player,
+    turnStats: {
+      ...player.turnStats,
+      damageTaken: player.turnStats.damageTaken + amount,
     },
   }));
 }
@@ -348,6 +358,21 @@ export function resolveCardTrigger(
   return { state: next, pendingEffects: pending };
 }
 
+function invalidResolvedTargetPending(
+  context: EffectContext,
+  selector: TargetSelector,
+): PendingEffect {
+  return {
+    cardId: "RUNTIME",
+    sourcePlayerId: context.sourcePlayerId,
+    sourceUnitId: context.sourceUnitId,
+    trigger: "PASSIVE",
+    text: "O alvo informado não é válido para este efeito.",
+    reason: "TARGET_REQUIRED",
+    requiredTarget: selector,
+  };
+}
+
 function applyEffectAction(
   state: MatchState,
   action: EffectAction,
@@ -390,7 +415,26 @@ function applyEffectAction(
     return { state: next, pendingEffects: pending };
   }
 
-  const targets = resolveUnitTargets(next, action.target, context);
+  const selector = actionTarget(action);
+  if (!selector) {
+    pending.push({
+      cardId: "RUNTIME",
+      sourcePlayerId: ownerPlayerId,
+      sourceUnitId: context.sourceUnitId,
+      trigger: "PASSIVE",
+      text: "Ação de efeito ainda não suportada pelo runtime.",
+      reason: "UNSUPPORTED_ACTION",
+    });
+    return { state: next, pendingEffects: pending };
+  }
+
+  const targets = resolveUnitTargets(next, selector, context);
+  if (targetNeedsExplicitBinding(selector) && targets.length === 0) {
+    return {
+      state: next,
+      pendingEffects: [invalidResolvedTargetPending(context, selector)],
+    };
+  }
 
   if (action.type === "RESTORE_DEFENSE") {
     for (const target of targets) next = restoreUnitDefense(next, target, action.amount);
@@ -487,17 +531,62 @@ export function damageUnit(
     ...location.unit,
     currentDefense: nextDefense,
   });
-
-  next = updatePlayer(next, location.unit.ownerPlayerId, (player) => ({
-    ...player,
-    turnStats: {
-      ...player.turnStats,
-      damageTaken: player.turnStats.damageTaken + amount,
-    },
-  }));
+  next = recordUnitDamage(next, location.unit.ownerPlayerId, amount);
 
   if (nextDefense > 0) return { state: next, pendingEffects: [] };
   return disconnectUnit(next, matchUnitId, catalogue, targets);
+}
+
+interface QueuedDisconnection {
+  card: CardDefinition;
+  ownerPlayerId: string;
+  matchUnitId: string;
+}
+
+function removeSimultaneouslyDestroyedUnits(
+  state: MatchState,
+  unitIdsInResolutionOrder: readonly string[],
+  catalogue: readonly CardDefinition[],
+  targets?: EffectTargetBindings,
+): EngineResult {
+  let next = state;
+  const queue: QueuedDisconnection[] = [];
+  const pending: PendingEffect[] = [];
+
+  // First remove every unit that was already dead from simultaneous damage.
+  // Only after that do DESCONEXÕES resolve, so one death trigger cannot rescue
+  // another unit that was already lethally damaged in the same combat event.
+  for (const unitId of unitIdsInResolutionOrder) {
+    const location = findUnit(next, unitId);
+    if (!location || location.unit.currentDefense > 0) continue;
+    const card = getCard(catalogue, location.unit.definitionId);
+    const hasDisconnection = Boolean(
+      card.effects?.some((effect) => effect.trigger === "DISCONNECTION"),
+    );
+    next = destroyUnitWithoutTrigger(next, location);
+    if (hasDisconnection) {
+      next = incrementDisconnectionStat(next, location.unit.ownerPlayerId);
+      queue.push({
+        card,
+        ownerPlayerId: location.unit.ownerPlayerId,
+        matchUnitId: location.unit.matchUnitId,
+      });
+    }
+  }
+
+  // Provisional deterministic order: active player's destroyed unit first,
+  // then the opponent's. This can be promoted to a formal APNAP rule later.
+  for (const item of queue) {
+    const result = resolveCardTrigger(next, item.card, "DISCONNECTION", catalogue, {
+      sourcePlayerId: item.ownerPlayerId,
+      sourceUnitId: item.matchUnitId,
+      targets,
+    });
+    next = result.state;
+    pending.push(...result.pendingEffects);
+  }
+
+  return { state: next, pendingEffects: pending };
 }
 
 export interface PlayControolzInput {
@@ -630,10 +719,6 @@ export function attackLane(input: AttackLaneInput): EngineResult {
     throw new Error("Este Controolz já usou todos os ataques permitidos no turno.");
   }
 
-  const defender = input.state.players[defenderIndex].board[input.lane];
-  const attackerDamage = attacker.attack;
-  const defenderDamage = defender?.attack ?? 0;
-
   let next = replaceUnitAt(input.state, attackerIndex, input.lane, {
     ...attacker,
     attacksUsedThisTurn: attacker.attacksUsedThisTurn + 1,
@@ -656,31 +741,56 @@ export function attackLane(input: AttackLaneInput): EngineResult {
   next = attackTrigger.state;
   pending.push(...attackTrigger.pendingEffects);
 
-  if (!defender) {
-    next = changeSignal(next, input.state.players[defenderIndex].playerId, -attackerDamage);
+  const currentAttacker = findUnit(next, attacker.matchUnitId);
+  if (!currentAttacker) {
     return { state: next, pendingEffects: pending };
   }
 
-  // Combat damage is simultaneous: values are snapshotted before either unit dies.
-  const defenderResult = damageUnit(
-    next,
-    defender.matchUnitId,
-    attackerDamage,
-    input.catalogue,
-    input.targets,
-  );
-  next = defenderResult.state;
-  pending.push(...defenderResult.pendingEffects);
+  const currentDefender = next.players[defenderIndex].board[input.lane];
+  if (!currentDefender) {
+    next = changeSignal(
+      next,
+      next.players[defenderIndex].playerId,
+      -currentAttacker.unit.attack,
+    );
+    return { state: next, pendingEffects: pending };
+  }
 
-  const attackerResult = damageUnit(
+  const attackerDamage = currentAttacker.unit.attack;
+  const defenderDamage = currentDefender.attack;
+  const attackerUnitId = currentAttacker.unit.matchUnitId;
+  const defenderUnitId = currentDefender.matchUnitId;
+
+  // Mark both damage packets before resolving any destruction or DESCONEXÃO.
+  const attackerAfterMark = findUnit(next, attackerUnitId);
+  const defenderAfterMark = findUnit(next, defenderUnitId);
+  if (!attackerAfterMark || !defenderAfterMark) {
+    return { state: next, pendingEffects: pending };
+  }
+
+  next = replaceUnitAt(next, defenderAfterMark.playerIndex, defenderAfterMark.lane, {
+    ...defenderAfterMark.unit,
+    currentDefense: defenderAfterMark.unit.currentDefense - attackerDamage,
+  });
+  next = recordUnitDamage(next, defenderAfterMark.unit.ownerPlayerId, attackerDamage);
+
+  const attackerStillMarked = findUnit(next, attackerUnitId);
+  if (attackerStillMarked) {
+    next = replaceUnitAt(next, attackerStillMarked.playerIndex, attackerStillMarked.lane, {
+      ...attackerStillMarked.unit,
+      currentDefense: attackerStillMarked.unit.currentDefense - defenderDamage,
+    });
+    next = recordUnitDamage(next, attackerStillMarked.unit.ownerPlayerId, defenderDamage);
+  }
+
+  const disconnections = removeSimultaneouslyDestroyedUnits(
     next,
-    attacker.matchUnitId,
-    defenderDamage,
+    [attackerUnitId, defenderUnitId],
     input.catalogue,
     input.targets,
   );
-  next = attackerResult.state;
-  pending.push(...attackerResult.pendingEffects);
+  next = disconnections.state;
+  pending.push(...disconnections.pendingEffects);
 
   return { state: next, pendingEffects: pending };
 }
