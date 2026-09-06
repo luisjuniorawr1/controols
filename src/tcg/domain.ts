@@ -45,27 +45,38 @@ export type EffectLimit =
 export type TargetSelector =
   | "SELF"
   | "ALLY_CONTROOLZ"
+  | "OTHER_ALLY_CONTROOLZ"
   | "ENEMY_CONTROOLZ"
   | "ANY_CONTROOLZ"
   | "ALLY_CONTROLLER"
   | "ENEMY_CONTROLLER"
+  | "ALL_OTHER_CONTROOLZ"
   | "ALL_ALLY_CONTROOLZ"
   | "ALL_ENEMY_CONTROOLZ"
   | "RANDOM_ALLY_CONTROOLZ"
   | "RANDOM_ENEMY_CONTROOLZ";
 
 /**
- * Structured effects are deliberately small in v0.1.
- * Cards may ship with human-readable `text` before every effect has an engine
- * implementation. New actions should be added explicitly instead of encoding
- * executable behavior in free-form strings.
+ * Structured effects are deliberately explicit. The engine never interprets
+ * Portuguese rules text as executable code. Complex Set 001 cards can keep
+ * their player-facing text while their runtime behavior is added separately.
  */
 export type EffectAction =
   | { type: "DEAL_DAMAGE"; amount: number; target: TargetSelector }
   | { type: "RESTORE_DEFENSE"; amount: number; target: TargetSelector }
-  | { type: "MODIFY_ATTACK"; amount: number; target: TargetSelector; duration: "TURN" | "PERMANENT" }
-  | { type: "MODIFY_DEFENSE"; amount: number; target: TargetSelector; duration: "TURN" | "PERMANENT" }
-  | { type: "DRAW"; amount: number }
+  | {
+      type: "MODIFY_ATTACK";
+      amount: number;
+      target: TargetSelector;
+      duration: "TURN" | "PERMANENT";
+    }
+  | {
+      type: "MODIFY_DEFENSE";
+      amount: number;
+      target: TargetSelector;
+      duration: "TURN" | "PERMANENT";
+    }
+  | { type: "DRAW"; amount: number; player?: "SELF" | "OPPONENT" }
   | { type: "DISCARD_RANDOM"; amount: number; player: "SELF" | "OPPONENT" }
   | { type: "DESTROY"; target: TargetSelector }
   | { type: "RETURN_TO_HAND"; target: TargetSelector }
@@ -76,7 +87,7 @@ export interface CardEffect {
   trigger: EffectTrigger;
   /** Final player-facing wording printed on the card. */
   text: string;
-  /** Optional structured implementation used by the deterministic engine. */
+  /** Structured implementation used by the deterministic engine. */
   actions?: readonly EffectAction[];
   limits?: readonly EffectLimit[];
 }
@@ -172,15 +183,27 @@ export interface UnitState {
 
 export type BoardState = [UnitState | null, UnitState | null, UnitState | null];
 
+export interface PlayerTurnStats {
+  damageTaken: number;
+  unitsAttacked: number;
+  unitsDestroyed: number;
+  cardsPlayed: number;
+  commandsPlayed: number;
+  disconnectionsTriggered: number;
+}
+
 export interface PlayerMatchState {
   playerId: string;
   signal: number;
   maxEnergy: number;
   energy: number;
+  /** Number of turns this player has actually started; fixes energy growth symmetry. */
+  ownTurnsStarted: number;
   deck: readonly string[];
   hand: readonly string[];
   discard: readonly string[];
   board: BoardState;
+  turnStats: PlayerTurnStats;
 }
 
 export type MatchOutcomeReason =
@@ -200,6 +223,7 @@ export interface MatchState {
   matchId: string;
   rulesVersion: string;
   cardPoolVersion: string;
+  /** Global turn sequence, starting at 1. */
   turn: number;
   activePlayerId: string;
   phase: MatchPhase;
@@ -212,6 +236,7 @@ export type MatchEventType =
   | "TURN_STARTED"
   | "CARD_DRAWN"
   | "CARD_PLAYED"
+  | "COMMAND_RESOLVED"
   | "CONTROOLZ_CONNECTED"
   | "CONTROOLZ_MOVED"
   | "ATTACK_DECLARED"
