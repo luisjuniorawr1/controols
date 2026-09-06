@@ -1,4 +1,4 @@
-import type { CardDefinition, CardEffect } from "../../domain";
+import type { CardDefinition, CardEffect, EffectTrigger } from "../../domain";
 
 /**
  * The source files in this folder mirror the approved design document. Runtime
@@ -142,6 +142,16 @@ const EFFECTS_OVERRIDES: Readonly<Record<string, readonly CardEffect[]>> = {
   ],
 };
 
+/** Exact trigger corrections for effects that were intentionally imported as PASSIVE. */
+const TRIGGER_OVERRIDES: Readonly<Record<string, EffectTrigger>> = {
+  "SET001-0002:0": "ON_DAMAGE",
+  "SET001-0013:0": "ON_ATTACK",
+  "SET001-0014:0": "ON_DAMAGE",
+  "SET001-0062:0": "PASSIVE",
+  "SET001-0067:0": "PASSIVE",
+  "SET001-0076:0": "TURN_START",
+};
+
 function normalizeEffectText(cardId: string, effect: CardEffect): CardEffect {
   if (!RULE_TEXT_OVERRIDES[cardId]) return effect;
   return {
@@ -152,11 +162,23 @@ function normalizeEffectText(cardId: string, effect: CardEffect): CardEffect {
   };
 }
 
+function attachRuntimeIdentity(cardId: string, index: number, effect: CardEffect): CardEffect {
+  const runtimeId = `${cardId}:${index}`;
+  return {
+    ...effect,
+    trigger: TRIGGER_OVERRIDES[runtimeId] ?? effect.trigger,
+    runtimeId,
+  };
+}
+
 export function prepareSet001CardForRuntime(card: CardDefinition): CardDefinition {
   const overriddenEffects = EFFECTS_OVERRIDES[card.id];
-  const effects = overriddenEffects
+  const baseEffects = overriddenEffects
     ? overriddenEffects
     : card.effects?.map((effect) => normalizeEffectText(card.id, effect));
+  const effects = baseEffects?.map((effect, index) =>
+    attachRuntimeIdentity(card.id, index, effect),
+  );
 
   return {
     ...card,
@@ -167,6 +189,9 @@ export function prepareSet001CardForRuntime(card: CardDefinition): CardDefinitio
 
 export function hasExecutableEffects(card: CardDefinition): boolean {
   return Boolean(
-    card.effects?.some((effect) => effect.actions && effect.actions.length > 0),
+    card.effects?.some(
+      (effect) =>
+        Boolean(effect.actions && effect.actions.length > 0) || Boolean(effect.runtimeId),
+    ),
   );
 }
