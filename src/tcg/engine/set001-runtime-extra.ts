@@ -380,6 +380,12 @@ export function resolveSet001ExtraRuntimeEffect(
   let next = state;
   const noPending: readonly Set001RuntimePending[] = [];
 
+  // ---------------- LOGIC completion ----------------
+  if (runtimeId === "SET001-0047:0") {
+    next = drawCards(next, context.sourcePlayerId, 2);
+    return discardChosen(next, runtimeId, context, text, trigger, "discard");
+  }
+
   // ---------------- WILD ----------------
   if (runtimeId === "SET001-0061:0" || runtimeId === "SET001-0071:0") {
     const tokenId = runtimeId === "SET001-0061:0" ? "SET001-TOKEN-BROTINHO" : "SET001-TOKEN-ESPORO";
@@ -586,7 +592,6 @@ export function resolveSet001ExtraRuntimeEffect(
     if (def.type !== "COMMAND" || def.cost > 2 || !getPlayer(next, context.sourcePlayerId).discard.includes(id)) {
       return decisionPending(state, runtimeId, context, text, trigger, "copyCommand");
     }
-    // The main engine resolves the copied command through its audited runtime id; the original is then exiled.
     const effect = def.effects?.find((item) => item.trigger === "COMMAND_RESOLVE");
     if (!effect?.runtimeId && !effect?.actions?.length) return decisionPending(state, runtimeId, context, text, trigger, "copyCommand");
     const removed = exileDiscardCard(next, context.sourcePlayerId, id);
@@ -878,7 +883,6 @@ export function resolveSet001ExtraRuntimeEffect(
 
   // ---------------- NEUTRAL ----------------
   if (runtimeId === "SET001-0178:0") {
-    // Information-only effect; state is unchanged, but it is fully deterministic and UI may reveal the top card to the source Controller.
     next = setRuntimeCounter(next, context.sourcePlayerId, `peekEnemyTop:${getOpponent(next, context.sourcePlayerId).deck[0] ?? "EMPTY"}`, 1);
     return { state: next, pendingEffects: noPending };
   }
