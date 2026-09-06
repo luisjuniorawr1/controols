@@ -12,6 +12,7 @@ import {
   emptyMatchRuntimeState,
   getPlayerModifiers,
   getRuntimeCounter,
+  hasPendingRuntimeDecision,
   resetRuntimeCountersForPlayer,
   setRuntimeCounter,
 } from "./runtime-state";
@@ -280,6 +281,9 @@ export function spendEnergy(
 ): MatchState {
   if (!Number.isInteger(amount) || amount < 0) {
     throw new Error("Custo de energia inválido.");
+  }
+  if (hasPendingRuntimeDecision(state, playerId)) {
+    throw new Error("Resolva a decisão pendente antes de jogar outra carta.");
   }
 
   const playerIndex = getPlayerIndex(state, playerId);
