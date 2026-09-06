@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "src/tcg/**"
-      - "tests/tcg-engine.spec.ts"
+      - "tests/tcg-*.spec.ts"
+      - "docs/tcg/**"
+      - "playwright.tcg.config.ts"
       - "package.json"
       - ".github/workflows/tcg-pr.yml"
   workflow_dispatch:
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   tcg-typecheck-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     env:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
@@ -27,7 +29,5 @@ jobs:
       - run: npm install
       - name: Type check
         run: npm run lint
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
       - name: TCG engine tests
         run: npm run qa:tcg
