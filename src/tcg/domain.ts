@@ -59,7 +59,8 @@ export type TargetSelector =
 /**
  * Structured effects are deliberately explicit. The engine never interprets
  * Portuguese rules text as executable code. Complex Set 001 cards can keep
- * their player-facing text while their runtime behavior is added separately.
+ * their player-facing text while their runtime behavior is attached by a
+ * stable runtimeId and resolved by the audited Set 001 rules module.
  */
 export type EffectAction =
   | { type: "DEAL_DAMAGE"; amount: number; target: TargetSelector }
@@ -89,6 +90,11 @@ export interface CardEffect {
   text: string;
   /** Structured implementation used by the deterministic engine. */
   actions?: readonly EffectAction[];
+  /**
+   * Stable pointer to the audited card-specific runtime. Used for mechanics
+   * that are richer than the small generic EffectAction vocabulary.
+   */
+  runtimeId?: string;
   limits?: readonly EffectLimit[];
 }
 
@@ -206,6 +212,33 @@ export interface PlayerMatchState {
   turnStats: PlayerTurnStats;
 }
 
+/**
+ * Generic serialized metadata used by Set 001 mechanics. The rules module owns
+ * the meaning of each modifier kind, while the match state remains replayable
+ * and safe to persist server-side.
+ */
+export interface RuntimeModifier {
+  id: string;
+  kind: string;
+  sourceCardId?: string;
+  sourceUnitId?: string;
+  amount?: number;
+  createdTurn: number;
+  expiresAtTurn?: number;
+  usedTurn?: number;
+  data?: Readonly<Record<string, string | number | boolean>>;
+}
+
+export interface MatchRuntimeState {
+  unitModifiers: Readonly<Record<string, readonly RuntimeModifier[]>>;
+  playerModifiers: Readonly<Record<string, readonly RuntimeModifier[]>>;
+  exileByPlayer: Readonly<Record<string, readonly string[]>>;
+  /** Turn-scoped counters are reset for a Controller when their next turn starts. */
+  turnCounters: Readonly<Record<string, number>>;
+  /** Monotonic deterministic sequence for runtime ids/tokens/replay ordering. */
+  sequence: number;
+}
+
 export type MatchOutcomeReason =
   | "SIGNAL_ZERO"
   | "SURRENDER"
@@ -229,6 +262,7 @@ export interface MatchState {
   phase: MatchPhase;
   players: [PlayerMatchState, PlayerMatchState];
   outcome: MatchOutcome | null;
+  runtime?: MatchRuntimeState;
 }
 
 export type MatchEventType =
