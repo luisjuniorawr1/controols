@@ -17,6 +17,8 @@ export interface RuntimeCoverageReport {
   partiallyExecutableCards: number;
   textOnlyCards: number;
   totalEffects: number;
+  genericActionEffects: number;
+  delegatedRuntimeEffects: number;
   executableEffects: number;
   issues: RuntimeCoverageIssue[];
 }
@@ -34,6 +36,14 @@ function suggestSpecificTrigger(text: string): EffectTrigger | undefined {
   return undefined;
 }
 
+function isEffectDelegated(effect: NonNullable<CardDefinition["effects"]>[number]): boolean {
+  return Boolean(effect.runtimeId);
+}
+
+function isEffectExecutable(effect: NonNullable<CardDefinition["effects"]>[number]): boolean {
+  return Boolean(effect.actions?.length) || isEffectDelegated(effect);
+}
+
 export function auditRuntimeCoverage(
   cards: readonly CardDefinition[],
 ): RuntimeCoverageReport {
@@ -43,6 +53,8 @@ export function auditRuntimeCoverage(
   let partiallyExecutableCards = 0;
   let textOnlyCards = 0;
   let totalEffects = 0;
+  let genericActionEffects = 0;
+  let delegatedRuntimeEffects = 0;
   let executableEffects = 0;
   const issues: RuntimeCoverageIssue[] = [];
 
@@ -59,9 +71,14 @@ export function auditRuntimeCoverage(
     }
 
     totalEffects += effects.length;
-    const executableCount = effects.filter(
-      (effect) => effect.actions && effect.actions.length > 0,
+    const genericCount = effects.filter((effect) => Boolean(effect.actions?.length)).length;
+    const delegatedCount = effects.filter(
+      (effect) => !effect.actions?.length && isEffectDelegated(effect),
     ).length;
+    const executableCount = effects.filter(isEffectExecutable).length;
+
+    genericActionEffects += genericCount;
+    delegatedRuntimeEffects += delegatedCount;
     executableEffects += executableCount;
 
     if (executableCount === effects.length) fullyExecutableCards += 1;
@@ -69,7 +86,7 @@ export function auditRuntimeCoverage(
     else textOnlyCards += 1;
 
     for (const effect of effects) {
-      if (!effect.actions?.length) {
+      if (!isEffectExecutable(effect)) {
         issues.push({
           cardId: card.id,
           name: card.name,
@@ -102,21 +119,20 @@ export function auditRuntimeCoverage(
     partiallyExecutableCards,
     textOnlyCards,
     totalEffects,
+    genericActionEffects,
+    delegatedRuntimeEffects,
     executableEffects,
     issues,
   };
 }
 
 /**
- * Runtime-ready here means only that every rules effect has a structured
- * action. It does not certify balance, target legality, temporary-duration
- * support or trigger correctness; those are audited separately.
+ * Runtime-ready means every printed rules effect is either expressed through
+ * generic structured actions or delegated to an audited runtimeId. A separate
+ * resolver-coverage audit verifies that delegated ids have an implementation.
  */
 export function isCardRuntimeReady(card: CardDefinition): boolean {
   if (!card.rulesText.trim()) return true;
   const effects = card.effects ?? [];
-  return (
-    effects.length > 0 &&
-    effects.every((effect) => Boolean(effect.actions?.length))
-  );
+  return effects.length > 0 && effects.every(isEffectExecutable);
 }
