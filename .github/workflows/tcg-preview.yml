@@ -1,0 +1,46 @@
+name: CONTROOLZ TCG Preview
+
+on:
+  push:
+    branches: [tcg-foundation]
+    paths:
+      - "app/play/**"
+      - "src/tcg/**"
+      - "package.json"
+      - "next.config.ts"
+      - "firebase.json"
+      - ".github/workflows/tcg-preview.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: controolz-tcg-preview
+  cancel-in-progress: true
+
+jobs:
+  build-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Type check
+        run: npm run lint
+      - name: TCG engine tests
+        run: npm run qa:tcg
+      - name: Build static site
+        run: npm run build
+      - name: Deploy isolated TCG preview
+        if: ${{ success() && env.FIREBASE_SERVICE_ACCOUNT != '' }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: controols
+          channelId: tcg-alpha
+          expires: 7d
